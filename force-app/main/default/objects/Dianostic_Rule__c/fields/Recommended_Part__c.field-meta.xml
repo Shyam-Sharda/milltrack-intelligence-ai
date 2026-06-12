@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Recommended_Part__c</fullName>
+    <deleteConstraint>SetNull</deleteConstraint>
+    <label>Recommended Part</label>
+    <referenceTo>Part_Catalog__c</referenceTo>
+    <relationshipLabel>Diagnostic Rules</relationshipLabel>
+    <relationshipName>Diagnostic_Rules</relationshipName>
+    <required>false</required>
+    <trackTrending>false</trackTrending>
+    <type>Lookup</type>
+</CustomField>
