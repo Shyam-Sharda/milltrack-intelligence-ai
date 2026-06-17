@@ -20,6 +20,10 @@
                     <value>false</value>
                 </componentInstanceProperties>
                 <componentInstanceProperties>
+                    <name>hideSlackAction</name>
+                    <value>false</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
                     <name>numVisibleActions</name>
                     <value>3</value>
                 </componentInstanceProperties>
@@ -119,16 +123,6 @@
                     <name>uiBehavior</name>
                     <value>none</value>
                 </fieldInstanceProperties>
-                <fieldItem>Record.ContactId</fieldItem>
-                <identifier>RecordContactIdField</identifier>
-            </fieldInstance>
-        </itemInstances>
-        <itemInstances>
-            <fieldInstance>
-                <fieldInstanceProperties>
-                    <name>uiBehavior</name>
-                    <value>none</value>
-                </fieldInstanceProperties>
                 <fieldItem>Record.AssetId</fieldItem>
                 <identifier>RecordAssetIdField</identifier>
             </fieldInstance>
@@ -147,10 +141,20 @@
             <fieldInstance>
                 <fieldInstanceProperties>
                     <name>uiBehavior</name>
+                    <value>readonly</value>
+                </fieldInstanceProperties>
+                <fieldItem>Record.CreatedDate</fieldItem>
+                <identifier>RecordCreatedDateField</identifier>
+            </fieldInstance>
+        </itemInstances>
+        <itemInstances>
+            <fieldInstance>
+                <fieldInstanceProperties>
+                    <name>uiBehavior</name>
                     <value>none</value>
                 </fieldInstanceProperties>
-                <fieldItem>Record.Status</fieldItem>
-                <identifier>RecordStatusField</identifier>
+                <fieldItem>Record.Dispatch_Status__c</fieldItem>
+                <identifier>RecordDispatch_Status__cField</identifier>
             </fieldInstance>
         </itemInstances>
         <itemInstances>
@@ -167,6 +171,36 @@
         <type>Facet</type>
     </flexiPageRegions>
     <flexiPageRegions>
+        <itemInstances>
+            <fieldInstance>
+                <fieldInstanceProperties>
+                    <name>uiBehavior</name>
+                    <value>none</value>
+                </fieldInstanceProperties>
+                <fieldItem>Record.Resolution_Status__c</fieldItem>
+                <identifier>RecordResolution_Status_cField</identifier>
+            </fieldInstance>
+        </itemInstances>
+        <itemInstances>
+            <fieldInstance>
+                <fieldInstanceProperties>
+                    <name>uiBehavior</name>
+                    <value>none</value>
+                </fieldInstanceProperties>
+                <fieldItem>Record.AI_Dispatch_Summary__c</fieldItem>
+                <identifier>RecordAI_Dispatch_Summary_cField</identifier>
+            </fieldInstance>
+        </itemInstances>
+        <itemInstances>
+            <fieldInstance>
+                <fieldInstanceProperties>
+                    <name>uiBehavior</name>
+                    <value>none</value>
+                </fieldInstanceProperties>
+                <fieldItem>Record.Dispatch_Response__c</fieldItem>
+                <identifier>RecordDispatch_Response__cField</identifier>
+            </fieldInstance>
+        </itemInstances>
         <name>Facet-39005f20-19a7-4dac-a3c7-fab9049f016d</name>
         <type>Facet</type>
     </flexiPageRegions>
@@ -201,8 +235,8 @@
                     <name>uiBehavior</name>
                     <value>none</value>
                 </fieldInstanceProperties>
-                <fieldItem>Record.AI_Dispatch_Summary__c</fieldItem>
-                <identifier>RecordAI_Dispatch_Summary_cField</identifier>
+                <fieldItem>Record.Recommended_Solution__c</fieldItem>
+                <identifier>RecordRecommended_Solution_cField</identifier>
             </fieldInstance>
         </itemInstances>
         <itemInstances>
@@ -211,8 +245,8 @@
                     <name>uiBehavior</name>
                     <value>none</value>
                 </fieldInstanceProperties>
-                <fieldItem>Record.Recommended_Solution__c</fieldItem>
-                <identifier>RecordRecommended_Solution_cField</identifier>
+                <fieldItem>Record.Recommended_Parts__c</fieldItem>
+                <identifier>RecordRecommended_Parts__cField</identifier>
             </fieldInstance>
         </itemInstances>
         <itemInstances>
@@ -231,8 +265,8 @@
                     <name>uiBehavior</name>
                     <value>none</value>
                 </fieldInstanceProperties>
-                <fieldItem>Record.Resolution_Status__c</fieldItem>
-                <identifier>RecordResolution_Status_cField</identifier>
+                <fieldItem>Record.Previous_Failure__c</fieldItem>
+                <identifier>RecordPrevious_Failure__cField</identifier>
             </fieldInstance>
         </itemInstances>
         <name>Facet-6faa53e7-7ef5-4eb3-8213-905bdcfacd97</name>

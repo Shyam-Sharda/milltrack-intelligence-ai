@@ -1,0 +1,633 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Flow xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>67.0</apiVersion>
+    <areMetricsLoggedToDataCloud>false</areMetricsLoggedToDataCloud>
+    <assignments>
+        <name>Add_Case_Text</name>
+        <label>Add Case Text</label>
+        <locationX>646</locationX>
+        <locationY>617</locationY>
+        <assignmentItems>
+            <assignToReference>caseSummaryText</assignToReference>
+            <operator>Add</operator>
+            <value>
+                <elementReference>CaseLine</elementReference>
+            </value>
+        </assignmentItems>
+        <connector>
+            <targetReference>Loop_Cases</targetReference>
+        </connector>
+    </assignments>
+    <assignments>
+        <name>Add_Maintenance_Log_Text</name>
+        <label>Add Maintenance Log Text</label>
+        <locationX>1239</locationX>
+        <locationY>641</locationY>
+        <assignmentItems>
+            <assignToReference>maintenanceLogSummaryText</assignToReference>
+            <operator>Add</operator>
+            <value>
+                <elementReference>MaintenanceLogLine</elementReference>
+            </value>
+        </assignmentItems>
+        <connector>
+            <targetReference>Loop_Maintenance_Logs</targetReference>
+        </connector>
+    </assignments>
+    <assignments>
+        <name>Add_Parts_Text</name>
+        <label>Add Parts Text</label>
+        <locationX>1530</locationX>
+        <locationY>656</locationY>
+        <assignmentItems>
+            <assignToReference>partSummaryText</assignToReference>
+            <operator>Add</operator>
+            <value>
+                <elementReference>PartLine</elementReference>
+            </value>
+        </assignmentItems>
+        <connector>
+            <targetReference>Loop_Work_Order_Parts</targetReference>
+        </connector>
+    </assignments>
+    <assignments>
+        <name>Add_Work_Order_Text</name>
+        <label>Add Work Order Text</label>
+        <locationX>948</locationX>
+        <locationY>627</locationY>
+        <assignmentItems>
+            <assignToReference>workOrderSummaryText</assignToReference>
+            <operator>Add</operator>
+            <value>
+                <elementReference>WorkOrderLine</elementReference>
+            </value>
+        </assignmentItems>
+        <connector>
+            <targetReference>Loop_Work_Orders</targetReference>
+        </connector>
+    </assignments>
+    <assignments>
+        <name>Build_Machine_Summary</name>
+        <label>Build Machine Summary</label>
+        <locationX>1746</locationX>
+        <locationY>436</locationY>
+        <assignmentItems>
+            <assignToReference>outputMachineSummary</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <elementReference>machineSummary</elementReference>
+            </value>
+        </assignmentItems>
+        <connector>
+            <targetReference>Build_Service_History_Summary</targetReference>
+        </connector>
+    </assignments>
+    <assignments>
+        <name>Build_Service_History_Summary</name>
+        <label>Build Service History Summary</label>
+        <locationX>1746</locationX>
+        <locationY>800</locationY>
+        <assignmentItems>
+            <assignToReference>outputServiceHistorySummary</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <elementReference>machineServiceHistory</elementReference>
+            </value>
+        </assignmentItems>
+        <assignmentItems>
+            <assignToReference>outputStatusMessage</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <elementReference>MachineFoundMessage</elementReference>
+            </value>
+        </assignmentItems>
+    </assignments>
+    <assignments>
+        <name>InitializeHistory_Variables</name>
+        <label>Initialize History Variables</label>
+        <locationX>328</locationX>
+        <locationY>431</locationY>
+        <assignmentItems>
+            <assignToReference>caseSummaryText</assignToReference>
+            <operator>Add</operator>
+            <value>
+                <elementReference>emptyCaseSummary</elementReference>
+            </value>
+        </assignmentItems>
+        <assignmentItems>
+            <assignToReference>workOrderSummaryText</assignToReference>
+            <operator>Add</operator>
+            <value>
+                <elementReference>emptyWorkOrderSummaryText</elementReference>
+            </value>
+        </assignmentItems>
+        <assignmentItems>
+            <assignToReference>maintenanceLogSummaryText</assignToReference>
+            <operator>Add</operator>
+            <value>
+                <elementReference>emptyMaintenanceLogSummaryText</elementReference>
+            </value>
+        </assignmentItems>
+        <assignmentItems>
+            <assignToReference>partSummaryText</assignToReference>
+            <operator>Add</operator>
+            <value>
+                <elementReference>emptyPartSummaryText</elementReference>
+            </value>
+        </assignmentItems>
+        <connector>
+            <targetReference>Get_Related_Machine_Records</targetReference>
+        </connector>
+    </assignments>
+    <assignments>
+        <name>Machine_Not_Found</name>
+        <label>Machine Not Found</label>
+        <locationX>530</locationX>
+        <locationY>243</locationY>
+        <assignmentItems>
+            <assignToReference>outputStatusMessage</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <elementReference>MachineNotFoundMessage</elementReference>
+            </value>
+        </assignmentItems>
+    </assignments>
+    <decisions>
+        <name>Was_Machine_Found</name>
+        <label>Was Machine Found</label>
+        <locationX>319</locationX>
+        <locationY>244</locationY>
+        <defaultConnector>
+            <targetReference>Machine_Not_Found</targetReference>
+        </defaultConnector>
+        <defaultConnectorLabel>Machine Not Found</defaultConnectorLabel>
+        <rules>
+            <name>Machine_Found</name>
+            <conditionLogic>and</conditionLogic>
+            <conditions>
+                <leftValueReference>Get_Machine.Id</leftValueReference>
+                <operator>IsNull</operator>
+                <rightValue>
+                    <booleanValue>false</booleanValue>
+                </rightValue>
+            </conditions>
+            <connector>
+                <targetReference>InitializeHistory_Variables</targetReference>
+            </connector>
+            <label>Machine Found</label>
+        </rules>
+    </decisions>
+    <description>Finds a machine by serial number and returns its Asset, related Cases, Work Orders, Maintenance Logs, and parts history for use by the MillTrack Technician Agent.</description>
+    <environments>Default</environments>
+    <interviewLabel>Get Machine History {!$Flow.CurrentDateTime}</interviewLabel>
+    <label>Get Machine History Updated</label>
+    <loops>
+        <name>Loop_Cases</name>
+        <label>Loop Cases</label>
+        <locationX>646</locationX>
+        <locationY>431</locationY>
+        <collectionReference>Get_Related_Machine_Records</collectionReference>
+        <iterationOrder>Asc</iterationOrder>
+        <nextValueConnector>
+            <targetReference>Add_Case_Text</targetReference>
+        </nextValueConnector>
+        <noMoreValuesConnector>
+            <targetReference>Get_Work_Orders</targetReference>
+        </noMoreValuesConnector>
+    </loops>
+    <loops>
+        <name>Loop_Maintenance_Logs</name>
+        <label>Loop Maintenance Logs</label>
+        <locationX>1235</locationX>
+        <locationY>430</locationY>
+        <collectionReference>Get_Maintenance_Logs</collectionReference>
+        <iterationOrder>Asc</iterationOrder>
+        <nextValueConnector>
+            <targetReference>Add_Maintenance_Log_Text</targetReference>
+        </nextValueConnector>
+        <noMoreValuesConnector>
+            <targetReference>Get_Work_Order_Parts</targetReference>
+        </noMoreValuesConnector>
+    </loops>
+    <loops>
+        <name>Loop_Work_Order_Parts</name>
+        <label>Loop Work Order Parts</label>
+        <locationX>1527</locationX>
+        <locationY>433</locationY>
+        <collectionReference>Get_Work_Order_Parts</collectionReference>
+        <iterationOrder>Asc</iterationOrder>
+        <nextValueConnector>
+            <targetReference>Add_Parts_Text</targetReference>
+        </nextValueConnector>
+        <noMoreValuesConnector>
+            <targetReference>Build_Machine_Summary</targetReference>
+        </noMoreValuesConnector>
+    </loops>
+    <loops>
+        <name>Loop_Work_Orders</name>
+        <label>Loop Work Orders</label>
+        <locationX>944</locationX>
+        <locationY>429</locationY>
+        <collectionReference>Get_Work_Orders</collectionReference>
+        <iterationOrder>Asc</iterationOrder>
+        <nextValueConnector>
+            <targetReference>Add_Work_Order_Text</targetReference>
+        </nextValueConnector>
+        <noMoreValuesConnector>
+            <targetReference>Get_Maintenance_Logs</targetReference>
+        </noMoreValuesConnector>
+    </loops>
+    <processMetadataValues>
+        <name>BuilderType</name>
+        <value>
+            <stringValue>LightningFlowBuilder</stringValue>
+        </value>
+    </processMetadataValues>
+    <processMetadataValues>
+        <name>CanvasMode</name>
+        <value>
+            <stringValue>FREE_FORM_CANVAS</stringValue>
+        </value>
+    </processMetadataValues>
+    <processMetadataValues>
+        <name>OriginBuilderType</name>
+        <value>
+            <stringValue>LightningFlowBuilder</stringValue>
+        </value>
+    </processMetadataValues>
+    <processType>AutoLaunchedFlow</processType>
+    <recordLookups>
+        <name>Get_Machine</name>
+        <label>Get Machine</label>
+        <locationX>143</locationX>
+        <locationY>243</locationY>
+        <assignNullValuesIfNoRecordsFound>false</assignNullValuesIfNoRecordsFound>
+        <connector>
+            <targetReference>Was_Machine_Found</targetReference>
+        </connector>
+        <filterLogic>and</filterLogic>
+        <filters>
+            <field>Serial_Number__c</field>
+            <operator>EqualTo</operator>
+            <value>
+                <elementReference>inputSerialNumber</elementReference>
+            </value>
+        </filters>
+        <getFirstRecordOnly>true</getFirstRecordOnly>
+        <object>Asset</object>
+        <storeOutputAutomatically>true</storeOutputAutomatically>
+    </recordLookups>
+    <recordLookups>
+        <name>Get_Maintenance_Logs</name>
+        <label>Get Maintenance Logs</label>
+        <locationX>1110</locationX>
+        <locationY>431</locationY>
+        <assignNullValuesIfNoRecordsFound>false</assignNullValuesIfNoRecordsFound>
+        <connector>
+            <targetReference>Loop_Maintenance_Logs</targetReference>
+        </connector>
+        <filterLogic>and</filterLogic>
+        <filters>
+            <field>Asset__c</field>
+            <operator>EqualTo</operator>
+            <value>
+                <elementReference>Get_Machine.Id</elementReference>
+            </value>
+        </filters>
+        <getFirstRecordOnly>false</getFirstRecordOnly>
+        <limit>
+            <numberValue>5.0</numberValue>
+        </limit>
+        <object>Maintenance_Log__c</object>
+        <queriedFields>Id</queriedFields>
+        <queriedFields>Name</queriedFields>
+        <queriedFields>CreatedDate</queriedFields>
+        <queriedFields>Issue_Resolved__c</queriedFields>
+        <queriedFields>Follow_Up_Required__c</queriedFields>
+        <queriedFields>Technician_Notes__c</queriedFields>
+        <queriedFields>Summary__c</queriedFields>
+        <queriedFields>Maintenance_Type__c</queriedFields>
+        <sortField>CreatedDate</sortField>
+        <sortOrder>Desc</sortOrder>
+        <storeOutputAutomatically>true</storeOutputAutomatically>
+    </recordLookups>
+    <recordLookups>
+        <name>Get_Related_Machine_Records</name>
+        <label>Get Related Cases</label>
+        <locationX>531</locationX>
+        <locationY>431</locationY>
+        <assignNullValuesIfNoRecordsFound>false</assignNullValuesIfNoRecordsFound>
+        <connector>
+            <targetReference>Loop_Cases</targetReference>
+        </connector>
+        <filterLogic>and</filterLogic>
+        <filters>
+            <field>AssetId</field>
+            <operator>EqualTo</operator>
+            <value>
+                <elementReference>Get_Machine.Id</elementReference>
+            </value>
+        </filters>
+        <filters>
+            <field>Id</field>
+            <operator>NotEqualTo</operator>
+            <value>
+                <elementReference>inputCurrentCaseId</elementReference>
+            </value>
+        </filters>
+        <getFirstRecordOnly>false</getFirstRecordOnly>
+        <limit>
+            <numberValue>5.0</numberValue>
+        </limit>
+        <object>Case</object>
+        <queriedFields>Id</queriedFields>
+        <queriedFields>CaseNumber</queriedFields>
+        <queriedFields>Subject</queriedFields>
+        <queriedFields>Status</queriedFields>
+        <queriedFields>CreatedDate</queriedFields>
+        <sortField>CreatedDate</sortField>
+        <sortOrder>Desc</sortOrder>
+        <storeOutputAutomatically>true</storeOutputAutomatically>
+    </recordLookups>
+    <recordLookups>
+        <name>Get_Work_Order_Parts</name>
+        <label>Get Work Order Parts</label>
+        <locationX>1404</locationX>
+        <locationY>432</locationY>
+        <assignNullValuesIfNoRecordsFound>false</assignNullValuesIfNoRecordsFound>
+        <connector>
+            <targetReference>Loop_Work_Order_Parts</targetReference>
+        </connector>
+        <filterLogic>and</filterLogic>
+        <filters>
+            <field>Machine__c</field>
+            <operator>EqualTo</operator>
+            <value>
+                <elementReference>Get_Machine.Id</elementReference>
+            </value>
+        </filters>
+        <getFirstRecordOnly>false</getFirstRecordOnly>
+        <limit>
+            <numberValue>5.0</numberValue>
+        </limit>
+        <object>Work_Order_Part__c</object>
+        <queriedFields>Id</queriedFields>
+        <queriedFields>Name</queriedFields>
+        <queriedFields>CreatedDate</queriedFields>
+        <queriedFields>Quantity_Needed__c</queriedFields>
+        <sortField>CreatedDate</sortField>
+        <sortOrder>Desc</sortOrder>
+        <storeOutputAutomatically>true</storeOutputAutomatically>
+    </recordLookups>
+    <recordLookups>
+        <name>Get_Work_Orders</name>
+        <label>Get Work Orders</label>
+        <locationX>821</locationX>
+        <locationY>430</locationY>
+        <assignNullValuesIfNoRecordsFound>false</assignNullValuesIfNoRecordsFound>
+        <connector>
+            <targetReference>Loop_Work_Orders</targetReference>
+        </connector>
+        <filterLogic>and</filterLogic>
+        <filters>
+            <field>AssetId</field>
+            <operator>EqualTo</operator>
+            <value>
+                <elementReference>Get_Machine.Id</elementReference>
+            </value>
+        </filters>
+        <filters>
+            <field>Id</field>
+            <operator>NotEqualTo</operator>
+            <value>
+                <elementReference>inputCurrentWorkOrderId</elementReference>
+            </value>
+        </filters>
+        <getFirstRecordOnly>false</getFirstRecordOnly>
+        <limit>
+            <numberValue>5.0</numberValue>
+        </limit>
+        <object>WorkOrder</object>
+        <queriedFields>Id</queriedFields>
+        <queriedFields>WorkOrderNumber</queriedFields>
+        <queriedFields>Subject</queriedFields>
+        <queriedFields>Status</queriedFields>
+        <queriedFields>CreatedDate</queriedFields>
+        <queriedFields>AI_Dispatch_Summary__c</queriedFields>
+        <queriedFields>Description</queriedFields>
+        <queriedFields>Recommended_Solution__c</queriedFields>
+        <queriedFields>Technician_Notes__c</queriedFields>
+        <sortField>CreatedDate</sortField>
+        <sortOrder>Desc</sortOrder>
+        <storeOutputAutomatically>true</storeOutputAutomatically>
+    </recordLookups>
+    <start>
+        <locationX>18</locationX>
+        <locationY>50</locationY>
+        <connector>
+            <targetReference>Get_Machine</targetReference>
+        </connector>
+    </start>
+    <status>Active</status>
+    <textTemplates>
+        <name>CaseLine</name>
+        <isViewedAsPlainText>true</isViewedAsPlainText>
+        <text>Case {!Loop_Cases.CaseNumber}
+
+Subject: {!Loop_Cases.Subject}
+
+Status: {!Loop_Cases.Status}</text>
+    </textTemplates>
+    <textTemplates>
+        <name>caseSummary</name>
+        <isViewedAsPlainText>true</isViewedAsPlainText>
+        <text>Case {!Loop_Cases.CaseNumber}
+
+Subject: {!Loop_Cases.Subject}
+
+Status: {!Loop_Cases.Status}
+
+Date: {!Loop_Cases.CreatedDate}</text>
+    </textTemplates>
+    <textTemplates>
+        <name>emptyCaseSummary</name>
+        <isViewedAsPlainText>true</isViewedAsPlainText>
+        <text>No previous cases found.</text>
+    </textTemplates>
+    <textTemplates>
+        <name>emptyMaintenanceLogSummaryText</name>
+        <isViewedAsPlainText>true</isViewedAsPlainText>
+        <text>No previous maintenance logs found.</text>
+    </textTemplates>
+    <textTemplates>
+        <name>emptyPartSummaryText</name>
+        <isViewedAsPlainText>true</isViewedAsPlainText>
+        <text>No previous parts records found.</text>
+    </textTemplates>
+    <textTemplates>
+        <name>emptyWorkOrderSummaryText</name>
+        <isViewedAsPlainText>true</isViewedAsPlainText>
+        <text>No previous work orders found.</text>
+    </textTemplates>
+    <textTemplates>
+        <name>MachineFoundMessage</name>
+        <isViewedAsPlainText>true</isViewedAsPlainText>
+        <text>Machine history retrieved successfully.</text>
+    </textTemplates>
+    <textTemplates>
+        <name>MachineNotFoundMessage</name>
+        <isViewedAsPlainText>true</isViewedAsPlainText>
+        <text>No machine was found for the provided serial number.</text>
+    </textTemplates>
+    <textTemplates>
+        <name>machineServiceHistory</name>
+        <isViewedAsPlainText>true</isViewedAsPlainText>
+        <text>Previous Service History
+
+
+
+Cases
+
+{!caseSummaryText}
+
+
+
+Work Orders
+
+{!workOrderSummaryText}
+
+
+
+Maintenance Logs
+
+{!maintenanceLogSummaryText}
+
+
+
+Parts Used
+
+{!partSummaryText}</text>
+    </textTemplates>
+    <textTemplates>
+        <name>machineSummary</name>
+        <isViewedAsPlainText>true</isViewedAsPlainText>
+        <text>Machine Found
+
+Name: {!Get_Machine.Name}
+
+Serial Number: {!Get_Machine.Serial_Number__c}
+
+Status: {!Get_Machine.Machine_Status__c}</text>
+    </textTemplates>
+    <textTemplates>
+        <name>MaintenanceLogLine</name>
+        <isViewedAsPlainText>true</isViewedAsPlainText>
+        <text>Maintenance Logs
+
+Maintenance {!Loop_Maintenance_Logs.Name}
+
+Service: {!Loop_Maintenance_Logs.Maintenance_Type__c}
+
+Summary: {!Loop_Maintenance_Logs.Summary__c}
+
+Notes: {!Loop_Maintenance_Logs.Technician_Notes__c}</text>
+    </textTemplates>
+    <textTemplates>
+        <name>PartLine</name>
+        <isViewedAsPlainText>true</isViewedAsPlainText>
+        <text>Parts Used
+
+Part: {!Loop_Work_Order_Parts.Name}
+
+Qty: {!Loop_Work_Order_Parts.Quantity_Needed__c}</text>
+    </textTemplates>
+    <textTemplates>
+        <name>WorkOrderLine</name>
+        <isViewedAsPlainText>true</isViewedAsPlainText>
+        <text>Work Orders
+
+Work Order {!Loop_Work_Orders.WorkOrderNumber}
+
+Subject: {!Loop_Work_Orders.Subject}
+
+Status: {!Loop_Work_Orders.Status}
+
+Recommended Solution: {!Loop_Work_Orders.Recommended_Solution__c}
+
+Technician Notes: {!Loop_Work_Orders.Technician_Notes__c}</text>
+    </textTemplates>
+    <variables>
+        <name>caseSummaryText</name>
+        <dataType>String</dataType>
+        <isCollection>false</isCollection>
+        <isInput>false</isInput>
+        <isOutput>false</isOutput>
+    </variables>
+    <variables>
+        <name>inputCurrentCaseId</name>
+        <dataType>String</dataType>
+        <isCollection>false</isCollection>
+        <isInput>true</isInput>
+        <isOutput>false</isOutput>
+    </variables>
+    <variables>
+        <name>inputCurrentWorkOrderId</name>
+        <dataType>String</dataType>
+        <isCollection>false</isCollection>
+        <isInput>true</isInput>
+        <isOutput>false</isOutput>
+    </variables>
+    <variables>
+        <description>Serial number of the dental milling machine the technician is asking about.</description>
+        <name>inputSerialNumber</name>
+        <dataType>String</dataType>
+        <isCollection>false</isCollection>
+        <isInput>true</isInput>
+        <isOutput>false</isOutput>
+    </variables>
+    <variables>
+        <name>maintenanceLogSummaryText</name>
+        <dataType>String</dataType>
+        <isCollection>false</isCollection>
+        <isInput>false</isInput>
+        <isOutput>false</isOutput>
+    </variables>
+    <variables>
+        <description>Summary of the machine Asset record found from the serial number.</description>
+        <name>outputMachineSummary</name>
+        <dataType>String</dataType>
+        <isCollection>false</isCollection>
+        <isInput>false</isInput>
+        <isOutput>true</isOutput>
+    </variables>
+    <variables>
+        <description>Summary of related Cases, Work Orders, Maintenance Logs and parts used.</description>
+        <name>outputServiceHistorySummary</name>
+        <dataType>String</dataType>
+        <isCollection>false</isCollection>
+        <isInput>false</isInput>
+        <isOutput>true</isOutput>
+    </variables>
+    <variables>
+        <description>Explains whether machine history was found or if no matching machine exists.</description>
+        <name>outputStatusMessage</name>
+        <dataType>String</dataType>
+        <isCollection>false</isCollection>
+        <isInput>false</isInput>
+        <isOutput>true</isOutput>
+    </variables>
+    <variables>
+        <name>partSummaryText</name>
+        <dataType>String</dataType>
+        <isCollection>false</isCollection>
+        <isInput>false</isInput>
+        <isOutput>false</isOutput>
+    </variables>
+    <variables>
+        <name>workOrderSummaryText</name>
+        <dataType>String</dataType>
+        <isCollection>false</isCollection>
+        <isInput>false</isInput>
+        <isOutput>false</isOutput>
+    </variables>
+</Flow>

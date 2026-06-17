@@ -3,7 +3,27 @@
 
     <types>
         <members>*</members>
+        <name>ApexClass</name>
+    </types>
+
+    <types>
+        <members>*</members>
+        <name>Flow</name>
+    </types>
+
+    <types>
+        <members>*</members>
+        <name>FlowDefinition</name>
+    </types>
+
+    <types>
+        <members>*</members>
         <name>CustomObject</name>
+    </types>
+
+    <types>
+        <members>*</members>
+        <name>PermissionSet</name>
     </types>
 
     <types>
@@ -24,6 +44,11 @@
     <types>
         <members>*</members>
         <name>CustomApplication</name>
+    </types>
+
+    <types>
+        <members>*</members>
+        <name>GenAiPromptTemplate</name>
     </types>
 
     <version>65.0</version>

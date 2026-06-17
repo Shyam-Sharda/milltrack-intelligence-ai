@@ -20,6 +20,7 @@
     <tabs>AI_Interaction_Log__c</tabs>
     <tabs>Work_Order_Part__c</tabs>
     <tabs>Maintenance_Log__c</tabs>
+    <tabs>standard-GlobalFlowResources</tabs>
     <uiType>Lightning</uiType>
     <utilityBar>FlowsApp_UtilityBar</utilityBar>
 </CustomApplication>

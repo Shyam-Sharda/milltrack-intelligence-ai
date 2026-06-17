@@ -20,6 +20,10 @@
                     <value>false</value>
                 </componentInstanceProperties>
                 <componentInstanceProperties>
+                    <name>hideSlackAction</name>
+                    <value>false</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
                     <name>numVisibleActions</name>
                     <value>3</value>
                 </componentInstanceProperties>
@@ -58,8 +62,8 @@
                     <name>uiBehavior</name>
                     <value>required</value>
                 </fieldInstanceProperties>
-                <fieldItem>Record.Part_Catalog__c</fieldItem>
-                <identifier>RecordPart_Catalog_cField</identifier>
+                <fieldItem>Record.Machine__c</fieldItem>
+                <identifier>RecordMachine__cField</identifier>
             </fieldInstance>
         </itemInstances>
         <itemInstances>
@@ -68,8 +72,8 @@
                     <name>uiBehavior</name>
                     <value>required</value>
                 </fieldInstanceProperties>
-                <fieldItem>Record.Quantity_Needed__c</fieldItem>
-                <identifier>RecordQuantity_Needed_cField</identifier>
+                <fieldItem>Record.Part_Catalog__c</fieldItem>
+                <identifier>RecordPart_Catalog_cField</identifier>
             </fieldInstance>
         </itemInstances>
         <itemInstances>
@@ -86,6 +90,16 @@
         <type>Facet</type>
     </flexiPageRegions>
     <flexiPageRegions>
+        <itemInstances>
+            <fieldInstance>
+                <fieldInstanceProperties>
+                    <name>uiBehavior</name>
+                    <value>required</value>
+                </fieldInstanceProperties>
+                <fieldItem>Record.Quantity_Needed__c</fieldItem>
+                <identifier>RecordQuantity_Needed_cField</identifier>
+            </fieldInstance>
+        </itemInstances>
         <itemInstances>
             <fieldInstance>
                 <fieldInstanceProperties>

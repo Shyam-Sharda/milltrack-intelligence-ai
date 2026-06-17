@@ -1,0 +1,313 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Flow xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>67.0</apiVersion>
+    <areMetricsLoggedToDataCloud>false</areMetricsLoggedToDataCloud>
+    <assignments>
+        <name>Machine_Summary</name>
+        <label>Set History Outputs</label>
+        <locationX>285</locationX>
+        <locationY>479</locationY>
+        <assignmentItems>
+            <assignToReference>outputMachineSummary</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <elementReference>Get_Machine_History.outputMachineSummary</elementReference>
+            </value>
+        </assignmentItems>
+        <assignmentItems>
+            <assignToReference>outputServiceHistorySummary</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <elementReference>Get_Machine_History.outputServiceHistorySummary</elementReference>
+            </value>
+        </assignmentItems>
+        <assignmentItems>
+            <assignToReference>outputStatusMessage</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <elementReference>Get_Machine_History.outputStatusMessage</elementReference>
+            </value>
+        </assignmentItems>
+        <connector>
+            <targetReference>Set_Dispatch_Context</targetReference>
+        </connector>
+    </assignments>
+    <assignments>
+        <name>Set_Dispatch_Context</name>
+        <label>Set Dispatch Context</label>
+        <locationX>286</locationX>
+        <locationY>621</locationY>
+        <assignmentItems>
+            <assignToReference>outputDispatchContext</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <elementReference>DispatchContextTemplate</elementReference>
+            </value>
+        </assignmentItems>
+    </assignments>
+    <environments>Default</environments>
+    <interviewLabel>Get Dispatch Context {!$Flow.CurrentDateTime}</interviewLabel>
+    <label>Get Dispatch Context Updated</label>
+    <processMetadataValues>
+        <name>BuilderType</name>
+        <value>
+            <stringValue>LightningFlowBuilder</stringValue>
+        </value>
+    </processMetadataValues>
+    <processMetadataValues>
+        <name>CanvasMode</name>
+        <value>
+            <stringValue>FREE_FORM_CANVAS</stringValue>
+        </value>
+    </processMetadataValues>
+    <processMetadataValues>
+        <name>OriginBuilderType</name>
+        <value>
+            <stringValue>LightningFlowBuilder</stringValue>
+        </value>
+    </processMetadataValues>
+    <processType>AutoLaunchedFlow</processType>
+    <recordLookups>
+        <name>Get_Asset</name>
+        <label>Get Asset</label>
+        <locationX>289</locationX>
+        <locationY>187</locationY>
+        <assignNullValuesIfNoRecordsFound>false</assignNullValuesIfNoRecordsFound>
+        <connector>
+            <targetReference>Get_Case</targetReference>
+        </connector>
+        <filterLogic>and</filterLogic>
+        <filters>
+            <field>Id</field>
+            <operator>EqualTo</operator>
+            <value>
+                <elementReference>Get_Work_Order.Asset.Id</elementReference>
+            </value>
+        </filters>
+        <getFirstRecordOnly>true</getFirstRecordOnly>
+        <object>Asset</object>
+        <storeOutputAutomatically>true</storeOutputAutomatically>
+    </recordLookups>
+    <recordLookups>
+        <name>Get_Case</name>
+        <label>Get Case</label>
+        <locationX>405</locationX>
+        <locationY>187</locationY>
+        <assignNullValuesIfNoRecordsFound>false</assignNullValuesIfNoRecordsFound>
+        <connector>
+            <targetReference>Get_Machine_History</targetReference>
+        </connector>
+        <filterLogic>and</filterLogic>
+        <filters>
+            <field>Id</field>
+            <operator>EqualTo</operator>
+            <value>
+                <elementReference>Get_Work_Order.Case.Id</elementReference>
+            </value>
+        </filters>
+        <getFirstRecordOnly>true</getFirstRecordOnly>
+        <object>Case</object>
+        <storeOutputAutomatically>true</storeOutputAutomatically>
+    </recordLookups>
+    <recordLookups>
+        <name>Get_Work_Order</name>
+        <label>Get Work Order</label>
+        <locationX>174</locationX>
+        <locationY>188</locationY>
+        <assignNullValuesIfNoRecordsFound>false</assignNullValuesIfNoRecordsFound>
+        <connector>
+            <targetReference>Get_Asset</targetReference>
+        </connector>
+        <filterLogic>and</filterLogic>
+        <filters>
+            <field>Id</field>
+            <operator>EqualTo</operator>
+            <value>
+                <elementReference>varWorkOrderId</elementReference>
+            </value>
+        </filters>
+        <getFirstRecordOnly>true</getFirstRecordOnly>
+        <object>WorkOrder</object>
+        <storeOutputAutomatically>true</storeOutputAutomatically>
+    </recordLookups>
+    <start>
+        <locationX>50</locationX>
+        <locationY>50</locationY>
+        <connector>
+            <targetReference>Get_Work_Order</targetReference>
+        </connector>
+    </start>
+    <status>Active</status>
+    <subflows>
+        <name>Get_Machine_History</name>
+        <label>Get Machine History</label>
+        <locationX>285</locationX>
+        <locationY>342</locationY>
+        <connector>
+            <targetReference>Machine_Summary</targetReference>
+        </connector>
+        <flowName>Get_Machine_History</flowName>
+        <inputAssignments>
+            <name>inputCurrentCaseId</name>
+            <value>
+                <elementReference>Get_Case.Id</elementReference>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <name>inputCurrentWorkOrderId</name>
+            <value>
+                <elementReference>Get_Work_Order.Id</elementReference>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <name>inputSerialNumber</name>
+            <value>
+                <elementReference>Get_Asset.Serial_Number__c</elementReference>
+            </value>
+        </inputAssignments>
+        <storeOutputAutomatically>true</storeOutputAutomatically>
+    </subflows>
+    <textTemplates>
+        <name>CaseSummary</name>
+        <isViewedAsPlainText>true</isViewedAsPlainText>
+        <text>Case
+
+
+
+Subject: 
+
+{!Get_Case.Subject}
+
+
+
+Status:
+
+ {!Get_Case.Status}
+
+
+
+Description:
+
+ {!Get_Case.Description}</text>
+    </textTemplates>
+    <textTemplates>
+        <name>DispatchContextTemplate</name>
+        <isViewedAsPlainText>true</isViewedAsPlainText>
+        <text>DISPATCH CONTEXT
+
+WORK ORDER
+Subject: {!Get_Work_Order.Subject}
+Status: {!Get_Work_Order.Status}
+Priority: {!Get_Work_Order.Priority}
+
+CASE
+Subject: {!Get_Case.Subject}
+Status: {!Get_Case.Status}
+Description: {!Get_Case.Description}
+
+MACHINE
+{!outputMachineSummary}
+
+SERVICE HISTORY
+{!outputServiceHistorySummary}
+
+STATUS
+{!outputStatusMessage}</text>
+    </textTemplates>
+    <textTemplates>
+        <name>MachineSummary</name>
+        <isViewedAsPlainText>true</isViewedAsPlainText>
+        <text>MACHINE
+
+Machine Found
+
+Name:
+{!Get_Asset.Name}
+
+Serial Number:
+{!Get_Asset.Serial_Number__c}
+
+Status:
+{!Get_Asset.Machine_Status__c}</text>
+    </textTemplates>
+    <textTemplates>
+        <name>WorkOrderSummary</name>
+        <isViewedAsPlainText>true</isViewedAsPlainText>
+        <text>WORK ORDER
+
+Subject:
+{!Get_Work_Order.Subject}
+
+Status:
+{!Get_Work_Order.Status}
+
+AI Dispatch Summary:
+{!Get_Work_Order.AI_Dispatch_Summary__c}
+
+Recommended Solution:
+{!Get_Work_Order.Recommended_Solution__c}
+
+Technician Notes:
+{!Get_Work_Order.Technician_Notes__c}
+
+Resolution Status:
+{!Get_Work_Order.Resolution_Status__c}</text>
+    </textTemplates>
+    <variables>
+        <name>outputCaseSummary</name>
+        <dataType>String</dataType>
+        <isCollection>false</isCollection>
+        <isInput>false</isInput>
+        <isOutput>true</isOutput>
+    </variables>
+    <variables>
+        <name>outputDispatchContext</name>
+        <dataType>String</dataType>
+        <isCollection>false</isCollection>
+        <isInput>false</isInput>
+        <isOutput>true</isOutput>
+    </variables>
+    <variables>
+        <name>outputMachineSummary</name>
+        <dataType>String</dataType>
+        <isCollection>false</isCollection>
+        <isInput>false</isInput>
+        <isOutput>true</isOutput>
+    </variables>
+    <variables>
+        <name>outputPartsSummary</name>
+        <dataType>String</dataType>
+        <isCollection>false</isCollection>
+        <isInput>false</isInput>
+        <isOutput>true</isOutput>
+    </variables>
+    <variables>
+        <name>outputServiceHistorySummary</name>
+        <dataType>String</dataType>
+        <isCollection>false</isCollection>
+        <isInput>false</isInput>
+        <isOutput>true</isOutput>
+    </variables>
+    <variables>
+        <name>outputStatusMessage</name>
+        <dataType>String</dataType>
+        <isCollection>false</isCollection>
+        <isInput>false</isInput>
+        <isOutput>true</isOutput>
+    </variables>
+    <variables>
+        <name>outputWorkOrderSummary</name>
+        <dataType>String</dataType>
+        <isCollection>false</isCollection>
+        <isInput>false</isInput>
+        <isOutput>true</isOutput>
+    </variables>
+    <variables>
+        <description>Input variable</description>
+        <name>varWorkOrderId</name>
+        <dataType>String</dataType>
+        <isCollection>false</isCollection>
+        <isInput>true</isInput>
+        <isOutput>false</isOutput>
+    </variables>
+</Flow>

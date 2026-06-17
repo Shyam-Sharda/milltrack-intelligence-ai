@@ -162,7 +162,7 @@
     <label>Work Order Part</label>
     <nameField>
         <displayFormat>WOP-{00000}</displayFormat>
-        <label>Part Usage Number</label>
+        <label>Part Number</label>
         <type>AutoNumber</type>
     </nameField>
     <pluralLabel>Work Order Parts</pluralLabel>

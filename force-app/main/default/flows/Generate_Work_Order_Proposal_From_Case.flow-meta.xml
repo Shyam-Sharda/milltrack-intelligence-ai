@@ -1,0 +1,522 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Flow xmlns="http://soap.sforce.com/2006/04/metadata" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <actionCalls>
+        <name>Generate_Service_Plan</name>
+        <label>Generate Service Plan</label>
+        <locationX>494</locationX>
+        <locationY>449</locationY>
+        <actionName>Generate_Dispatch_Briefing</actionName>
+        <actionType>generatePromptResponse</actionType>
+        <connector>
+            <targetReference>Manager_Review</targetReference>
+        </connector>
+        <flowTransactionModel>CurrentTransaction</flowTransactionModel>
+        <inputParameters>
+            <name>Input:dispatchContext</name>
+            <value>
+                <elementReference>CaseContext</elementReference>
+                <inputConfiguratorMode>Resource</inputConfiguratorMode>
+            </value>
+        </inputParameters>
+        <nameSegment>Generate_Dispatch_Briefing</nameSegment>
+        <offset>0</offset>
+        <storeOutputAutomatically>true</storeOutputAutomatically>
+    </actionCalls>
+    <apiVersion>67.0</apiVersion>
+    <areMetricsLoggedToDataCloud>false</areMetricsLoggedToDataCloud>
+    <assignments>
+        <name>Populate_Work_Order_Fields</name>
+        <label>Populate Work Order Fields</label>
+        <locationX>1011</locationX>
+        <locationY>451</locationY>
+        <assignmentItems>
+            <assignToReference>Get_Pending_Work_Order.AI_Dispatch_Summary__c</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <elementReference>Generate_Service_Plan.promptResponse</elementReference>
+            </value>
+        </assignmentItems>
+        <assignmentItems>
+            <assignToReference>Get_Pending_Work_Order.Recommended_Solution__c</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <elementReference>varRecommendedSolution</elementReference>
+            </value>
+        </assignmentItems>
+        <assignmentItems>
+            <assignToReference>Get_Pending_Work_Order.Technician_Notes__c</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <elementReference>varTechnicianNotes</elementReference>
+            </value>
+        </assignmentItems>
+        <assignmentItems>
+            <assignToReference>Get_Pending_Work_Order.Recommended_Parts__c</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <elementReference>varRecommendedParts</elementReference>
+            </value>
+        </assignmentItems>
+        <assignmentItems>
+            <assignToReference>Get_Pending_Work_Order.Previous_Failure__c</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <elementReference>varPreviousFailure</elementReference>
+            </value>
+        </assignmentItems>
+        <assignmentItems>
+            <assignToReference>Get_Pending_Work_Order.Dispatch_Status__c</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <stringValue>Manager Reviewed</stringValue>
+            </value>
+        </assignmentItems>
+        <assignmentItems>
+            <assignToReference>Get_Pending_Work_Order.Resolution_Status__c</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <stringValue>Pending</stringValue>
+            </value>
+        </assignmentItems>
+        <assignmentItems>
+            <assignToReference>Get_Pending_Work_Order.Priority</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <elementReference>varPriority</elementReference>
+            </value>
+        </assignmentItems>
+        <connector>
+            <targetReference>Update_Pending_Work_Order</targetReference>
+        </connector>
+    </assignments>
+    <choices>
+        <name>approve</name>
+        <choiceText>Approve</choiceText>
+        <dataType>String</dataType>
+    </choices>
+    <choices>
+        <name>cancel</name>
+        <choiceText>Cancel</choiceText>
+        <dataType>String</dataType>
+    </choices>
+    <choices>
+        <name>revise</name>
+        <choiceText>Revise Later</choiceText>
+        <dataType>String</dataType>
+    </choices>
+    <customProperties>
+        <name>ScreenProgressIndicator</name>
+        <value>
+            <stringValue>{&quot;location&quot;:&quot;top&quot;,&quot;type&quot;:&quot;simple&quot;}</stringValue>
+        </value>
+    </customProperties>
+    <decisions>
+        <name>Manager_Approval</name>
+        <label>Manager Approval</label>
+        <locationX>812</locationX>
+        <locationY>450</locationY>
+        <defaultConnectorLabel>Cancel</defaultConnectorLabel>
+        <rules>
+            <name>Approved</name>
+            <conditionLogic>and</conditionLogic>
+            <conditions>
+                <leftValueReference>varManagerDecision</leftValueReference>
+                <operator>EqualTo</operator>
+                <rightValue>
+                    <elementReference>approve</elementReference>
+                </rightValue>
+            </conditions>
+            <connector>
+                <targetReference>Populate_Work_Order_Fields</targetReference>
+            </connector>
+            <label>Approved</label>
+        </rules>
+        <rules>
+            <name>Revise_Later</name>
+            <conditionLogic>and</conditionLogic>
+            <conditions>
+                <leftValueReference>varManagerDecision</leftValueReference>
+                <operator>EqualTo</operator>
+                <rightValue>
+                    <elementReference>revise</elementReference>
+                </rightValue>
+            </conditions>
+            <label>Revise Later</label>
+        </rules>
+    </decisions>
+    <description>Take a Case, generate an AI-assisted Work Order proposal, show it to the Service Manager, and only create the Work Order after approval.</description>
+    <dynamicChoiceSets>
+        <name>priority</name>
+        <dataType>Picklist</dataType>
+        <displayField xsi:nil="true"/>
+        <object xsi:nil="true"/>
+        <picklistField>Priority</picklistField>
+        <picklistObject>Case</picklistObject>
+    </dynamicChoiceSets>
+    <environments>Default</environments>
+    <interviewLabel>Generate Work Order Proposal From Case {!$Flow.CurrentDateTime}</interviewLabel>
+    <label>Generate Work Order Proposal From Case</label>
+    <processMetadataValues>
+        <name>BuilderType</name>
+        <value>
+            <stringValue>LightningFlowBuilder</stringValue>
+        </value>
+    </processMetadataValues>
+    <processMetadataValues>
+        <name>CanvasMode</name>
+        <value>
+            <stringValue>FREE_FORM_CANVAS</stringValue>
+        </value>
+    </processMetadataValues>
+    <processMetadataValues>
+        <name>OriginBuilderType</name>
+        <value>
+            <stringValue>LightningFlowBuilder</stringValue>
+        </value>
+    </processMetadataValues>
+    <processType>Flow</processType>
+    <recordLookups>
+        <name>Get_Pending_Work_Order</name>
+        <label>Get Pending Work Order</label>
+        <locationX>176</locationX>
+        <locationY>450</locationY>
+        <assignNullValuesIfNoRecordsFound>false</assignNullValuesIfNoRecordsFound>
+        <connector>
+            <targetReference>Get_Machine_History</targetReference>
+        </connector>
+        <filterLogic>and</filterLogic>
+        <filters>
+            <field>CaseId</field>
+            <operator>EqualTo</operator>
+            <value>
+                <elementReference>Get_the_Case.Id</elementReference>
+            </value>
+        </filters>
+        <filters>
+            <field>Dispatch_Status__c</field>
+            <operator>EqualTo</operator>
+            <value>
+                <stringValue>Pending</stringValue>
+            </value>
+        </filters>
+        <getFirstRecordOnly>true</getFirstRecordOnly>
+        <object>WorkOrder</object>
+        <sortField>CreatedDate</sortField>
+        <sortOrder>Desc</sortOrder>
+        <storeOutputAutomatically>true</storeOutputAutomatically>
+    </recordLookups>
+    <recordLookups>
+        <name>Get_the_Case</name>
+        <label>Get the Case</label>
+        <locationX>176</locationX>
+        <locationY>191</locationY>
+        <assignNullValuesIfNoRecordsFound>false</assignNullValuesIfNoRecordsFound>
+        <connector>
+            <targetReference>Get_the_Machine</targetReference>
+        </connector>
+        <filterLogic>and</filterLogic>
+        <filters>
+            <field>Id</field>
+            <operator>EqualTo</operator>
+            <value>
+                <elementReference>varCaseId</elementReference>
+            </value>
+        </filters>
+        <getFirstRecordOnly>true</getFirstRecordOnly>
+        <object>Case</object>
+        <storeOutputAutomatically>true</storeOutputAutomatically>
+    </recordLookups>
+    <recordLookups>
+        <name>Get_the_Machine</name>
+        <label>Get the Machine</label>
+        <locationX>177</locationX>
+        <locationY>321</locationY>
+        <assignNullValuesIfNoRecordsFound>false</assignNullValuesIfNoRecordsFound>
+        <connector>
+            <targetReference>Get_Pending_Work_Order</targetReference>
+        </connector>
+        <filterLogic>and</filterLogic>
+        <filters>
+            <field>Id</field>
+            <operator>EqualTo</operator>
+            <value>
+                <elementReference>Get_the_Case.AssetId</elementReference>
+            </value>
+        </filters>
+        <getFirstRecordOnly>true</getFirstRecordOnly>
+        <object>Asset</object>
+        <storeOutputAutomatically>true</storeOutputAutomatically>
+    </recordLookups>
+    <recordUpdates>
+        <name>Update_Pending_Work_Order</name>
+        <label>Update Pending Work Order</label>
+        <locationX>1182</locationX>
+        <locationY>452</locationY>
+        <connector>
+            <targetReference>Confirmation_Screen</targetReference>
+        </connector>
+        <inputReference>Get_Pending_Work_Order</inputReference>
+    </recordUpdates>
+    <screens>
+        <name>Confirmation_Screen</name>
+        <label>Confirmation Screen</label>
+        <locationX>1415</locationX>
+        <locationY>452</locationY>
+        <allowBack>true</allowBack>
+        <allowFinish>true</allowFinish>
+        <allowPause>true</allowPause>
+        <fields>
+            <name>Confirmation</name>
+            <fieldText>&lt;p&gt;&lt;span style=&quot;font-size: 16px;&quot;&gt;Work Order Approved&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;br&gt;&lt;/p&gt;&lt;p&gt;The AI service plan has been reviewed and approved.&lt;/p&gt;&lt;p&gt;&lt;br&gt;&lt;/p&gt;&lt;p&gt;The Work Order has been updated and is ready for technician dispatch.&lt;/p&gt;</fieldText>
+            <fieldType>DisplayText</fieldType>
+            <styleProperties>
+                <verticalAlignment>
+                    <stringValue>top</stringValue>
+                </verticalAlignment>
+                <width>
+                    <stringValue>12</stringValue>
+                </width>
+            </styleProperties>
+        </fields>
+        <showFooter>true</showFooter>
+        <showHeader>false</showHeader>
+    </screens>
+    <screens>
+        <name>Manager_Review</name>
+        <label>Manager Review</label>
+        <locationX>654</locationX>
+        <locationY>447</locationY>
+        <allowBack>false</allowBack>
+        <allowFinish>true</allowFinish>
+        <allowPause>false</allowPause>
+        <connector>
+            <targetReference>Manager_Approval</targetReference>
+        </connector>
+        <fields>
+            <name>AI_Proposal</name>
+            <fieldText>&lt;p&gt;&lt;span style=&quot;font-size: 16px;&quot;&gt;AI Proposed Service Plan&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot;font-size: 13px;&quot;&gt;{!Generate_Service_Plan.promptResponse}&lt;/span&gt;&lt;/p&gt;</fieldText>
+            <fieldType>DisplayText</fieldType>
+            <styleProperties>
+                <verticalAlignment>
+                    <stringValue>top</stringValue>
+                </verticalAlignment>
+                <width>
+                    <stringValue>12</stringValue>
+                </width>
+            </styleProperties>
+        </fields>
+        <fields>
+            <name>varProblemSummary</name>
+            <fieldText>Problem Summary</fieldText>
+            <fieldType>LargeTextArea</fieldType>
+            <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
+            <isRequired>false</isRequired>
+            <styleProperties>
+                <verticalAlignment>
+                    <stringValue>top</stringValue>
+                </verticalAlignment>
+                <width>
+                    <stringValue>12</stringValue>
+                </width>
+            </styleProperties>
+        </fields>
+        <fields>
+            <name>varPreviousFailure</name>
+            <dataType>Boolean</dataType>
+            <fieldText>Previous Failure</fieldText>
+            <fieldType>InputField</fieldType>
+            <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
+            <isRequired>true</isRequired>
+            <styleProperties>
+                <verticalAlignment>
+                    <stringValue>top</stringValue>
+                </verticalAlignment>
+                <width>
+                    <stringValue>12</stringValue>
+                </width>
+            </styleProperties>
+        </fields>
+        <fields>
+            <name>varRecommendedSolution</name>
+            <fieldText>Recommended Solution</fieldText>
+            <fieldType>LargeTextArea</fieldType>
+            <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
+            <isRequired>false</isRequired>
+            <styleProperties>
+                <verticalAlignment>
+                    <stringValue>top</stringValue>
+                </verticalAlignment>
+                <width>
+                    <stringValue>12</stringValue>
+                </width>
+            </styleProperties>
+        </fields>
+        <fields>
+            <name>varTechnicianNotes</name>
+            <fieldText>Technician Notes</fieldText>
+            <fieldType>LargeTextArea</fieldType>
+            <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
+            <isRequired>false</isRequired>
+            <styleProperties>
+                <verticalAlignment>
+                    <stringValue>top</stringValue>
+                </verticalAlignment>
+                <width>
+                    <stringValue>12</stringValue>
+                </width>
+            </styleProperties>
+        </fields>
+        <fields>
+            <name>varRecommendedParts</name>
+            <fieldText>Recommended Parts</fieldText>
+            <fieldType>LargeTextArea</fieldType>
+            <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
+            <isRequired>false</isRequired>
+            <styleProperties>
+                <verticalAlignment>
+                    <stringValue>top</stringValue>
+                </verticalAlignment>
+                <width>
+                    <stringValue>12</stringValue>
+                </width>
+            </styleProperties>
+        </fields>
+        <fields>
+            <name>varSuggestedTechnician</name>
+            <dataType>String</dataType>
+            <fieldText>Suggested Technician</fieldText>
+            <fieldType>InputField</fieldType>
+            <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
+            <isRequired>false</isRequired>
+            <styleProperties>
+                <verticalAlignment>
+                    <stringValue>top</stringValue>
+                </verticalAlignment>
+                <width>
+                    <stringValue>12</stringValue>
+                </width>
+            </styleProperties>
+        </fields>
+        <fields>
+            <name>varPriority</name>
+            <choiceReferences>priority</choiceReferences>
+            <dataType>String</dataType>
+            <fieldText>Priority</fieldText>
+            <fieldType>DropdownBox</fieldType>
+            <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
+            <isRequired>false</isRequired>
+            <styleProperties>
+                <verticalAlignment>
+                    <stringValue>top</stringValue>
+                </verticalAlignment>
+                <width>
+                    <stringValue>12</stringValue>
+                </width>
+            </styleProperties>
+        </fields>
+        <fields>
+            <name>varManagerDecision</name>
+            <choiceReferences>approve</choiceReferences>
+            <choiceReferences>revise</choiceReferences>
+            <choiceReferences>cancel</choiceReferences>
+            <dataType>String</dataType>
+            <fieldText>Manager Decision</fieldText>
+            <fieldType>RadioButtons</fieldType>
+            <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
+            <isRequired>true</isRequired>
+            <styleProperties>
+                <verticalAlignment>
+                    <stringValue>top</stringValue>
+                </verticalAlignment>
+                <width>
+                    <stringValue>12</stringValue>
+                </width>
+            </styleProperties>
+        </fields>
+        <showFooter>true</showFooter>
+        <showHeader>false</showHeader>
+    </screens>
+    <start>
+        <locationX>50</locationX>
+        <locationY>50</locationY>
+        <connector>
+            <targetReference>Get_the_Case</targetReference>
+        </connector>
+    </start>
+    <status>Obsolete</status>
+    <subflows>
+        <name>Get_Machine_History</name>
+        <label>Get Machine History</label>
+        <locationX>321</locationX>
+        <locationY>450</locationY>
+        <connector>
+            <targetReference>Generate_Service_Plan</targetReference>
+        </connector>
+        <flowName>Get_Machine_History</flowName>
+        <inputAssignments>
+            <name>inputCurrentCaseId</name>
+            <value>
+                <elementReference>Get_the_Case.Id</elementReference>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <name>inputCurrentWorkOrderId</name>
+            <value>
+                <elementReference>Get_Pending_Work_Order.Id</elementReference>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <name>inputSerialNumber</name>
+            <value>
+                <elementReference>Get_the_Machine.Serial_Number__c</elementReference>
+            </value>
+        </inputAssignments>
+        <storeOutputAutomatically>true</storeOutputAutomatically>
+    </subflows>
+    <textTemplates>
+        <name>CaseContext</name>
+        <isViewedAsPlainText>true</isViewedAsPlainText>
+        <text>CASE CONTEXT
+
+Case Subject:
+{!Get_the_Case.Subject}
+
+Case Description:
+{!Get_the_Case.Description}
+
+Case Priority:
+{!Get_the_Case.Priority}
+
+Machine:
+{!Get_the_Machine.Name}
+
+Serial Number:
+{!Get_the_Machine.Serial_Number__c}
+
+Machine Status:
+{!Get_the_Machine.Machine_Status__c}
+
+Customer:
+{!Get_the_Case.Account.Name}
+
+Existing Work Order Subject:
+{!Get_Pending_Work_Order.Subject}
+
+Existing Work Order Dispatch Status
+{!Get_Pending_Work_Order.Dispatch_Status__c}
+
+Existing Work Order Priority:
+{!Get_Pending_Work_Order.Priority}
+
+Machine History:
+{!Get_Machine_History.outputServiceHistorySummary}</text>
+    </textTemplates>
+    <variables>
+        <description>Lets the flow launch from a Case record</description>
+        <name>varCaseId</name>
+        <dataType>String</dataType>
+        <isCollection>false</isCollection>
+        <isInput>true</isInput>
+        <isOutput>false</isOutput>
+    </variables>
+</Flow>

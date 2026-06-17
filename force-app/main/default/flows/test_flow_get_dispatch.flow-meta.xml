@@ -1,0 +1,219 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Flow xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>67.0</apiVersion>
+    <areMetricsLoggedToDataCloud>false</areMetricsLoggedToDataCloud>
+    <assignments>
+        <name>set_ouput</name>
+        <label>set ouput</label>
+        <locationX>673</locationX>
+        <locationY>621</locationY>
+        <assignmentItems>
+            <assignToReference>outputDispatchContext</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <elementReference>dispatchcontext</elementReference>
+            </value>
+        </assignmentItems>
+    </assignments>
+    <decisions>
+        <name>work_order_found</name>
+        <label>work order found</label>
+        <locationX>406</locationX>
+        <locationY>302</locationY>
+        <defaultConnectorLabel>Not Found</defaultConnectorLabel>
+        <rules>
+            <name>outcome_found</name>
+            <conditionLogic>and</conditionLogic>
+            <conditions>
+                <leftValueReference>get_work_order.Id</leftValueReference>
+                <operator>IsNull</operator>
+                <rightValue>
+                    <booleanValue>false</booleanValue>
+                </rightValue>
+            </conditions>
+            <connector>
+                <targetReference>get_case</targetReference>
+            </connector>
+            <label>outcome found</label>
+        </rules>
+    </decisions>
+    <environments>Default</environments>
+    <interviewLabel>test flow get dispatch {!$Flow.CurrentDateTime}</interviewLabel>
+    <label>test flow get dispatch</label>
+    <processMetadataValues>
+        <name>BuilderType</name>
+        <value>
+            <stringValue>LightningFlowBuilder</stringValue>
+        </value>
+    </processMetadataValues>
+    <processMetadataValues>
+        <name>CanvasMode</name>
+        <value>
+            <stringValue>FREE_FORM_CANVAS</stringValue>
+        </value>
+    </processMetadataValues>
+    <processMetadataValues>
+        <name>OriginBuilderType</name>
+        <value>
+            <stringValue>LightningFlowBuilder</stringValue>
+        </value>
+    </processMetadataValues>
+    <processType>AutoLaunchedFlow</processType>
+    <recordLookups>
+        <name>get_asset</name>
+        <label>get asset</label>
+        <locationX>800</locationX>
+        <locationY>304</locationY>
+        <assignNullValuesIfNoRecordsFound>false</assignNullValuesIfNoRecordsFound>
+        <connector>
+            <targetReference>get_Machine_history</targetReference>
+        </connector>
+        <filterLogic>and</filterLogic>
+        <filters>
+            <field>Id</field>
+            <operator>EqualTo</operator>
+            <value>
+                <elementReference>get_work_order.AssetId</elementReference>
+            </value>
+        </filters>
+        <getFirstRecordOnly>true</getFirstRecordOnly>
+        <object>Asset</object>
+        <storeOutputAutomatically>true</storeOutputAutomatically>
+    </recordLookups>
+    <recordLookups>
+        <name>get_case</name>
+        <label>get case</label>
+        <locationX>635</locationX>
+        <locationY>307</locationY>
+        <assignNullValuesIfNoRecordsFound>false</assignNullValuesIfNoRecordsFound>
+        <connector>
+            <targetReference>get_asset</targetReference>
+        </connector>
+        <filterLogic>and</filterLogic>
+        <filters>
+            <field>Id</field>
+            <operator>EqualTo</operator>
+            <value>
+                <elementReference>get_work_order.CaseId</elementReference>
+            </value>
+        </filters>
+        <getFirstRecordOnly>true</getFirstRecordOnly>
+        <object>Case</object>
+        <storeOutputAutomatically>true</storeOutputAutomatically>
+    </recordLookups>
+    <recordLookups>
+        <name>get_work_order</name>
+        <label>get work order</label>
+        <locationX>229</locationX>
+        <locationY>297</locationY>
+        <assignNullValuesIfNoRecordsFound>false</assignNullValuesIfNoRecordsFound>
+        <connector>
+            <targetReference>work_order_found</targetReference>
+        </connector>
+        <filterLogic>and</filterLogic>
+        <filters>
+            <field>Id</field>
+            <operator>EqualTo</operator>
+            <value>
+                <elementReference>varWorkOrderId</elementReference>
+            </value>
+        </filters>
+        <getFirstRecordOnly>true</getFirstRecordOnly>
+        <object>WorkOrder</object>
+        <storeOutputAutomatically>true</storeOutputAutomatically>
+    </recordLookups>
+    <start>
+        <locationX>98</locationX>
+        <locationY>85</locationY>
+        <connector>
+            <targetReference>get_work_order</targetReference>
+        </connector>
+    </start>
+    <status>Active</status>
+    <subflows>
+        <name>get_Machine_history</name>
+        <label>get Machine history</label>
+        <locationX>802</locationX>
+        <locationY>472</locationY>
+        <connector>
+            <targetReference>set_ouput</targetReference>
+        </connector>
+        <flowName>Get_Machine_History</flowName>
+        <inputAssignments>
+            <name>inputCurrentCaseId</name>
+            <value>
+                <elementReference>get_case.Id</elementReference>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <name>inputCurrentWorkOrderId</name>
+            <value>
+                <elementReference>get_work_order.Id</elementReference>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <name>inputSerialNumber</name>
+            <value>
+                <elementReference>get_asset.Serial_Number__c</elementReference>
+            </value>
+        </inputAssignments>
+        <storeOutputAutomatically>true</storeOutputAutomatically>
+    </subflows>
+    <textTemplates>
+        <name>dispatchcontext</name>
+        <isViewedAsPlainText>true</isViewedAsPlainText>
+        <text>DISPATCH CONTEXT
+
+
+
+WORK ORDER
+
+Subject: {!get_work_order.Subject}
+
+Status: {!get_work_order.Status}
+
+Priority: {!get_work_order.Priority}
+
+
+
+CASE
+
+Subject: {!get_case.Subject}
+
+Status: {!get_case.Status}
+
+Description: {!get_case.Description}
+
+
+
+MACHINE
+
+{!get_Machine_history.outputMachineSummary}
+
+
+
+SERVICE HISTORY
+
+{!get_Machine_history.outputServiceHistorySummary}
+
+
+
+STATUS
+
+{!get_Machine_history.outputStatusMessage}</text>
+    </textTemplates>
+    <variables>
+        <name>outputDispatchContext</name>
+        <dataType>String</dataType>
+        <isCollection>false</isCollection>
+        <isInput>false</isInput>
+        <isOutput>true</isOutput>
+    </variables>
+    <variables>
+        <name>varWorkOrderId</name>
+        <dataType>String</dataType>
+        <isCollection>false</isCollection>
+        <isInput>true</isInput>
+        <isOutput>false</isOutput>
+    </variables>
+</Flow>
