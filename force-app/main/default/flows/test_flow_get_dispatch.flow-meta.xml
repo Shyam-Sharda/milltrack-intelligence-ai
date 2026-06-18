@@ -129,7 +129,7 @@
             <targetReference>get_work_order</targetReference>
         </connector>
     </start>
-    <status>Active</status>
+    <status>Obsolete</status>
     <subflows>
         <name>get_Machine_history</name>
         <label>get Machine history</label>

@@ -3,12 +3,12 @@
     <actionCalls>
         <name>Generate_Service_Plan</name>
         <label>Generate Service Plan</label>
-        <locationX>494</locationX>
-        <locationY>449</locationY>
+        <locationX>458</locationX>
+        <locationY>450</locationY>
         <actionName>Generate_Dispatch_Briefing</actionName>
         <actionType>generatePromptResponse</actionType>
         <connector>
-            <targetReference>Manager_Review</targetReference>
+            <targetReference>Generate_Work_Order_Proposal_Fields</targetReference>
         </connector>
         <flowTransactionModel>CurrentTransaction</flowTransactionModel>
         <inputParameters>
@@ -19,6 +19,50 @@
             </value>
         </inputParameters>
         <nameSegment>Generate_Dispatch_Briefing</nameSegment>
+        <offset>0</offset>
+        <storeOutputAutomatically>true</storeOutputAutomatically>
+    </actionCalls>
+    <actionCalls>
+        <name>Generate_Work_Order_Proposal_Fields</name>
+        <label>Generate Work Order Proposal Fields</label>
+        <locationX>458</locationX>
+        <locationY>289</locationY>
+        <actionName>Generate_Work_Order_Proposal_Fields</actionName>
+        <actionType>generatePromptResponse</actionType>
+        <connector>
+            <targetReference>Parse_Work_Order_Proposal_Fields</targetReference>
+        </connector>
+        <flowTransactionModel>CurrentTransaction</flowTransactionModel>
+        <inputParameters>
+            <name>Input:dispatchContext</name>
+            <value>
+                <elementReference>CaseContext</elementReference>
+                <inputConfiguratorMode>Resource</inputConfiguratorMode>
+            </value>
+        </inputParameters>
+        <nameSegment>Generate_Work_Order_Proposal_Fields</nameSegment>
+        <offset>0</offset>
+        <storeOutputAutomatically>true</storeOutputAutomatically>
+    </actionCalls>
+    <actionCalls>
+        <name>Parse_Work_Order_Proposal_Fields</name>
+        <label>Parse Work Order Proposal Fields</label>
+        <locationX>654</locationX>
+        <locationY>289</locationY>
+        <actionName>ParseWorkOrderProposalFields</actionName>
+        <actionType>apex</actionType>
+        <connector>
+            <targetReference>Manager_Review</targetReference>
+        </connector>
+        <flowTransactionModel>Automatic</flowTransactionModel>
+        <inputParameters>
+            <name>proposalText</name>
+            <value>
+                <elementReference>Generate_Work_Order_Proposal_Fields.promptResponse</elementReference>
+                <inputConfiguratorMode>Resource</inputConfiguratorMode>
+            </value>
+        </inputParameters>
+        <nameSegment>ParseWorkOrderProposalFields</nameSegment>
         <offset>0</offset>
         <storeOutputAutomatically>true</storeOutputAutomatically>
     </actionCalls>
@@ -40,28 +84,42 @@
             <assignToReference>Get_Pending_Work_Order.Recommended_Solution__c</assignToReference>
             <operator>Assign</operator>
             <value>
-                <elementReference>varRecommendedSolution</elementReference>
+                <elementReference>recommendedSolution</elementReference>
             </value>
         </assignmentItems>
         <assignmentItems>
             <assignToReference>Get_Pending_Work_Order.Technician_Notes__c</assignToReference>
             <operator>Assign</operator>
             <value>
-                <elementReference>varTechnicianNotes</elementReference>
+                <elementReference>technicianNotes</elementReference>
             </value>
         </assignmentItems>
         <assignmentItems>
             <assignToReference>Get_Pending_Work_Order.Recommended_Parts__c</assignToReference>
             <operator>Assign</operator>
             <value>
-                <elementReference>varRecommendedParts</elementReference>
+                <elementReference>recommendedParts</elementReference>
             </value>
         </assignmentItems>
         <assignmentItems>
             <assignToReference>Get_Pending_Work_Order.Previous_Failure__c</assignToReference>
             <operator>Assign</operator>
             <value>
-                <elementReference>varPreviousFailure</elementReference>
+                <elementReference>previousFailure</elementReference>
+            </value>
+        </assignmentItems>
+        <assignmentItems>
+            <assignToReference>Get_Pending_Work_Order.Priority</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <elementReference>priorityAi</elementReference>
+            </value>
+        </assignmentItems>
+        <assignmentItems>
+            <assignToReference>Get_Pending_Work_Order.Suggested_Technician__c</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <elementReference>suggestedTechnician.selectedChoiceValues</elementReference>
             </value>
         </assignmentItems>
         <assignmentItems>
@@ -78,13 +136,6 @@
                 <stringValue>Pending</stringValue>
             </value>
         </assignmentItems>
-        <assignmentItems>
-            <assignToReference>Get_Pending_Work_Order.Priority</assignToReference>
-            <operator>Assign</operator>
-            <value>
-                <elementReference>varPriority</elementReference>
-            </value>
-        </assignmentItems>
         <connector>
             <targetReference>Update_Pending_Work_Order</targetReference>
         </connector>
@@ -93,16 +144,25 @@
         <name>approve</name>
         <choiceText>Approve</choiceText>
         <dataType>String</dataType>
+        <value>
+            <stringValue>approve</stringValue>
+        </value>
     </choices>
     <choices>
         <name>cancel</name>
         <choiceText>Cancel</choiceText>
         <dataType>String</dataType>
+        <value>
+            <stringValue>cancel</stringValue>
+        </value>
     </choices>
     <choices>
         <name>revise</name>
         <choiceText>Revise Later</choiceText>
         <dataType>String</dataType>
+        <value>
+            <stringValue>revise</stringValue>
+        </value>
     </choices>
     <customProperties>
         <name>ScreenProgressIndicator</name>
@@ -120,7 +180,7 @@
             <name>Approved</name>
             <conditionLogic>and</conditionLogic>
             <conditions>
-                <leftValueReference>varManagerDecision</leftValueReference>
+                <leftValueReference>managerDecision</leftValueReference>
                 <operator>EqualTo</operator>
                 <rightValue>
                     <elementReference>approve</elementReference>
@@ -135,7 +195,7 @@
             <name>Revise_Later</name>
             <conditionLogic>and</conditionLogic>
             <conditions>
-                <leftValueReference>varManagerDecision</leftValueReference>
+                <leftValueReference>managerDecision</leftValueReference>
                 <operator>EqualTo</operator>
                 <rightValue>
                     <elementReference>revise</elementReference>
@@ -152,6 +212,15 @@
         <object xsi:nil="true"/>
         <picklistField>Priority</picklistField>
         <picklistObject>Case</picklistObject>
+    </dynamicChoiceSets>
+    <dynamicChoiceSets>
+        <name>userChoice</name>
+        <dataType>String</dataType>
+        <displayField>Name</displayField>
+        <object>User</object>
+        <sortField>Name</sortField>
+        <sortOrder>Asc</sortOrder>
+        <valueField>Id</valueField>
     </dynamicChoiceSets>
     <environments>Default</environments>
     <interviewLabel>Generate Work Order Proposal From Case {!$Flow.CurrentDateTime}</interviewLabel>
@@ -250,8 +319,8 @@
     <recordUpdates>
         <name>Update_Pending_Work_Order</name>
         <label>Update Pending Work Order</label>
-        <locationX>1182</locationX>
-        <locationY>452</locationY>
+        <locationX>1151</locationX>
+        <locationY>451</locationY>
         <connector>
             <targetReference>Confirmation_Screen</targetReference>
         </connector>
@@ -260,8 +329,8 @@
     <screens>
         <name>Confirmation_Screen</name>
         <label>Confirmation Screen</label>
-        <locationX>1415</locationX>
-        <locationY>452</locationY>
+        <locationX>1289</locationX>
+        <locationY>451</locationY>
         <allowBack>true</allowBack>
         <allowFinish>true</allowFinish>
         <allowPause>true</allowPause>
@@ -293,8 +362,8 @@
             <targetReference>Manager_Approval</targetReference>
         </connector>
         <fields>
-            <name>AI_Proposal</name>
-            <fieldText>&lt;p&gt;&lt;span style=&quot;font-size: 16px;&quot;&gt;AI Proposed Service Plan&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot;font-size: 13px;&quot;&gt;{!Generate_Service_Plan.promptResponse}&lt;/span&gt;&lt;/p&gt;</fieldText>
+            <name>Display_Text</name>
+            <fieldText>&lt;p style=&quot;text-align: center;&quot;&gt;&lt;span style=&quot;font-size: 20px;&quot;&gt;AI Work Order Proposal&lt;/span&gt;&lt;/p&gt;&lt;p style=&quot;text-align: center;&quot;&gt;Review and edit the proposed information before approving.&lt;/p&gt;</fieldText>
             <fieldType>DisplayText</fieldType>
             <styleProperties>
                 <verticalAlignment>
@@ -306,11 +375,9 @@
             </styleProperties>
         </fields>
         <fields>
-            <name>varProblemSummary</name>
-            <fieldText>Problem Summary</fieldText>
-            <fieldType>LargeTextArea</fieldType>
-            <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
-            <isRequired>false</isRequired>
+            <name>AI_Proposal</name>
+            <fieldText>&lt;p&gt;&lt;span style=&quot;font-size: 16px;&quot;&gt;AI Dispatch Summary&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot;font-size: 13px;&quot;&gt;{!Generate_Service_Plan.promptResponse}&lt;/span&gt;&lt;/p&gt;</fieldText>
+            <fieldType>DisplayText</fieldType>
             <styleProperties>
                 <verticalAlignment>
                     <stringValue>top</stringValue>
@@ -321,10 +388,12 @@
             </styleProperties>
         </fields>
         <fields>
-            <name>varPreviousFailure</name>
-            <dataType>Boolean</dataType>
-            <fieldText>Previous Failure</fieldText>
-            <fieldType>InputField</fieldType>
+            <name>problemSummary</name>
+            <defaultValue>
+                <stringValue>{!Parse_Work_Order_Proposal_Fields.problemSummary}</stringValue>
+            </defaultValue>
+            <fieldText>Problem Summary</fieldText>
+            <fieldType>LargeTextArea</fieldType>
             <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
             <isRequired>true</isRequired>
             <styleProperties>
@@ -337,11 +406,14 @@
             </styleProperties>
         </fields>
         <fields>
-            <name>varRecommendedSolution</name>
+            <name>recommendedSolution</name>
+            <defaultValue>
+                <stringValue>{!Parse_Work_Order_Proposal_Fields.recommendedSolution}</stringValue>
+            </defaultValue>
             <fieldText>Recommended Solution</fieldText>
             <fieldType>LargeTextArea</fieldType>
             <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
-            <isRequired>false</isRequired>
+            <isRequired>true</isRequired>
             <styleProperties>
                 <verticalAlignment>
                     <stringValue>top</stringValue>
@@ -352,7 +424,10 @@
             </styleProperties>
         </fields>
         <fields>
-            <name>varTechnicianNotes</name>
+            <name>technicianNotes</name>
+            <defaultValue>
+                <stringValue>{!Parse_Work_Order_Proposal_Fields.technicianNotes}</stringValue>
+            </defaultValue>
             <fieldText>Technician Notes</fieldText>
             <fieldType>LargeTextArea</fieldType>
             <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
@@ -367,7 +442,10 @@
             </styleProperties>
         </fields>
         <fields>
-            <name>varRecommendedParts</name>
+            <name>recommendedParts</name>
+            <defaultValue>
+                <stringValue>{!Parse_Work_Order_Proposal_Fields.recommendedParts}</stringValue>
+            </defaultValue>
             <fieldText>Recommended Parts</fieldText>
             <fieldType>LargeTextArea</fieldType>
             <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
@@ -382,12 +460,15 @@
             </styleProperties>
         </fields>
         <fields>
-            <name>varSuggestedTechnician</name>
-            <dataType>String</dataType>
-            <fieldText>Suggested Technician</fieldText>
+            <name>previousFailure</name>
+            <dataType>Boolean</dataType>
+            <defaultValue>
+                <elementReference>Parse_Work_Order_Proposal_Fields.previousFailure</elementReference>
+            </defaultValue>
+            <fieldText>Previous Failure</fieldText>
             <fieldType>InputField</fieldType>
             <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
-            <isRequired>false</isRequired>
+            <isRequired>true</isRequired>
             <styleProperties>
                 <verticalAlignment>
                     <stringValue>top</stringValue>
@@ -398,13 +479,16 @@
             </styleProperties>
         </fields>
         <fields>
-            <name>varPriority</name>
+            <name>priorityAi</name>
             <choiceReferences>priority</choiceReferences>
             <dataType>String</dataType>
+            <defaultValue>
+                <elementReference>Parse_Work_Order_Proposal_Fields.priority</elementReference>
+            </defaultValue>
             <fieldText>Priority</fieldText>
             <fieldType>DropdownBox</fieldType>
             <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
-            <isRequired>false</isRequired>
+            <isRequired>true</isRequired>
             <styleProperties>
                 <verticalAlignment>
                     <stringValue>top</stringValue>
@@ -415,7 +499,25 @@
             </styleProperties>
         </fields>
         <fields>
-            <name>varManagerDecision</name>
+            <name>suggestedTechnician</name>
+            <choiceReferences>userChoice</choiceReferences>
+            <extensionName>flowruntime:choiceLookup</extensionName>
+            <fieldText>Suggested Technician</fieldText>
+            <fieldType>ComponentChoice</fieldType>
+            <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
+            <isRequired>true</isRequired>
+            <storeOutputAutomatically>true</storeOutputAutomatically>
+            <styleProperties>
+                <verticalAlignment>
+                    <stringValue>top</stringValue>
+                </verticalAlignment>
+                <width>
+                    <stringValue>12</stringValue>
+                </width>
+            </styleProperties>
+        </fields>
+        <fields>
+            <name>managerDecision</name>
             <choiceReferences>approve</choiceReferences>
             <choiceReferences>revise</choiceReferences>
             <choiceReferences>cancel</choiceReferences>
@@ -443,7 +545,7 @@
             <targetReference>Get_the_Case</targetReference>
         </connector>
     </start>
-    <status>Obsolete</status>
+    <status>Active</status>
     <subflows>
         <name>Get_Machine_History</name>
         <label>Get Machine History</label>
