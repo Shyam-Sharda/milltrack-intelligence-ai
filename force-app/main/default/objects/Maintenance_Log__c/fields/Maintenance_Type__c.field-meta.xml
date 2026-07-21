@@ -10,9 +10,14 @@
         <valueSetDefinition>
             <sorted>false</sorted>
             <value>
-                <fullName>Repair</fullName>
+                <fullName>Installation_And_Calibration</fullName>
                 <default>false</default>
-                <label>Repair</label>
+                <label>Installation And Calibration</label>
+            </value>
+            <value>
+                <fullName>Inspection</fullName>
+                <default>false</default>
+                <label>Inspection</label>
             </value>
             <value>
                 <fullName>Preventive Maintenance</fullName>
@@ -20,19 +25,14 @@
                 <label>Preventive Maintenance</label>
             </value>
             <value>
-                <fullName>Calibration</fullName>
+                <fullName>Repair</fullName>
                 <default>false</default>
-                <label>Calibration</label>
+                <label>Repair</label>
             </value>
             <value>
-                <fullName>Installation</fullName>
+                <fullName>Temporary Repair</fullName>
                 <default>false</default>
-                <label>Installation</label>
-            </value>
-            <value>
-                <fullName>Inspection</fullName>
-                <default>false</default>
-                <label>Inspection</label>
+                <label>Temporary Repair</label>
             </value>
             <value>
                 <fullName>Emergency Service</fullName>

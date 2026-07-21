@@ -82,6 +82,36 @@
                 <identifier>RecordNotes_cField</identifier>
             </fieldInstance>
         </itemInstances>
+        <itemInstances>
+            <fieldInstance>
+                <fieldItem>Record.Order_URL__c</fieldItem>
+                <identifier>RecordOrder_URL__cField</identifier>
+            </fieldInstance>
+        </itemInstances>
+        <itemInstances>
+            <fieldInstance>
+                <fieldItem>Record.Parts_Category__c</fieldItem>
+                <identifier>RecordParts_Category__cField</identifier>
+            </fieldInstance>
+        </itemInstances>
+        <itemInstances>
+            <fieldInstance>
+                <fieldItem>Record.Active__c</fieldItem>
+                <identifier>RecordActive__cField</identifier>
+            </fieldInstance>
+        </itemInstances>
+        <itemInstances>
+            <fieldInstance>
+                <fieldItem>Record.Keyword_Aliases__c</fieldItem>
+                <identifier>RecordKeyword_Aliases__cField</identifier>
+            </fieldInstance>
+        </itemInstances>
+        <itemInstances>
+            <fieldInstance>
+                <fieldItem>Record.Preferred_Supplier__c</fieldItem>
+                <identifier>RecordPreferred_Supplier__cField</identifier>
+            </fieldInstance>
+        </itemInstances>
         <name>Facet-9c3b0cc2-a739-4267-b784-93b09c64e943</name>
         <type>Facet</type>
     </flexiPageRegions>

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ListView xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Low_Stock</fullName>
+    <columns>NAME</columns>
+    <columns>Manufacturer__c</columns>
+    <columns>Stock_Status__c</columns>
+    <columns>Supplier_Name__c</columns>
+    <columns>Supplier_Phone__c</columns>
+    <filterScope>Everything</filterScope>
+    <filters>
+        <field>Stock_Status__c</field>
+        <operation>equals</operation>
+        <value>Low Stock</value>
+    </filters>
+    <label>Low Stock</label>
+    <sharedTo>
+        <group>MillTrack_Service_Managers</group>
+    </sharedTo>
+</ListView>

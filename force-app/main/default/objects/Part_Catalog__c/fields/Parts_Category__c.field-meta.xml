@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Parts_Category__c</fullName>
+    <label>Parts Category</label>
+    <required>false</required>
+    <trackTrending>false</trackTrending>
+    <type>Picklist</type>
+    <valueSet>
+        <restricted>true</restricted>
+        <valueSetDefinition>
+            <sorted>false</sorted>
+            <value>
+                <fullName>Spindle</fullName>
+                <default>false</default>
+                <label>Spindle</label>
+            </value>
+            <value>
+                <fullName>Collet</fullName>
+                <default>false</default>
+                <label>Collet</label>
+            </value>
+            <value>
+                <fullName>Tool Changer</fullName>
+                <default>false</default>
+                <label>Tool Changer</label>
+            </value>
+            <value>
+                <fullName>Filter</fullName>
+                <default>false</default>
+                <label>Filter</label>
+            </value>
+            <value>
+                <fullName>Limit Switch</fullName>
+                <default>false</default>
+                <label>Limit Switch</label>
+            </value>
+            <value>
+                <fullName>USB Cable</fullName>
+                <default>false</default>
+                <label>USB Cable</label>
+            </value>
+            <value>
+                <fullName>X Ball Screws</fullName>
+                <default>false</default>
+                <label>X Ball Screws</label>
+            </value>
+            <value>
+                <fullName>Y Ball Screws</fullName>
+                <default>false</default>
+                <label>Y Ball Screws</label>
+            </value>
+            <value>
+                <fullName>Z Ball Screws</fullName>
+                <default>false</default>
+                <label>Z Ball Screws</label>
+            </value>
+            <value>
+                <fullName>Motors</fullName>
+                <default>false</default>
+                <label>Motors</label>
+            </value>
+            <value>
+                <fullName>Motherboard</fullName>
+                <default>false</default>
+                <label>Motherboard</label>
+            </value>
+            <value>
+                <fullName>Cutting Tools</fullName>
+                <default>false</default>
+                <label>Cutting Tools</label>
+            </value>
+            <value>
+                <fullName>Motors &amp; Drives</fullName>
+                <default>false</default>
+                <label>Motors &amp; Drives</label>
+            </value>
+            <value>
+                <fullName>Toolholders &amp; Collets</fullName>
+                <default>false</default>
+                <label>Toolholders &amp; Collets</label>
+            </value>
+            <value>
+                <fullName>Filters &amp; Maintenance</fullName>
+                <default>false</default>
+                <label>Filters &amp; Maintenance</label>
+            </value>
+            <value>
+                <fullName>Workholding &amp; Fixtures</fullName>
+                <default>false</default>
+                <label>Workholding &amp; Fixtures</label>
+            </value>
+            <value>
+                <fullName>Coolant System</fullName>
+                <default>false</default>
+                <label>Coolant System</label>
+            </value>
+            <value>
+                <fullName>Calibration &amp; Sensors</fullName>
+                <default>false</default>
+                <label>Calibration &amp; Sensors</label>
+            </value>
+            <value>
+                <fullName>Electronics &amp; Controls</fullName>
+                <default>false</default>
+                <label>Electronics &amp; Controls</label>
+            </value>
+            <value>
+                <fullName>Seals &amp; Gaskets</fullName>
+                <default>false</default>
+                <label>Seals &amp; Gaskets</label>
+            </value>
+        </valueSetDefinition>
+    </valueSet>
+</CustomField>

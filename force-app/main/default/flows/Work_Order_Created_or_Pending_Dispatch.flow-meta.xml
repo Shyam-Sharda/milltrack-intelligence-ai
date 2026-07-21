@@ -17,8 +17,7 @@
         <inputParameters>
             <name>Input:dispatchContext</name>
             <value>
-                <elementReference>Get_Dispatch_Context.outputDispatchContext</elementReference>
-                <inputConfiguratorMode>Resource</inputConfiguratorMode>
+                <elementReference>Get_Technician_Dispatch_Context.outputDispatchContext</elementReference>
             </value>
         </inputParameters>
         <nameSegment>Generate_Dispatch_Briefing</nameSegment>
@@ -63,7 +62,7 @@
         <inputAssignments>
             <field>Dispatch_Status__c</field>
             <value>
-                <stringValue>Generation Failed</stringValue>
+                <stringValue>Pending</stringValue>
             </value>
         </inputAssignments>
         <inputReference>$Record</inputReference>
@@ -71,17 +70,11 @@
     <recordUpdates>
         <name>Update_Work_Order_With_AI_Dispatch</name>
         <label>Update Work Order With AI Dispatch</label>
-        <locationX>340</locationX>
+        <locationX>341</locationX>
         <locationY>510</locationY>
         <faultConnector>
             <targetReference>Mark_Dispatch_Generation_Failed</targetReference>
         </faultConnector>
-        <inputAssignments>
-            <field>AI_Dispatch_Summary__c</field>
-            <value>
-                <elementReference>Generate_Dispatch_Briefing.promptResponse</elementReference>
-            </value>
-        </inputAssignments>
         <inputAssignments>
             <field>Dispatch_Response__c</field>
             <value>
@@ -91,7 +84,7 @@
         <inputAssignments>
             <field>Dispatch_Status__c</field>
             <value>
-                <stringValue>Generated</stringValue>
+                <stringValue>Manager Reviewed</stringValue>
             </value>
         </inputAssignments>
         <inputReference>$Record</inputReference>
@@ -100,18 +93,26 @@
         <locationX>50</locationX>
         <locationY>50</locationY>
         <connector>
-            <targetReference>Get_Dispatch_Context</targetReference>
+            <targetReference>Get_Technician_Dispatch_Context</targetReference>
         </connector>
+        <doesRequireRecordChangedToMeetCriteria>true</doesRequireRecordChangedToMeetCriteria>
         <filterLogic>and</filterLogic>
         <filters>
             <field>Dispatch_Status__c</field>
             <operator>EqualTo</operator>
             <value>
-                <stringValue>Pending</stringValue>
+                <stringValue>Manager Reviewed</stringValue>
             </value>
         </filters>
         <filters>
-            <field>AI_Dispatch_Summary__c</field>
+            <field>Suggested_Technician__c</field>
+            <operator>IsNull</operator>
+            <value>
+                <booleanValue>false</booleanValue>
+            </value>
+        </filters>
+        <filters>
+            <field>Dispatch_Response__c</field>
             <operator>IsNull</operator>
             <value>
                 <booleanValue>true</booleanValue>
@@ -123,14 +124,14 @@
     </start>
     <status>Active</status>
     <subflows>
-        <name>Get_Dispatch_Context</name>
-        <label>Get Dispatch Context</label>
-        <locationX>173</locationX>
-        <locationY>374</locationY>
+        <name>Get_Technician_Dispatch_Context</name>
+        <label>Get Technician Dispatch Context</label>
+        <locationX>176</locationX>
+        <locationY>375</locationY>
         <connector>
             <targetReference>Generate_Dispatch_Briefing</targetReference>
         </connector>
-        <flowName>Get_Dispatch_Context</flowName>
+        <flowName>Build_Technician_Dispatch_Context</flowName>
         <inputAssignments>
             <name>varWorkOrderId</name>
             <value>

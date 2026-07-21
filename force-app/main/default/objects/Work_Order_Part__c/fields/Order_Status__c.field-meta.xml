@@ -25,9 +25,14 @@
                 <label>Received</label>
             </value>
             <value>
-                <fullName>Installed</fullName>
+                <fullName>Used</fullName>
                 <default>false</default>
-                <label>Installed</label>
+                <label>Used</label>
+            </value>
+            <value>
+                <fullName>Cancelled</fullName>
+                <default>false</default>
+                <label>Cancelled</label>
             </value>
         </valueSetDefinition>
     </valueSet>

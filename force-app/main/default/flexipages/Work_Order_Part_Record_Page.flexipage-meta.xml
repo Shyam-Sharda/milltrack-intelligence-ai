@@ -82,24 +82,42 @@
                     <name>uiBehavior</name>
                     <value>none</value>
                 </fieldInstanceProperties>
+                <fieldItem>Record.Supplier_Name__c</fieldItem>
+                <identifier>RecordSupplier_Name__cField</identifier>
+            </fieldInstance>
+        </itemInstances>
+        <itemInstances>
+            <fieldInstance>
+                <fieldInstanceProperties>
+                    <name>uiBehavior</name>
+                    <value>none</value>
+                </fieldInstanceProperties>
+                <fieldItem>Record.Supplier_Phone__c</fieldItem>
+                <identifier>RecordSupplier_Phone__cField</identifier>
+            </fieldInstance>
+        </itemInstances>
+        <itemInstances>
+            <fieldInstance>
+                <fieldItem>Record.Quantity__c</fieldItem>
+                <identifier>RecordQuantity__cField</identifier>
+            </fieldInstance>
+        </itemInstances>
+        <itemInstances>
+            <fieldInstance>
+                <fieldItem>Record.Order_URL__c</fieldItem>
+                <identifier>RecordOrder_URL__cField</identifier>
+            </fieldInstance>
+        </itemInstances>
+        <itemInstances>
+            <fieldInstance>
                 <fieldItem>Record.Quantity_Used__c</fieldItem>
-                <identifier>RecordQuantity_Used_cField</identifier>
+                <identifier>RecordQuantity_Used__cField</identifier>
             </fieldInstance>
         </itemInstances>
         <name>Facet-44922bba-a862-4c8d-b654-dd2be6ffadc9</name>
         <type>Facet</type>
     </flexiPageRegions>
     <flexiPageRegions>
-        <itemInstances>
-            <fieldInstance>
-                <fieldInstanceProperties>
-                    <name>uiBehavior</name>
-                    <value>required</value>
-                </fieldInstanceProperties>
-                <fieldItem>Record.Quantity_Needed__c</fieldItem>
-                <identifier>RecordQuantity_Needed_cField</identifier>
-            </fieldInstance>
-        </itemInstances>
         <itemInstances>
             <fieldInstance>
                 <fieldInstanceProperties>

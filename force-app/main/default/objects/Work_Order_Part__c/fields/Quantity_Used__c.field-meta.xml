@@ -3,9 +3,9 @@
     <fullName>Quantity_Used__c</fullName>
     <externalId>false</externalId>
     <label>Quantity Used</label>
-    <precision>18</precision>
+    <precision>10</precision>
     <required>false</required>
-    <scale>0</scale>
+    <scale>2</scale>
     <trackTrending>false</trackTrending>
     <type>Number</type>
     <unique>false</unique>

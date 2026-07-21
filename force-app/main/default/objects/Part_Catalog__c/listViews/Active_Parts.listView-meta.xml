@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ListView xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Active_Parts</fullName>
+    <columns>NAME</columns>
+    <columns>Part_Number__c</columns>
+    <columns>Manufacturer__c</columns>
+    <columns>Compatible_Model__c</columns>
+    <columns>Stock_Status__c</columns>
+    <filterScope>Everything</filterScope>
+    <filters>
+        <field>Active__c</field>
+        <operation>equals</operation>
+        <value>1</value>
+    </filters>
+    <label>Active Parts</label>
+</ListView>

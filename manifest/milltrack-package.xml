@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Package xmlns="http://soap.sforce.com/2006/04/metadata">
+
+    <!-- Apex Classes -->
+    <types>
+        <members>CreateWorkOrderParts</members>
+        <members>CreateWorkOrderPartsTest</members>
+        <members>ShareWorkOrderWithTechnician</members>
+        <members>ShareWorkOrderWithTechnicianTest</members>
+        <members>TechnicianCopilotController</members>
+        <name>ApexClass</name>
+    </types>
+
+    <!-- Flows -->
+    <types>
+        <members>Build_Technician_Dispatch_Context</members>
+        <members>Complete_Work_Order</members>
+        <members>Create_Work_Order_Proposal_From_Case</members>
+        <members>Customer_Create_Case</members>
+        <members>Generate_Work_Order_Proposal_From_Case</members>
+        <members>Get_Dispatch_Context</members>
+        <members>Request_Parts</members>
+        <members>Resume_Work</members>
+        <members>Share_Work_Order_With_Assigned_Technician</members>
+        <members>Start_Work</members>
+        <members>Temporary_Fix_From_Work_Order</members>
+        <members>Work_Order_Assignment_Sync</members>
+        <members>Work_Order_Created_or_Pending_Dispatch</members>
+        <name>Flow</name>
+    </types>
+
+    <!-- Flow Activation Definitions -->
+    <types>
+        <members>Build_Technician_Dispatch_Context</members>
+        <members>Complete_Work_Order</members>
+        <members>Create_Work_Order_Proposal_From_Case</members>
+        <members>Customer_Create_Case</members>
+        <members>Generate_Work_Order_Proposal_From_Case</members>
+        <members>Get_Dispatch_Context</members>
+        <members>Request_Parts</members>
+        <members>Resume_Work</members>
+        <members>Share_Work_Order_With_Assigned_Technician</members>
+        <members>Start_Work</members>
+        <members>Temporary_Fix_From_Work_Order</members>
+        <members>Work_Order_Assignment_Sync</members>
+        <members>Work_Order_Created_or_Pending_Dispatch</members>
+        <name>FlowDefinition</name>
+    </types>
+
+    <!-- Custom and Customized Standard Objects -->
+    <types>
+        <members>AI_Interaction_Log__c</members>
+        <members>Asset</members>
+        <members>Case</members>
+        <members>Dianostic_Rule__c</members>
+        <members>Maintenance_Log__c</members>
+        <members>Part_Catalog__c</members>
+        <members>Service_Manual__c</members>
+        <members>WorkOrder</members>
+        <members>Work_Order_Part__c</members>
+        <name>CustomObject</name>
+    </types>
+
+    <!-- Lightning Record, Home and Utility Pages -->
+    <types>
+        <members>Asset_Record_Page</members>
+        <members>Case_Record_Page</members>
+        <members>Case_Record_Page1</members>
+        <members>Maintenance_Log_Record_Page</members>
+        <members>MillTrack_Admin_Home</members>
+        <members>MillTrack_Manager_Home</members>
+        <members>MillTrack_Service_Manager_UtilityBar</members>
+        <members>MillTrack_Technician_Home</members>
+        <members>MillTrack_Technician_UtilityBar</members>
+        <members>Part_Catalog_Record_Page</members>
+        <members>Work_Order_Part_Record_Page</members>
+        <members>Work_Order_Record_Page</members>
+        <members>Work_Order_Record_Page1</members>
+        <members>Work_Order_Record_Page2</members>
+        <name>FlexiPage</name>
+    </types>
+
+    <!-- Page Layouts -->
+    <types>
+        <members>Asset-Asset Layout</members>
+        <members>Asset-Asset Manager Layout</members>
+        <members>Asset-Asset Technician Layout</members>
+
+        <members>Case-Case Layout</members>
+        <members>Case-Case Manager Layout</members>
+        <members>Case-Case Technician Layout</members>
+
+        <members>Maintenance_Log__c-Maintenance Log Layout</members>
+        <members>Maintenance_Log__c-Maintenance Log Manager Layout</members>
+        <members>Maintenance_Log__c-Maintenance Log Technician Layout</members>
+
+        <members>Part_Catalog__c-Part Catalog Layout</members>
+        <members>Part_Catalog__c-Part Catalog Manager Layout</members>
+        <members>Part_Catalog__c-Part Catalog Technician Layout</members>
+
+        <members>WorkOrder-Work Order Layout</members>
+        <members>WorkOrder-Work Order Manager Layout</members>
+        <members>WorkOrder-Work Order Technician Layout</members>
+
+        <members>Work_Order_Part__c-Work Order Part Layout</members>
+        <members>Work_Order_Part__c-Work Order Part Service Manager Layout</members>
+        <members>Work_Order_Part__c-Work Order Part Technician Layout</members>
+
+        <name>Layout</name>
+    </types>
+
+    <!-- Permission Sets -->
+    <types>
+        <members>Customer_AI518413218_Permissions</members>
+        <members>MillTrack_Admin</members>
+        <members>MillTrack_Dispatch_Agent39821207_Permissions</members>
+        <members>MillTrack_Service_Manager</members>
+        <members>MillTrack_Technician</members>
+        <members>MillTrack_Technician_Agent32645960_Permissions</members>
+        <name>PermissionSet</name>
+    </types>
+
+    <!-- Lightning Applications -->
+    <types>
+        <members>MillTrack_Intelligence</members>
+        <members>MillTrack_Service_Manager</members>
+        <members>MillTrack_Technician</members>
+        <name>CustomApplication</name>
+    </types>
+
+    <!-- Custom Object Tabs -->
+    <types>
+        <members>AI_Interaction_Log__c</members>
+        <members>Dianostic_Rule__c</members>
+        <members>Maintenance_Log__c</members>
+        <members>Part_Catalog__c</members>
+        <members>Service_Manual__c</members>
+        <members>Work_Order_Part__c</members>
+        <name>CustomTab</name>
+    </types>
+
+    <version>65.0</version>
+
+</Package>

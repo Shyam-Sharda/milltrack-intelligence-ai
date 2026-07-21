@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ListView xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Escalation_Required</fullName>
+    <columns>NAME</columns>
+    <columns>Symptom__c</columns>
+    <columns>Recommended_Solution__c</columns>
+    <columns>Severity__c</columns>
+    <filterScope>Everything</filterScope>
+    <filters>
+        <field>Escalation_Required__c</field>
+        <operation>equals</operation>
+        <value>1</value>
+    </filters>
+    <label>Escalation Required</label>
+    <sharedTo>
+        <group>MillTrack_Administrators</group>
+        <group>MillTrack_Service_Managers</group>
+    </sharedTo>
+</ListView>

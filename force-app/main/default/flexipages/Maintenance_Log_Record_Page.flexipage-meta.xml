@@ -20,6 +20,10 @@
                     <value>false</value>
                 </componentInstanceProperties>
                 <componentInstanceProperties>
+                    <name>hideSlackAction</name>
+                    <value>false</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
                     <name>numVisibleActions</name>
                     <value>3</value>
                 </componentInstanceProperties>
@@ -68,24 +72,10 @@
                     <name>uiBehavior</name>
                     <value>none</value>
                 </fieldInstanceProperties>
-                <fieldItem>Record.Issue_Resolved__c</fieldItem>
-                <identifier>RecordIssue_Resolved_cField</identifier>
+                <fieldItem>Record.Performed_By__c</fieldItem>
+                <identifier>RecordPerformed_By_cField</identifier>
             </fieldInstance>
         </itemInstances>
-        <itemInstances>
-            <fieldInstance>
-                <fieldInstanceProperties>
-                    <name>uiBehavior</name>
-                    <value>none</value>
-                </fieldInstanceProperties>
-                <fieldItem>Record.Follow_Up_Required__c</fieldItem>
-                <identifier>RecordFollow_Up_Required_cField</identifier>
-            </fieldInstance>
-        </itemInstances>
-        <name>Facet-417ce92b-8f00-4dc5-b7cc-2ae7d4db92bb</name>
-        <type>Facet</type>
-    </flexiPageRegions>
-    <flexiPageRegions>
         <itemInstances>
             <fieldInstance>
                 <fieldInstanceProperties>
@@ -108,12 +98,32 @@
         </itemInstances>
         <itemInstances>
             <fieldInstance>
+                <fieldItem>Record.Labor_Hours__c</fieldItem>
+                <identifier>RecordLabor_Hours__cField</identifier>
+            </fieldInstance>
+        </itemInstances>
+        <name>Facet-417ce92b-8f00-4dc5-b7cc-2ae7d4db92bb</name>
+        <type>Facet</type>
+    </flexiPageRegions>
+    <flexiPageRegions>
+        <itemInstances>
+            <fieldInstance>
                 <fieldInstanceProperties>
                     <name>uiBehavior</name>
                     <value>none</value>
                 </fieldInstanceProperties>
-                <fieldItem>Record.Performed_By__c</fieldItem>
-                <identifier>RecordPerformed_By_cField</identifier>
+                <fieldItem>Record.Issue_Resolved__c</fieldItem>
+                <identifier>RecordIssue_Resolved_cField</identifier>
+            </fieldInstance>
+        </itemInstances>
+        <itemInstances>
+            <fieldInstance>
+                <fieldInstanceProperties>
+                    <name>uiBehavior</name>
+                    <value>none</value>
+                </fieldInstanceProperties>
+                <fieldItem>Record.Follow_Up_Required__c</fieldItem>
+                <identifier>RecordFollow_Up_Required_cField</identifier>
             </fieldInstance>
         </itemInstances>
         <itemInstances>
@@ -132,8 +142,28 @@
                     <name>uiBehavior</name>
                     <value>none</value>
                 </fieldInstanceProperties>
+                <fieldItem>Record.Parts_Used__c</fieldItem>
+                <identifier>RecordParts_Used__cField</identifier>
+            </fieldInstance>
+        </itemInstances>
+        <itemInstances>
+            <fieldInstance>
+                <fieldInstanceProperties>
+                    <name>uiBehavior</name>
+                    <value>none</value>
+                </fieldInstanceProperties>
                 <fieldItem>Record.Technician_Notes__c</fieldItem>
                 <identifier>RecordTechnician_Notes_cField</identifier>
+            </fieldInstance>
+        </itemInstances>
+        <itemInstances>
+            <fieldInstance>
+                <fieldInstanceProperties>
+                    <name>uiBehavior</name>
+                    <value>none</value>
+                </fieldInstanceProperties>
+                <fieldItem>Record.Root_Cause__c</fieldItem>
+                <identifier>RecordRoot_Cause__cField</identifier>
             </fieldInstance>
         </itemInstances>
         <name>Facet-8294238e-de94-45f0-8c33-f3cca44530db</name>
@@ -172,6 +202,16 @@
                 </fieldInstanceProperties>
                 <fieldItem>Record.CreatedById</fieldItem>
                 <identifier>RecordCreatedByIdField</identifier>
+            </fieldInstance>
+        </itemInstances>
+        <itemInstances>
+            <fieldInstance>
+                <fieldInstanceProperties>
+                    <name>uiBehavior</name>
+                    <value>none</value>
+                </fieldInstanceProperties>
+                <fieldItem>Record.OwnerId</fieldItem>
+                <identifier>RecordOwnerIdField</identifier>
             </fieldInstance>
         </itemInstances>
         <name>Facet-93cb27dd-0a19-472c-a742-59f6f6460dfe</name>
