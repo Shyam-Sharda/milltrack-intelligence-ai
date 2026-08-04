@@ -1,0 +1,172 @@
+<template>
+    <lightning-card title="Manager Operations Center" icon-name="standard:work_order">
+        <lightning-button-icon
+            slot="actions"
+            icon-name="utility:refresh"
+            alternative-text="Refresh operations data"
+            title="Refresh"
+            disabled={isBusy}
+            onclick={handleRefresh}
+        >
+        </lightning-button-icon>
+
+        <div class="operations-center">
+            <!-- Loading State -->
+            <template lwc:if={isBusy}>
+                <div class="spinner-container">
+                    <lightning-spinner alternative-text="Loading manager operations" size="medium"></lightning-spinner>
+                </div>
+            </template>
+
+            <!-- Error State -->
+            <template lwc:if={errorMessage}>
+                <div class="error-state slds-notify slds-notify_alert slds-alert_error" role="alert">
+                    <span class="slds-assistive-text">Error</span>
+
+                    <lightning-icon
+                        icon-name="utility:error"
+                        alternative-text="Error"
+                        size="x-small"
+                        variant="inverse"
+                        class="slds-m-right_small"
+                    >
+                    </lightning-icon>
+
+                    <h2>{errorMessage}</h2>
+                </div>
+            </template>
+
+            <!-- Queue Cards -->
+            <section class="overview-section" aria-labelledby="service-overview-heading">
+                <div class="section-heading">
+                    <div>
+                        <h2 id="service-overview-heading" class="section-title">Today’s Service Overview</h2>
+
+                        <p class="section-subtitle">Select a queue to review its records and available manager actions.</p>
+                    </div>
+                </div>
+
+                <div class="queue-grid">
+                    <template for:each={queueCards} for:item="card">
+                        <button
+                            key={card.key}
+                            type="button"
+                            class={card.cardClass}
+                            data-queue={card.key}
+                            aria-pressed={card.ariaPressed}
+                            onclick={handleQueueSelect}
+                        >
+                            <span class="queue-count">{card.count}</span>
+
+                            <span class="queue-label">{card.label}</span>
+
+                            <span class="queue-description">{card.description}</span>
+                        </button>
+                    </template>
+                </div>
+            </section>
+
+            <!-- Selected Queue Table -->
+            <section class="queue-table-section" aria-labelledby="selected-queue-heading">
+                <div class="table-heading">
+                    <div>
+                        <h2 id="selected-queue-heading" class="section-title">{selectedQueueLabel}</h2>
+
+                        <p class="section-subtitle">{selectedQueueDescription}</p>
+
+                        <p class="table-instructions">
+                            Use the record number to open the record. Where
+                            available, use the Work Order number to open the
+                            parent Work Order or use the action button to
+                            continue the service workflow.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Records Found -->
+                <template lwc:if={showTable}>
+                    <div class="datatable-container">
+                        <lightning-datatable
+                            key-field="recordId"
+                            data={selectedRows}
+                            columns={columns}
+                            hide-checkbox-column
+                            show-row-number-column
+                            onrowaction={handleRowAction}
+                            wrap-table-header
+                        >
+                        </lightning-datatable>
+                    </div>
+                </template>
+
+                <!-- Empty Queue -->
+                <template lwc:if={showEmptyState}>
+                    <div class="empty-state">
+                        <lightning-icon
+                            icon-name="utility:inbox"
+                            alternative-text="Empty queue"
+                            size="large"
+                            class="empty-state-icon"
+                        >
+                        </lightning-icon>
+
+                        <h3 class="empty-state-title">No records in this queue</h3>
+
+                        <p class="empty-state-message">
+                            There are currently no records requiring attention
+                            in {selectedQueueLabel}.
+                        </p>
+                    </div>
+                </template>
+            </section>
+        </div>
+    </lightning-card>
+
+    <!-- Manager Flow Modal -->
+    <template lwc:if={isFlowModalOpen}>
+        <section
+            role="dialog"
+            tabindex="-1"
+            aria-modal="true"
+            aria-labelledby="flow-modal-heading"
+            class="slds-modal slds-fade-in-open manager-flow-modal"
+        >
+            <div class="slds-modal__container">
+                <header class="slds-modal__header">
+                    <button
+                        type="button"
+                        class="slds-button slds-button_icon
+                            slds-modal__close
+                            slds-button_icon-inverse"
+                        title="Close"
+                        onclick={handleModalClose}
+                    >
+                        <lightning-icon
+                            icon-name="utility:close"
+                            alternative-text="Close"
+                            variant="inverse"
+                            size="small"
+                        >
+                        </lightning-icon>
+
+                        <span class="slds-assistive-text">Close</span>
+                    </button>
+
+                    <h2 id="flow-modal-heading" class="slds-text-heading_medium">{activeFlowLabel}</h2>
+                </header>
+
+                <div class="slds-modal__content slds-p-around_medium flow-modal-content">
+                    <lightning-flow
+                        flow-api-name={activeFlowApiName}
+                        flow-input-variables={flowInputVariables}
+                        onstatuschange={handleFlowStatus}
+                    >
+                    </lightning-flow>
+                </div>
+            </div>
+        </section>
+
+        <div class="slds-backdrop slds-backdrop_open" role="presentation">
+        </div>
+    </template>
+</template>

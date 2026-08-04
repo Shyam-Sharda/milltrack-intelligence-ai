@@ -70,6 +70,7 @@ public with sharing class TechnicianCopilotController {
  
         //Related service history and parts
         response.maintenanceLogs = getMaintenanceLogs(workOrderId, DEFAULT_MAINTENANCE_LOG_LIMIT);
+        response.assetMaintenanceHistory = getAssetMaintenanceHistory(assetId, workOrderId, DEFAULT_MAINTENANCE_LOG_LIMIT);
         response.workOrderParts = getWorkOrderParts(workOrderId, DEFAULT_PART_LIMIT);
         response.summary = buildSummary(response);
 
@@ -130,7 +131,9 @@ public with sharing class TechnicianCopilotController {
             'StartDate',
             'EndDate',
             'Suggested_Technician__c',
-            'Service_Manager__c'
+            'Service_Manager__c',
+            'Recommended_Tools__c',
+            'Recommended_Fix_Summary__c'
         };
     }
 
@@ -149,13 +152,15 @@ public with sharing class TechnicianCopilotController {
         info.standardStatus = getString(record, 'Status');
         info.dispatchStatus = getString(record, 'Dispatch_Status__c');
         info.resolutionStatus = getString(record, 'Resolution_Status__c');
-
+        
+        info.recommendedFixSummary = getString(record, 'Recommended_Fix_Summary__c');
         info.aiDispatchSummary = getString(record, 'AI_Dispatch_Summary__c');
         info.dispatchResponse = getString(record, 'Dispatch_Response__c');
         info.problemSummary = getString(record, 'Problem_Summary__c');
         info.recommendedSolution = getString(record, 'Recommended_Solution__c');
         info.recommendedParts = getString(record, 'Recommended_Parts__c');
-        info.previousFailure = getString(record, 'Previous_Failure__c');
+        info.recommendedTools = getString(record, 'Recommended_Tools__c');
+        info.previousFailure = getBoolean(record, 'Previous_Failure__c');
         info.technicianNotes = getString(record, 'Technician_Notes__c');
         info.laborHours = getDecimal(record, 'Labor_Hours__c');
         info.workStartedDateTime = firstNonNullDateTime(
@@ -235,6 +240,114 @@ public with sharing class TechnicianCopilotController {
         info.productId = getId(record, 'Product2Id');
 
         return info;
+    }
+
+
+    /*
+     * ============================================================
+     * ASSET / MACHINE History
+     * ============================================================
+     */
+    private static List<MaintenanceLogInfo> getAssetMaintenanceHistory(Id assetId, Id currentWorkOrderId, Integer recordLimit) {
+        List<MaintenanceLogInfo> results = new List<MaintenanceLogInfo>();
+
+        String objectApiName = 'Maintenance_Log__c';
+
+        if (assetId == null || !isObjectAccessible(objectApiName) || !fieldExists(objectApiName, 'Asset__c')) {
+            return results;
+        }
+
+        List<String> requestedFields = new List<String>{
+            'Id',
+            'Name',
+            'Asset__c',
+            'Work_Order__c',
+            'Maintenance_Date__c',
+            'Maintenance_Type__c',
+            'Performed_By__c',
+            'Summary__c',
+            'Root_Cause__c',
+            'Technician_Notes__c',
+            'Parts_Used__c',
+            'Labor_Hours__c',
+            'Issue_Resolved__c',
+            'Follow_Up_Required__c',
+            'CreatedDate',
+            'LastModifiedDate'
+        };
+
+        List<String> fields = getExistingFields(objectApiName, requestedFields);
+
+        if (fields.isEmpty()) {
+            return results;
+        }
+
+        String queryString = 'SELECT ' + String.join(fields, ', ') + ' FROM ' + objectApiName + ' WHERE Asset__c = :assetId';
+
+        if (currentWorkOrderId != null && fieldExists(objectApiName, 'Work_Order__c')) {
+            queryString += ' AND Work_Order__c != :currentWorkOrderId';
+        }
+
+        if (fieldExists(objectApiName, 'Maintenance_Date__c')) {
+            queryString += ' ORDER BY Maintenance_Date__c DESC, CreatedDate DESC';
+        } else {
+            queryString += ' ORDER BY CreatedDate DESC';
+        }
+
+        queryString += ' LIMIT :recordLimit';
+
+        List<SObject> records = Database.query(queryString);
+        records = stripUnreadableFields(records);
+
+        Set<Id> performedByIds = new Set<Id>();
+
+        for (SObject record : records) {
+            performedByIds.add(getId(record, 'Performed_By__c'));
+        }
+
+        Map<Id, UserInfo> usersById = queryUsers(performedByIds);
+
+        for (SObject record : records) {
+            MaintenanceLogInfo info = new MaintenanceLogInfo();
+
+            info.id = getId(record, 'Id');
+
+            info.name = getString(record, 'Name');
+
+            info.assetId = getId(record, 'Asset__c');
+
+            info.workOrderId = getId(record, 'Work_Order__c');
+
+            info.maintenanceDate = getDate(record, 'Maintenance_Date__c');
+
+            info.maintenanceType = getString(record, 'Maintenance_Type__c');
+
+            info.performedById = getId(record, 'Performed_By__c');
+
+            info.performedBy = usersById.get(info.performedById);
+
+            info.summary = getString(record, 'Summary__c');
+
+            info.rootCause = getString(record, 'Root_Cause__c');
+
+            info.technicianNotes = getString(record, 'Technician_Notes__c');
+
+            info.partsUsed = getString(record, 'Parts_Used__c');
+
+            info.laborHours = getDecimal(record, 'Labor_Hours__c');
+
+            info.issueResolved = getBoolean(record, 'Issue_Resolved__c');
+
+            info.followUpRequired = getBoolean(record, 'Follow_Up_Required__c');
+
+            info.createdDate = getDateTime(record, 'CreatedDate');
+
+            info.lastModifiedDate = getDateTime(record, 'LastModifiedDate');
+
+            results.add(info);
+        }
+
+        return results;
     }
 
 
@@ -615,7 +728,7 @@ public with sharing class TechnicianCopilotController {
         summary.hasCase = response.caseRecord != null;
         summary.maintenanceLogCount = response.maintenanceLogs == null ? 0 : response.maintenanceLogs.size();
         summary.partCount = response.workOrderParts == null ? 0 : response.workOrderParts.size();
-        summary.hasPreviousServiceHistory = summary.maintenanceLogCount > 0;
+        summary.hasCurrentWorkOrderActivity = summary.maintenanceLogCount > 0;
         summary.hasParts = summary.partCount > 0;
         summary.hasAiDiagnosis = response.workOrder != null &&
             (
@@ -623,6 +736,13 @@ public with sharing class TechnicianCopilotController {
                 !String.isBlank(response.workOrder.problemSummary) ||
                 !String.isBlank(response.workOrder.recommendedSolution)
             );
+        summary.hasIssueSummary = response.workOrder != null && !String.isBlank(response.workOrder.problemSummary);
+        summary.hasRecommendedSolution = response.workOrder != null && !String.isBlank(response.workOrder.recommendedSolution);
+        summary.hasRecommendedTools = response.workOrder != null && !String.isBlank(response.workOrder.recommendedTools);
+        summary.assetMaintenanceHistoryCount = response.assetMaintenanceHistory == null ? 0 : response.assetMaintenanceHistory.size();
+        summary.hasAssetMaintenanceHistory = summary.assetMaintenanceHistoryCount > 0;
+        summary.hasRecommendedFixSummary = response.workOrder != null &&
+            String.isNotBlank(response.workOrder.recommendedFixSummary);
 
         return summary;
     }
@@ -806,6 +926,7 @@ public with sharing class TechnicianCopilotController {
         @AuraEnabled public UserInfo assignedTechnician {get; set;}
         @AuraEnabled public UserInfo serviceManager {get; set;}
         @AuraEnabled public List<MaintenanceLogInfo> maintenanceLogs {get; set;}
+        @AuraEnabled public List<MaintenanceLogInfo> assetMaintenanceHistory { get; set; }
         @AuraEnabled public List<WorkOrderPartInfo> workOrderParts {get; set;}
 
         @AuraEnabled public CopilotSummary summary {get; set;}
@@ -824,9 +945,11 @@ public with sharing class TechnicianCopilotController {
         @AuraEnabled public String aiDispatchSummary { get; set; }
         @AuraEnabled public String dispatchResponse { get; set; }
         @AuraEnabled public String problemSummary { get; set; }
+        @AuraEnabled public String recommendedFixSummary { get; set; }
         @AuraEnabled public String recommendedSolution { get; set; }
         @AuraEnabled public String recommendedParts { get; set; }
-        @AuraEnabled public String previousFailure { get; set; }
+        @AuraEnabled public String recommendedTools { get; set; }
+        @AuraEnabled public Boolean previousFailure { get; set; }
         @AuraEnabled public String technicianNotes { get; set; }
 
         @AuraEnabled public Decimal laborHours { get; set; }
@@ -971,9 +1094,15 @@ public with sharing class TechnicianCopilotController {
         @AuraEnabled public Boolean hasCustomer { get; set; }
         @AuraEnabled public Boolean hasCase { get; set; }
         @AuraEnabled public Boolean hasAiDiagnosis { get; set; }
-        @AuraEnabled public Boolean hasPreviousServiceHistory {get; set;}
+        @AuraEnabled public Boolean hasCurrentWorkOrderActivity {get; set;}
         @AuraEnabled public Boolean hasParts { get; set; }
         @AuraEnabled public Integer maintenanceLogCount {get; set;}
         @AuraEnabled public Integer partCount { get; set; }
+        @AuraEnabled public Boolean hasIssueSummary { get; set; }
+        @AuraEnabled public Boolean hasRecommendedSolution { get; set; }
+        @AuraEnabled public Boolean hasRecommendedTools { get; set; }
+        @AuraEnabled public Boolean hasAssetMaintenanceHistory { get; set; }
+        @AuraEnabled public Integer assetMaintenanceHistoryCount { get; set; }
+        @AuraEnabled public Boolean hasRecommendedFixSummary { get; set; }
     }
 }

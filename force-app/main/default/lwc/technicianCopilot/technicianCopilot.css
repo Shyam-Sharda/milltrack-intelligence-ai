@@ -1,0 +1,172 @@
+:host {
+    display: block;
+}
+
+.loading-container {
+    position: relative;
+    min-height: 8rem;
+}
+
+.copilot-container {
+    padding: 0 1rem 1rem;
+}
+
+/*
+ * Two large cards on the first row.
+ * The smaller Tools card sits underneath.
+ */
+.summary-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+    margin-bottom: 1rem;
+    align-items: start;
+}
+
+.summary-card {
+    padding: 1rem;
+    border: 1px solid var(--lwc-colorBorder, #dddbda);
+    border-radius: 0.5rem;
+    background: var(--lwc-colorBackgroundAlt, #ffffff);
+}
+
+.issue-card,
+.solution-card {
+    min-height: 10rem;
+}
+
+.tools-card {
+    grid-column: 1 / -1;
+    min-height: auto;
+}
+
+.summary-heading {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+}
+
+.summary-heading h2 {
+    font-size: 1rem;
+    font-weight: 700;
+}
+
+.summary-card p,
+.detail-item span,
+.related-record p {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+.detail-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+}
+
+.diagnosis-grid {
+    gap: 1.25rem;
+}
+
+.compact-grid {
+    margin-top: 0.75rem;
+}
+
+.detail-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.detail-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--lwc-colorTextLabel, #3e3e3c);
+    text-transform: uppercase;
+}
+
+.full-width {
+    grid-column: 1 / -1;
+}
+
+.related-record {
+    padding: 1rem;
+    border-bottom: 1px solid var(--lwc-colorBorder, #dddbda);
+}
+
+.related-record:last-child {
+    border-bottom: 0;
+}
+
+.related-record-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.related-record p {
+    margin-top: 0.35rem;
+}
+
+.inline-value {
+    margin-left: 0.25rem;
+}
+
+.record-metadata {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-top: 0.75rem;
+    font-size: 0.75rem;
+    color: var(--lwc-colorTextWeak, #706e6b);
+}
+
+.error-container {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    margin: 1rem;
+    padding: 1rem;
+    border: 1px solid var(--lwc-colorBorderError, #ea001e);
+    border-radius: 0.5rem;
+}
+
+.error-title {
+    margin-bottom: 0.25rem;
+    font-weight: 700;
+}
+
+/*
+ * When the Copilot column becomes narrow, stack all summary cards.
+ */
+@media screen and (max-width: 64rem) {
+    .summary-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .tools-card {
+        grid-column: auto;
+    }
+
+    .issue-card,
+    .solution-card {
+        min-height: auto;
+    }
+}
+
+@media screen and (max-width: 48rem) {
+    .detail-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .full-width {
+        grid-column: auto;
+    }
+
+    .related-record-heading {
+        flex-direction: column;
+    }
+}
