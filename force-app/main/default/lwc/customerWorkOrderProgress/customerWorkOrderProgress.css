@@ -1,0 +1,26 @@
+:host {
+    display: block;
+}
+
+.status-summary {
+    border-left: 0.25rem solid
+        var(--slds-g-color-brand-base-50, #0176d3);
+}
+
+.path-scroll {
+    width: 100%;
+    padding: 0.25rem 0 0.5rem;
+    overflow-x: auto;
+    overflow-y: hidden;
+}
+
+.path-scroll lightning-progress-indicator {
+    display: block;
+    min-width: 48rem;
+}
+
+@media (max-width: 48rem) {
+    .path-scroll lightning-progress-indicator {
+        min-width: 42rem;
+    }
+}

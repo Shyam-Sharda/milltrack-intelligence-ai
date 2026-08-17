@@ -1,0 +1,38 @@
+:host {
+    display: block;
+}
+
+.content {
+    min-height: 6rem;
+    max-width: 100%;
+}
+
+.table-container {
+    max-width: 100%;
+    overflow-x: auto;
+}
+
+.state-container {
+    align-items: center;
+    display: flex;
+    gap: 0.75rem;
+    justify-content: center;
+    min-height: 6rem;
+    padding: 1.5rem;
+    position: relative;
+    text-align: center;
+}
+
+.empty {
+    color: var(
+        --lwc-colorTextWeak,
+        #5c5c5c
+    );
+}
+
+.error {
+    color: var(
+        --lwc-colorTextError,
+        #ba0517
+    );
+}

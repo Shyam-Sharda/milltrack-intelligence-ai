@@ -1,0 +1,59 @@
+<template>
+    <lightning-card title={cardTitle} icon-name="standard:work_order">
+        <div class="slds-p-horizontal_medium slds-p-bottom_medium">
+            <template lwc:if={isLoading}>
+                <div class="slds-is-relative slds-p-vertical_xx-large" role="status" aria-live="polite">
+                    <lightning-spinner alternative-text="Loading service progress" size="small"></lightning-spinner>
+                </div>
+            </template>
+
+            <template lwc:elseif={isMissingRecordId}>
+                <div class="slds-notify slds-notify_alert slds-alert_warning" role="status">
+                    <span class="slds-assistive-text">Information</span>
+                    <h2>Open this tracker from a Work Order record.</h2>
+                </div>
+            </template>
+
+            <template lwc:elseif={errorMessage}>
+                <div class="slds-notify slds-notify_alert slds-alert_error" role="alert">
+                    <span class="slds-assistive-text">Error</span>
+                    <h2>{errorMessage}</h2>
+                </div>
+            </template>
+
+            <template lwc:elseif={showCancelledState}>
+                <div class="slds-notify slds-notify_alert slds-alert_warning" role="status">
+                    <span class="slds-assistive-text">Service cancelled</span>
+
+                    <div>
+                        <p class="slds-text-title_caps">Current status</p>
+
+                        <h2 class="slds-text-heading_small">{progress.currentStage}</h2>
+
+                        <p>{progress.message}</p>
+                    </div>
+                </div>
+            </template>
+
+            <template lwc:elseif={showTracker}>
+                <section aria-labelledby="progress-heading">
+                    <div class="status-summary slds-box slds-theme_shade slds-m-bottom_large" aria-live="polite">
+                        <p class="slds-text-title_caps">Current status</p>
+
+                        <h2 id="progress-heading" class="slds-text-heading_medium slds-m-top_xx-small">{progress.currentStage}</h2>
+
+                        <p class="slds-m-top_x-small slds-text-body_regular">{progress.message}</p>
+                    </div>
+
+                    <div class="path-scroll" aria-label="Work Order service progress">
+                        <lightning-progress-indicator current-step={progress.currentStep} type="path" variant="base">
+                            <template for:each={progress.stages} for:item="stage">
+                                <lightning-progress-step key={stage.key} label={stage.label} value={stage.key}></lightning-progress-step>
+                            </template>
+                        </lightning-progress-indicator>
+                    </div>
+                </section>
+            </template>
+        </div>
+    </lightning-card>
+</template>

@@ -1,0 +1,55 @@
+<template>
+    <lightning-card title={displayTitle}>
+        <div class="content">
+            <template lwc:if={recordId}>
+                <template lwc:if={isLoading}>
+                    <div class="state-container">
+                        <lightning-spinner alternative-text="Loading service history" size="small"></lightning-spinner>
+                    </div>
+                </template>
+
+                <template lwc:elseif={hasError}>
+                    <div class="state-container error" role="alert">
+                        <lightning-icon
+                            icon-name="utility:error"
+                            alternative-text="Error"
+                            size="small"
+                            variant="error"
+                        >
+                        </lightning-icon>
+
+                        <p>{errorMessage}</p>
+                    </div>
+                </template>
+
+                <template lwc:elseif={hasRecords}>
+                    <div class="table-container">
+                        <lightning-datatable
+                            key-field="id"
+                            data={serviceHistory}
+                            columns={columns}
+                            hide-checkbox-column
+                            column-widths-mode="auto"
+                        >
+                        </lightning-datatable>
+                    </div>
+                </template>
+
+                <template lwc:else>
+                    <div class="state-container empty">
+                        <lightning-icon icon-name="utility:info" alternative-text="Information" size="small">
+                        </lightning-icon>
+
+                        <p>No completed service history is available for this machine.</p>
+                    </div>
+                </template>
+            </template>
+
+            <template lwc:else>
+                <div class="state-container empty">
+                    <p>Service history loads when a customer opens a machine record.</p>
+                </div>
+            </template>
+        </div>
+    </lightning-card>
+</template>

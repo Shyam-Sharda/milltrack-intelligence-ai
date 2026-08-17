@@ -1,0 +1,16 @@
+:host {
+    display: block;
+}
+
+.back-navigation {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    padding: 0.5rem 0;
+}
+
+@media (max-width: 48rem) {
+    .back-navigation {
+        padding: 0.375rem 0;
+    }
+}
