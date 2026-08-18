@@ -134,6 +134,10 @@ variables:
         label: "Asset Confirmation Success"
         description: "True only when the customer's machine selection has been successfully resolved to an authorized Asset."
 
+    service_case_original_request: mutable string = ""
+        label: "Original Service Request"
+        description: "Original customer message that initiated the current service-request workflow. Preserve this value unchanged for deterministic duplicate detection. Never rewrite, summarize, normalize, or expose Salesforce record identifiers in this value."
+
     service_case_subject: mutable string = ""
         label: "Service Case Subject"
         description: "Concise factual subject for the authorized customer service Case, derived from the customer's reported issue without inventing a diagnosis or root cause."
@@ -164,7 +168,8 @@ variables:
 
     service_case_success: mutable boolean = False
         label: "Service Case Success"
-        description: "Boolean returned by the authorized Case creation Flow. A newly created Case is confirmed only when this is True and service_case_status_code is CASE_CREATED."
+        description: "Boolean returned by the authorized Case creation Flow. A newly created Case is confirmed only when this is True and service_case_status_code is CASE_CREATED."     
+     
         
 knowledge:
     rag_feature_config_id: "ARFPC_1JDgK000008WRZxWAO"
@@ -1316,14 +1321,39 @@ subagent escalate_service:
 
             if @variables.requires_service == False:
                 set @variables.requires_service = True
+
+                # Preserve the exact customer message that initiated this
+                # service-request workflow. This value is immutable for the
+                # life of the current service workflow and is used only for
+                # deterministic duplicate-request fingerprinting.
+                set @variables.service_case_original_request = @system_variables.user_input
+
+                # Preserve a safe deterministic fallback payload.
+                # These values remain usable if intelligent preparation
+                # does not occur for any reason.
                 set @variables.service_case_subject = @system_variables.user_input
                 set @variables.service_case_description = @system_variables.user_input
                 set @variables.service_case_priority = "Medium"
                 set @variables.service_case_technician_requested = False
+
                 set @variables.service_case_number = ""
                 set @variables.service_case_status_code = ""
                 set @variables.service_case_status_message = ""
                 set @variables.service_case_success = False
+
+            # Defensive fallback if another service path set
+            # requires_service before initializing the service workflow.
+            if @variables.service_case_original_request == "":
+                set @variables.service_case_original_request = @system_variables.user_input
+
+            if @variables.service_case_subject == "":
+                set @variables.service_case_subject = @system_variables.user_input
+
+            if @variables.service_case_description == "":
+                set @variables.service_case_description = @system_variables.user_input
+
+            if @variables.service_case_priority == "":
+                set @variables.service_case_priority = "Medium"
 
             # ---------------------------------------------------------
             # STEP 2 — REQUIRE A TRUSTED AUTHORIZED ASSET
@@ -1333,86 +1363,219 @@ subagent escalate_service:
                 transition to @subagent.intake_context
 
             # ---------------------------------------------------------
-            # STEP 3 — CREATE THE CASE DETERMINISTICALLY
+            # STEP 3 — PREPARE A HIGH-QUALITY CASE PAYLOAD
             # ---------------------------------------------------------
 
-            if @variables.ContactId is not None and @variables.ContactId != "" and @variables.asset_confirmation_success == True and @variables.asset_confirmation_status == "CONFIRMED" and @variables.confirmed_asset_id != "" and @variables.service_case_status_code == "":
-                run @actions.Create_Authorized_Case
-                    with varAuthorizedAssetId = @variables.confirmed_asset_id
-                    with varDescription = @variables.service_case_description
-                    with varErrorCode = @variables.error_code
-                    with varPriority = @variables.service_case_priority
-                    with varSubject = @variables.service_case_subject
-                    with varTechnicianRequested = @variables.service_case_technician_requested
-                    with varVerifiedContactId = @variables.ContactId
-                    set @variables.service_case_number = @outputs.varCaseNumber
-                    set @variables.service_case_status_code = @outputs.varStatusCode
-                    set @variables.service_case_status_message = @outputs.varStatusMessage
-                    set @variables.service_case_success = @outputs.varSuccess
+            |The customer has requested service and the authorized machine is now confirmed.
 
-            # ---------------------------------------------------------
-            # STEP 4 — RESPOND ONLY FROM THE AUTHORITATIVE FLOW RESULT
-            # ---------------------------------------------------------
+             Before completing the service request, you MUST use
+                {!@actions.prepare_service_case_payload} exactly once to prepare the
+                service Case payload and capture any exact error code explicitly reported
+                by the customer from the factual conversation context.
 
-            if @variables.service_case_status_code == "CASE_CREATED" and @variables.service_case_success == True:
-                set @variables.requires_service = False
-                |The authorized Salesforce Case action confirmed that a new service request was created.
-                 Tell the customer the service request was created successfully.
-                 Give the customer the exact Case Number from {!@variables.service_case_number}.
-                 State that a Service Manager will review the request.
-                 Do not invent, alter, shorten, or reconstruct the Case Number.
-                 Do not expose a Salesforce record ID.
-                 Do not claim that a technician has been assigned, scheduled, or dispatched.
+             Use the customer's original service request, earlier conversation
+             history, and the known service context below.
 
-            if @variables.service_case_status_code == "EXISTING_OPEN_CASE":
-                set @variables.requires_service = False
-                |The authorized Salesforce Case action confirmed that a matching open service request already exists.
-                 Do not say that a new Case was created.
-                 Give the customer the exact existing Case Number from {!@variables.service_case_number}.
-                 State that the existing request remains with the service team for review.
-                 Do not invent, alter, shorten, or reconstruct the Case Number.
-                 Do not expose a Salesforce record ID.
+             Known context:
+             - Original preserved service request: {!@variables.service_case_original_request}
+             - Reported symptoms: {!@variables.symptoms}
+             - Exact error code: {!@variables.error_code}
+             - Manufacturer: {!@variables.manufacturer}
+             - Model: {!@variables.model}
+             - Serial number: {!@variables.serial_number}
 
-            if @variables.service_case_status_code == "MISSING_REQUIRED_INFORMATION":
-                |The authorized Salesforce Case action did not create a Case because required service information is missing.
-                 Do not claim that a Case exists.
-                 Ask exactly one short question asking the customer to briefly describe the service issue.
-                 Do not restart Asset authorization.
-                 Do not invent a Case Number.
+             Never use or expose {!@variables.confirmed_asset_id} as customer-facing
+             machine information. It is an internal trusted Salesforce identifier.
 
-            if @variables.service_case_status_code == "INVALID_VERIFIED_CONTACT":
-                set @variables.requires_service = False
-                |The authorized Salesforce Case action could not verify the authenticated customer for Case creation.
-                 Do not claim that a Case was created.
-                 Do not ask the customer to provide a Contact ID, Account ID, email address, or other identity information as a workaround.
-                 Explain briefly that the signed-in customer information could not be verified for the service request.
-                 Offer human service assistance.
-                 Do not expose implementation details.
+             SUBJECT RULES
 
-            if @variables.service_case_status_code == "INVALID_AUTHORIZED_ASSET":
-                set @variables.requires_service = False
-                |The authorized Salesforce Case action could not validate the confirmed Asset for Case creation.
-                 Do not claim that a Case was created.
-                 Do not substitute a serial number, machine name, typed Asset ID, or guessed Asset.
-                 Explain briefly that the selected machine could not be validated for the service request.
-                 Offer human service assistance.
-                 Do not expose implementation details.
+             Prepare a short factual Case subject, preferably about 4–12 words.
 
-            if @variables.service_case_status_code == "SYSTEM_ERROR":
-                set @variables.requires_service = False
-                |The authorized Salesforce Case action returned a system error.
-                 Do not claim that a Case was created.
-                 Explain briefly that the service request could not be created at this time.
-                 Offer human service assistance.
-                 Do not expose Flow names, Apex names, Salesforce IDs, stack traces, or technical error details.
+             Describe the reported symptom or service problem.
+             Do not invent a diagnosis, root cause, failed component, or repair.
 
-            if @variables.service_case_status_code == "" and @variables.service_case_success == False:
-                set @variables.requires_service = False
-                |No authoritative Salesforce Case result was returned.
-                 Do not claim that a Case or service request was created.
-                 Do not provide or guess a Case Number.
-                 Tell the customer that the service request could not be completed at this time.
-                 Offer human service assistance.
+             Manufacturer or model may be included when useful.
+
+             DESCRIPTION RULES
+
+             Prepare concise professional service documentation using only facts
+             that are actually known from the conversation.
+
+             Include only factual details that are explicitly established by the customer or already stored in trusted conversation variables.
+
+                Relevant details may include:
+                - reported symptoms;
+                - when or under what conditions the issue occurs;
+                - troubleshooting actually attempted;
+                - the exact reported error code when one exists;
+                - relevant confirmed machine information;
+                - explicit technician or onsite-service request;
+                - explicit safety concerns;
+                - operational impact only when the customer explicitly described that impact;
+                - machine usability only when the customer explicitly stated whether the machine is usable.
+
+                Do not infer operational impact or machine usability from the existence, timing,
+                or severity of a symptom.
+
+                For example:
+                - Do not infer "machine remains usable" merely because the issue occurs during milling.
+                - Do not infer "production is affected" unless the customer states that it is.
+                - Do not infer "machine is unusable" merely because an issue sounds severe.
+
+             Prefer 1–4 concise sentences.
+
+             Never describe missing information.
+             Do not write phrases such as:
+             - no error code provided;
+             - no troubleshooting reported;
+             - operational impact not specified;
+             - no safety concerns reported;
+             - unknown;
+             - not provided;
+             - not reported.
+
+             If a fact is unknown, omit it completely.
+
+             ABSOLUTE MISSING-INFORMATION RULE:
+
+                If no error code was supplied, omit error-code information completely.
+                Never write "no error code reported", "no error code provided", or equivalent wording.
+
+                If no troubleshooting was supplied, omit troubleshooting completely.
+
+                If operational impact or machine usability was not explicitly supplied,
+                omit those facts completely.
+
+                The Case Description documents known service facts.
+                It must never document which intake fields were missing.
+
+             Preserve an exact reported error code character-for-character.
+             Never normalize, correct, reinterpret, reformat, or invent an error code.
+
+             ERROR CODE STATE RULES
+
+                The @variables.error_code variable is the authoritative error-code value
+                passed separately to Salesforce Case creation.
+
+                If @variables.error_code is already populated, preserve its exact value.
+
+                If @variables.error_code is blank and the customer explicitly reported
+                an error code anywhere in the relevant conversation, set
+                @variables.error_code to that exact code character-for-character.
+
+                Do not normalize, correct, reinterpret, reformat, translate, or guess it.
+
+                If the customer did not explicitly report an error code and
+                @variables.error_code is blank, leave it blank.
+
+                Never derive an error code from symptoms, machine behavior, documentation,
+                or general knowledge.
+
+             Do not add acknowledgements, pleasantries, commentary, or conversational filler.
+
+             PRIORITY RULES
+
+             service_case_priority MUST be exactly one of:
+             Critical
+             High
+             Medium
+             Low
+
+             Critical:
+             - explicit safety concern or hazardous condition;
+             - explicit risk of injury or equipment damage;
+             - machine completely unusable or fully down;
+             - production stopped because of the machine;
+             - urgent shutdown required.
+
+             High:
+             - severe or urgent operational failure;
+             - machine use is significantly affected;
+             - serious recurring problem requiring prompt service;
+             - but Critical criteria are not met.
+
+             Medium:
+             - degraded operation;
+             - intermittent problem;
+             - unresolved issue;
+             - operational impact unclear;
+             - insufficient facts to justify Critical, High, or Low.
+
+             When uncertain, use Medium.
+
+             Low:
+             - minor problem;
+             - machine remains operational;
+             - explicitly non-urgent request;
+             - limited operational impact.
+
+             Do not raise priority merely because the customer asks for quick service.
+
+             TECHNICIAN REQUESTED RULES
+
+             service_case_technician_requested is True ONLY when the customer
+             explicitly requests:
+             - a technician;
+             - onsite assistance;
+             - someone to come to the location;
+             - an onsite service visit.
+
+             General phrases such as:
+             - request service;
+             - service request;
+             - need service;
+             - repair request;
+             - need help;
+             - need support;
+
+             do NOT mean that a technician was explicitly requested.
+
+             When uncertain, use False.
+
+             Never state that a technician is assigned, scheduled, or dispatched.
+
+             After preparing the service Case payload and error-code state, do not claim that the Case has been created. Salesforce Case creation occurs deterministically
+             after reasoning and its result is authoritative.
+
+        actions:
+            prepare_service_case_payload: @utils.setVariables
+                description: "Prepare the factual service Case payload and exact error-code state from the customer's conversation. Use only explicitly known facts. Never diagnose, invent, or infer missing facts. If error_code is already populated, preserve it exactly. If it is blank and the customer explicitly reported an error code, capture that code character-for-character. If no error code was explicitly reported, leave error_code blank. For Description, omit missing information entirely. Do not infer machine usability or operational impact unless explicitly stated. Subject must be concise. Priority must be exactly Critical, High, Medium, or Low. Technician Requested is true only for an explicit technician or onsite-service request."
+                available when @variables.requires_service == True and @variables.ContactId is not None and @variables.ContactId != "" and @variables.asset_confirmation_success == True and @variables.asset_confirmation_status == "CONFIRMED" and @variables.confirmed_asset_id != "" and @variables.service_case_original_request != "" and @variables.service_case_status_code == ""
+                with service_case_subject=...
+                with service_case_description=...
+                with service_case_priority=...
+                with service_case_technician_requested=...
+                with error_code=...
+
+    after_reasoning:
+
+        # ---------------------------------------------------------
+        # STEP 4 — VALIDATE PREPARED PRIORITY DETERMINISTICALLY
+        # ---------------------------------------------------------
+
+        if @variables.service_case_priority != "Critical" and @variables.service_case_priority != "High" and @variables.service_case_priority != "Medium" and @variables.service_case_priority != "Low":
+            set @variables.service_case_priority = "Medium"
+
+        # ---------------------------------------------------------
+        # STEP 5 — CREATE THE CASE DETERMINISTICALLY
+        # ---------------------------------------------------------
+
+        if @variables.requires_service == True and @variables.ContactId is not None and @variables.ContactId != "" and @variables.asset_confirmation_success == True and @variables.asset_confirmation_status == "CONFIRMED" and @variables.confirmed_asset_id != "" and @variables.service_case_original_request != "" and @variables.service_case_status_code == "":
+            run @actions.Create_Authorized_Case
+                with varAuthorizedAssetId = @variables.confirmed_asset_id
+                with varOriginalServiceRequest = @variables.service_case_original_request
+                with varDescription = @variables.service_case_description
+                with varErrorCode = @variables.error_code
+                with varPriority = @variables.service_case_priority
+                with varSubject = @variables.service_case_subject
+                with varTechnicianRequested = @variables.service_case_technician_requested
+                with varVerifiedContactId = @variables.ContactId
+                set @variables.service_case_number = @outputs.varCaseNumber
+                set @variables.service_case_status_code = @outputs.varStatusCode
+                set @variables.service_case_status_message = @outputs.varStatusMessage
+                set @variables.service_case_success = @outputs.varSuccess
+
+            transition to @subagent.service_case_result
 
 
     actions:
@@ -1420,36 +1583,42 @@ subagent escalate_service:
             label: "Create Authorized Case"
             description: "Creates an authorized customer service Case using the authenticated Contact and confirmed Asset. Revalidates customer and Asset authorization, checks for an existing matching open Case, and creates a new Case only when the request is valid."
             target: "flow://CUST_02_Create_Authorized_Service_Case"
+
             inputs:
                 varAuthorizedAssetId: string
                     label: "varAuthorizedAssetId"
                     is_required: True
                     description: "Trusted authorized Asset ID already confirmed by Intake Context. Always use @variables.confirmed_asset_id. Never use an Asset ID, serial number, machine name, or other machine identifier supplied directly by the customer."
+                
+                varOriginalServiceRequest: string
+                    label: "varOriginalServiceRequest"
+                    is_required: True
+                    description: "Exact original customer message preserved when the current service-request workflow began. Always use @variables.service_case_original_request. This value is used deterministically for duplicate-request fingerprinting and must never be replaced with the AI-generated Subject or Description."
 
                 varDescription: string
                     label: "varDescription"
                     is_required: True
-                    description: "Factual service summary based on the current conversation and confirmed machine context. Include symptoms, troubleshooting already attempted, exact error code when available, relevant machine information, technician request, and safety concerns. Never invent a diagnosis or result."
+                    description: "Prepared factual service summary. Never invent a diagnosis, root cause, repair, technician assignment, or result."
 
                 varErrorCode: string
                     label: "varErrorCode"
                     is_required: False
-                    description: "Exact error code reported by the customer. Use @variables.error_code when populated. Preserve it exactly as reported. If no error code was reported, leave this input blank and never invent one."
+                    description: "Exact error code reported by the customer. Preserve it exactly as reported. If no error code was reported, leave this input blank and never invent one."
 
                 varPriority: string
                     label: "varPriority"
                     is_required: True
-                    description: "Case priority. Use Critical for safety concerns, complete machine outage, or production stopped. Use High for severe or urgent failures that significantly affect operation. Use Medium for degraded, intermittent, or unresolved operational issues. Use Low for non-urgent minor service. If impact is unclear, use Medium."
+                    description: "Validated Case priority. Expected values are Critical, High, Medium, or Low."
 
                 varSubject: string
                     label: "varSubject"
                     is_required: True
-                    description: "Concise factual summary of the customer's service issue. Describe the reported problem without inventing a diagnosis or root cause."
+                    description: "Concise factual summary of the customer's reported service issue. Never invent a diagnosis or root cause."
 
                 varTechnicianRequested: boolean
                     label: "varTechnicianRequested"
                     is_required: True
-                    description: "Boolean indicating whether the customer explicitly requested a technician or onsite service. Set true only when explicitly requested; otherwise set false."
+                    description: "True only when the customer explicitly requested a technician or onsite service. Otherwise false."
 
                 varVerifiedContactId: string
                     label: "varVerifiedContactId"
@@ -1467,70 +1636,103 @@ subagent escalate_service:
                     label: "varStatusCode"
                     is_displayable: False
                     filter_from_agent: False
-                    description: "Authoritative result code returned by the Flow. Expected values include CASE_CREATED, EXISTING_OPEN_CASE, INVALID_VERIFIED_CONTACT, INVALID_AUTHORIZED_ASSET, MISSING_REQUIRED_INFORMATION, and SYSTEM_ERROR. Use this value to determine what happened."
+                    description: "Authoritative result code returned by the Flow. Expected values include CASE_CREATED, EXISTING_OPEN_CASE, INVALID_VERIFIED_CONTACT, INVALID_AUTHORIZED_ASSET, MISSING_REQUIRED_INFORMATION, and SYSTEM_ERROR."
 
                 varStatusMessage: string
                     label: "varStatusMessage"
                     is_displayable: False
                     filter_from_agent: False
-                    description: "Customer-safe status information returned by the Flow. Use it as supporting context when responding, but follow varStatusCode and varSuccess to determine the actual result."
+                    description: "Customer-safe status information returned by the Flow."
 
                 varSuccess: boolean
                     label: "varSuccess"
                     is_displayable: False
                     filter_from_agent: False
-                    description: "Boolean result returned by the Flow. Never infer Case creation from action execution alone. A newly created Case is confirmed only when varSuccess is true and varStatusCode is CASE_CREATED."
+                    description: "Boolean result returned by the Flow. A newly created Case is confirmed only when varSuccess is true and varStatusCode is CASE_CREATED."
 
             require_user_confirmation: False
             include_in_progress_indicator: True
             progress_indicator_message: "Creating your service request..."
 
-        Prepare_Service_Case:
-            label: "Prepare Service Case"
-            description: "Prepares the factual Subject, Description, Priority, and Technician Requested values for an authorized customer service request before the Case creation action runs."
-            target: "flow://CUST_04_Prepare_Authorized_Service_Case"
-            inputs:
-                varDescription: string
-                    label: "varDescription"
-                    description: "Concise factual service summary based on information already present in the conversation. Include the reported symptoms, timing, troubleshooting attempted, exact error code, confirmed machine context, technician request, and safety information when known. Do not invent missing facts."
-                    is_required: True
+subagent service_case_result:
+    label: "Service Case Result"
+    description: "Respond to the customer only from the authoritative result returned by the authorized Salesforce Case creation process"
 
-                varPriority: string
-                    label: "varPriority"
-                    description: "Service Case priority derived from the reported operational impact. Use Critical for safety concerns, complete machine outage, or production stopped; High for severe or urgent failures that significantly affect operation; Medium for degraded, intermittent, or unresolved operational issues; Low for non-urgent minor service. Use Medium when impact is unclear."
-                    is_required: True
+    reasoning:
+        instructions: ->
 
-                varSubject: string
-                    label: "varSubject"
-                    description: "Concise factual subject for the service Case based on the customer's reported issue. Use information already present in the conversation. Do not invent a diagnosis or root cause."
-                    is_required: True
+            if @variables.service_case_status_code == "CASE_CREATED" and @variables.service_case_success == True:
+                set @variables.requires_service = False
 
-                varTechnicianRequested: boolean
-                    label: "varTechnicianRequested"
-                    description: "True only when the customer explicitly requested a technician or onsite service. Otherwise false. A technician request does not mean a technician has been assigned."
-                    is_required: True
+                |The authorized Salesforce Case action confirmed that a new service request was created.
 
-            outputs:
-                outDescription: string
-                    label: "outDescription"
-                    description: "Returns the prepared factual service Case description for use by the authorized Case creation action."
-                    is_displayable: False
-                    filter_from_agent: False
+                 Tell the customer the service request was created successfully.
+                 Give the customer the exact Case Number from {!@variables.service_case_number}.
+                 State that a Service Manager will review the request.
 
-                outPriority: string
-                    label: "outPriority"
-                    description: "Returns the prepared Case priority for use by the authorized Case creation action. Expected values are Critical, High, Medium, or Low."
-                    is_displayable: False
-                    filter_from_agent: False
+                 Do not invent, alter, shorten, or reconstruct the Case Number.
+                 Do not expose a Salesforce record ID.
+                 Do not claim that a technician has been assigned, scheduled, or dispatched.
 
-                outSubject: string
-                    label: "outSubject"
-                    description: "Returns the prepared factual service Case subject for use by the authorized Case creation action."
-                    is_displayable: False
-                    filter_from_agent: False
+            if @variables.service_case_status_code == "EXISTING_OPEN_CASE":
+                set @variables.requires_service = False
 
-                outTechnicianRequested: boolean
-                    label: "outTechnicianRequested"
-                    description: "Returns whether the customer explicitly requested a technician, for use by the authorized Case creation action."
-                    is_displayable: False
-                    filter_from_agent: False
+                |The authorized Salesforce Case action confirmed that a matching open service request already exists.
+
+                 Do not say that a new Case was created.
+                 Give the customer the exact existing Case Number from {!@variables.service_case_number}.
+                 State that the existing request remains with the service team for review.
+
+                 Do not invent, alter, shorten, or reconstruct the Case Number.
+                 Do not expose a Salesforce record ID.
+
+            if @variables.service_case_status_code == "MISSING_REQUIRED_INFORMATION":
+
+                |The authorized Salesforce Case action did not create a Case because required service information is missing.
+
+                 Do not claim that a Case exists.
+                 Ask exactly one short question asking the customer to briefly describe the service issue.
+                 Do not restart Asset authorization.
+                 Do not invent a Case Number.
+
+            if @variables.service_case_status_code == "INVALID_VERIFIED_CONTACT":
+                set @variables.requires_service = False
+
+                |The authorized Salesforce Case action could not verify the authenticated customer for Case creation.
+
+                 Do not claim that a Case was created.
+                 Do not ask the customer to provide a Contact ID, Account ID, email address, or other identity information as a workaround.
+                 Explain briefly that the signed-in customer information could not be verified for the service request.
+                 Offer human service assistance.
+                 Do not expose implementation details.
+
+            if @variables.service_case_status_code == "INVALID_AUTHORIZED_ASSET":
+                set @variables.requires_service = False
+
+                |The authorized Salesforce Case action could not validate the confirmed Asset for Case creation.
+
+                 Do not claim that a Case was created.
+                 Do not substitute a serial number, machine name, typed Asset ID, or guessed Asset.
+                 Explain briefly that the selected machine could not be validated for the service request.
+                 Offer human service assistance.
+                 Do not expose implementation details.
+
+            if @variables.service_case_status_code == "SYSTEM_ERROR":
+                set @variables.requires_service = False
+
+                |The authorized Salesforce Case action returned a system error.
+
+                 Do not claim that a Case was created.
+                 Explain briefly that the service request could not be created at this time.
+                 Offer human service assistance.
+                 Do not expose Flow names, Apex names, Salesforce IDs, stack traces, or technical error details.
+
+            if @variables.service_case_status_code == "" and @variables.service_case_success == False:
+                set @variables.requires_service = False
+
+                |No authoritative Salesforce Case result was returned.
+
+                 Do not claim that a Case or service request was created.
+                 Do not provide or guess a Case Number.
+                 Tell the customer that the service request could not be completed at this time.
+                 Offer human service assistance.
