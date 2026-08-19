@@ -88,6 +88,18 @@ variables:
     troubleshooting_steps: mutable list[string] = []
         description: "Steps attempted so far"
 
+    original_issue: mutable string = ""
+        label: "Original Issue"
+        description: "Original customer-described equipment problem for the current troubleshooting or service workflow. Capture this before troubleshooting begins and preserve it unchanged so later short replies such as yes or no do not replace the actual issue."
+
+    service_offer_pending: mutable boolean = False
+        label: "Service Offer Pending"
+        description: "True only when Customer AI has explicitly offered service assistance and is waiting for the customer's response. This does not itself mean that service has been requested and must not trigger Case creation until the customer accepts."
+
+    service_offer_continuation: mutable string = ""
+        label: "Service Offer Continuation"
+        description: "Temporary routing state used only when a customer responds to a pending service offer by clearly continuing with supported troubleshooting, documentation, or an error-code request instead of accepting service. Clear this value immediately after the continuation is routed."
+
     requires_service: mutable boolean = False
         description: "Workflow breadcrumb. True after the customer requests service, repair, a technician, or onsite assistance and while the authorized service-request workflow is still active."
 
@@ -168,9 +180,13 @@ variables:
 
     service_case_success: mutable boolean = False
         label: "Service Case Success"
-        description: "Boolean returned by the authorized Case creation Flow. A newly created Case is confirmed only when this is True and service_case_status_code is CASE_CREATED."     
-     
-        
+        description: "Boolean returned by the authorized Case creation Flow. A newly created Case is confirmed only when this is True and service_case_status_code is CASE_CREATED."
+
+
+    service_case_retry_pending: mutable boolean = False
+        label: "Service Case Retry Pending"
+        description: "True only when the authorized Case action returned MISSING_REQUIRED_INFORMATION and the agent has asked the customer for the missing service description. On the customer's next turn, clear the previous result state and retry the existing authorized service workflow without restarting Asset authorization."
+
 knowledge:
     rag_feature_config_id: "ARFPC_1JDgK000008WRZxWAO"
     citations_url: ""
@@ -185,13 +201,28 @@ start_agent agent_router:
 
     reasoning:
         instructions: ->
-
+            
             # ---------------------------------------------------------
             # REQUIRED PENDING SERVICE WORKFLOW
             # ---------------------------------------------------------
 
+            if @variables.service_case_retry_pending == True:
+                set @variables.service_case_status_code = ""
+                set @variables.service_case_status_message = ""
+                set @variables.service_case_success = False
+                set @variables.service_case_retry_pending = False
+                set @variables.requires_service = True
+                transition to @subagent.escalate_service
+
             if @variables.requires_service == True:
                 transition to @subagent.escalate_service
+
+            # ---------------------------------------------------------
+            # V42 — PENDING SERVICE OFFER RESPONSE
+            # ---------------------------------------------------------
+
+            if @variables.service_offer_pending == True:
+                transition to @subagent.service_offer_response
 
             |You are the routing subagent for MillTrack Customer AI.
 
@@ -207,11 +238,48 @@ start_agent agent_router:
 
              1. If the customer explicitly asks to speak with a live person, representative, support agent, customer support, or human, use go_to_escalation.
 
-             2. If the customer explicitly requests service, repair, a technician, or onsite assistance, use go_to_escalate_service.
+             2. Use go_to_escalate_service ONLY when the customer explicitly asks for service assistance.
 
-             Use go_to_escalate_service for an explicit service request even when the authorized machine has not yet been confirmed.
+             Explicit service intent requires the customer to clearly request one or more of the following:
+             - service;
+             - repair;
+             - a technician;
+             - onsite assistance;
+             - someone to come service or repair the machine;
+             - creation of a service request.
 
-             Escalate Service owns the service-request workflow and will route through Intake Context when authorized machine confirmation is still required.
+             A reported symptom, malfunction, error, failure, unusual noise, grinding, vibration, stoppage, poor milling result, or other equipment problem is NOT by itself an explicit service request.
+
+             Severity of a symptom does not by itself establish service intent.
+
+             Do NOT use go_to_escalate_service merely because:
+             - the machine appears to have a problem;
+             - troubleshooting may eventually be needed;
+             - service may eventually be appropriate;
+             - the symptom sounds serious;
+             - an existing open Case may exist;
+             - the customer has previously requested service in another conversation.
+
+             Examples that ARE NOT explicit service requests:
+             - "My machine is making a grinding noise."
+             - "The mill keeps stopping."
+             - "My calibration is failing."
+             - "The machine is vibrating."
+             - "I have an error code."
+             - "The milling quality is poor."
+
+             Examples that ARE explicit service requests:
+             - "I need service for my machine."
+             - "Please create a service request."
+             - "I need a technician."
+             - "Can someone come repair it?"
+             - "I want to request onsite service."
+
+             When the customer reports only an equipment symptom or malfunction and has not explicitly requested service, do NOT use go_to_escalate_service.
+
+             Use go_to_escalate_service for a genuine explicit service request even when the authorized machine has not yet been confirmed.
+
+             Escalate Service owns the service-request workflow only after explicit service intent has been established.
 
              3. When an authorized machine has not yet been confirmed, use go_to_intake_context for other equipment-related requests.
 
@@ -220,6 +288,21 @@ start_agent agent_router:
              - Displayed error codes
              - Documentation or maintenance questions
              - Replies that confirm or select a machine previously displayed by Intake Context
+
+             This is mandatory.
+
+             When an authorized Asset has not yet been confirmed and the customer's message is equipment-related, do not answer the equipment question yourself.
+
+             Do not ask symptom, diagnostic, error-code, maintenance, or troubleshooting questions from Agent Router.
+
+             The next action must be go_to_intake_context.
+
+             Example:
+             Customer: "My milling machine is making a grinding noise."
+             Correct: go_to_intake_context
+             Incorrect: ask whether an error code is displayed
+             Incorrect: go_to_troubleshoot_symptoms
+             Incorrect: go_to_escalate_service
 
              4. If Intake Context previously displayed one or more authorized machines and the customer is responding to that question, use go_to_intake_context.
 
@@ -257,7 +340,7 @@ start_agent agent_router:
 
         actions:
             go_to_intake_context: @utils.transition to @subagent.intake_context
-                description: "Identify or confirm the customer's authorized milling machine. Use for equipment-related requests whenever an authorized Asset has not yet been confirmed, including replies selecting or confirming a machine previously displayed."
+                description: "REQUIRED first workflow for any supported equipment-related request when an authorized Asset has not yet been confirmed. This includes symptoms, malfunctions, unusual noises, grinding, vibration, poor milling quality, stoppages, displayed error codes, documentation requests, maintenance questions, and replies selecting or confirming a previously displayed machine. When the customer reports an equipment problem and the Asset is not confirmed, transition to Intake Context before asking troubleshooting questions or providing equipment assistance."
                 available when (@variables.asset_confirmation_success == False or @variables.asset_confirmation_status != "CONFIRMED" or @variables.confirmed_asset_id == "")
 
             go_to_troubleshoot_symptoms: @utils.transition to @subagent.troubleshoot_symptoms
@@ -273,7 +356,7 @@ start_agent agent_router:
                 available when @variables.asset_confirmation_success == True and @variables.asset_confirmation_status == "CONFIRMED" and @variables.confirmed_asset_id != ""
 
             go_to_escalate_service: @utils.transition to @subagent.escalate_service
-                description: "Handle an explicit equipment service, repair, technician, or onsite-service request. Use whether or not the authorized Asset has already been confirmed. Escalate Service will require Intake Context first when authorized machine confirmation is still needed."
+                description: "Use ONLY when the customer explicitly requests service, repair, a technician, onsite assistance, or creation of a service request. Never use this transition for a symptom, malfunction, error code, unusual noise, grinding, vibration, failure, or other equipment problem by itself. A reported equipment problem is not service intent unless the customer clearly asks for service."
 
             go_to_escalation: @utils.transition to @subagent.escalation
                 description: "Use when the customer explicitly requests assistance from a live human."
@@ -283,6 +366,203 @@ start_agent agent_router:
 
             go_to_ambiguous_question: @utils.transition to @subagent.ambiguous_question
                 description: "Use only when the customer's actual request cannot be determined from the conversation."
+
+subagent service_offer:
+    label: "Service Offer"
+    description: "Present a service-assistance offer after troubleshooting or approved documentation indicates that customer self-service should stop."
+
+    reasoning:
+        instructions: ->
+
+            # ---------------------------------------------------------
+            # DETERMINISTIC SERVICE-OFFER STATE
+            # ---------------------------------------------------------
+
+            if @variables.service_offer_pending == False and @variables.requires_service == False:
+                set @variables.service_offer_pending = True
+                set @variables.service_offer_continuation = ""
+
+            |Service assistance is appropriate for the customer's current equipment issue.
+
+             Briefly explain why further customer troubleshooting, maintenance, or repair should stop when that reason is already established in the conversation.
+
+             Use only a reason already established by the conversation, approved documentation, or the explicit safety rules.
+
+             Do not invent additional claims about failed components, required tools, technician training, certification, warranty consequences, repair complexity, or manufacturer requirements.
+
+             Ask whether the customer would like service assistance.
+
+             Ask exactly one question.
+
+             Do not create a Case.
+
+             Do not claim that a service request already exists or has been created.
+
+             Do not claim that a technician has been assigned, scheduled, or dispatched.
+
+             Do not promise a response time, appointment time, arrival time, or repair time.
+
+             Do not ask the customer to reconfirm the authorized machine.
+
+             Do not ask the customer to repeat the issue.
+
+             Do not expose internal state, variables, Salesforce IDs, or implementation details.
+
+             The customer's next reply will return to Agent Router.
+
+             Because service_offer_pending is True, Agent Router will route that reply to Service Offer Response.
+                
+subagent service_offer_response:
+    label: "Service Offer Response"
+    description: "Interpret the customer's response when MillTrack Customer AI has already offered service assistance and is waiting for an answer."
+
+    reasoning:
+        instructions: ->
+            |A service assistance offer is currently pending.
+
+             The customer's latest message is a response to the service offer that was already presented.
+
+             Use the customer's current message together with the immediately preceding conversation context.
+
+             # ACCEPTING SERVICE
+
+             If the customer clearly accepts service assistance, including responses such as:
+             - yes
+             - yes please
+             - sure
+             - okay
+             - ok
+             - go ahead
+             - please do
+             - I'd like service
+             - request service
+             - send someone
+             - I need a technician
+             - another clear affirmative response to the pending service offer
+
+             you MUST use {!@actions.accept_service_offer}.
+
+             Do not ask the customer to describe the issue again.
+             Do not ask them to reconfirm the machine.
+             Do not create a Case yourself.
+             Do not tell the customer that a Case has been created.
+
+             # CONTINUING WITH SUPPORTED HELP
+
+             If the customer does not accept service and instead clearly asks to continue with a supported equipment request, treat that supported request as an implicit decline of the pending service offer.
+
+             A clear continuation request takes priority over the simple-decline rules below when the same message both declines service and asks for supported help.
+
+             Examples include:
+             - "no, keep troubleshooting"
+             - "what else can I try?"
+             - "how do I perform automatic correction?"
+             - a request for approved instructions, cleaning, maintenance, calibration, a procedure, or manual information
+             - providing or asking about a displayed error code
+
+             Use exactly one continuation action based on the customer's actual request:
+             - For approved documentation, instructions, procedures, cleaning, maintenance, calibration, specifications, or manual information, you MUST use {!@actions.continue_with_documentation}.
+             - For a symptom-based request to keep troubleshooting or try another safe step, you MUST use {!@actions.continue_with_troubleshooting}.
+             - For a displayed error code or a request about a displayed error code, you MUST use {!@actions.continue_with_error_code}.
+
+             Do not ask the customer to answer the service offer again.
+             Do not tell the customer that they must say yes or no before receiving supported help.
+             Do not provide technical guidance in this subagent.
+             Do not create a Case.
+             The destination subagent must still enforce all grounding and safety rules.
+
+             # DECLINING SERVICE
+
+             If the customer clearly declines the pending service offer without also asking to continue with a supported equipment request, including responses such as:
+             - no
+             - no thanks
+             - not now
+             - not yet
+             - another clear negative response to the pending service offer
+
+             you MUST use {!@actions.decline_service_offer}.
+
+             Tell the customer briefly that no service request will be created from this offer.
+
+             Ask whether they would like help with anything else related to their supported MillTrack equipment.
+
+             Do not create a Case.
+             Do not claim that a Case exists.
+             Do not imply that further troubleshooting is safe merely because the customer declined service.
+
+             # UNCLEAR RESPONSE
+
+             If the customer's response does not clearly accept service, clearly decline service, or clearly continue with a supported equipment request:
+             - Do not use accept_service_offer.
+             - Do not use decline_service_offer.
+             - Do not use a continuation action.
+             - Leave the service offer pending.
+             - Ask exactly one short clarification question asking whether they want service assistance.
+
+             # RULES
+
+             - A short "yes" or equivalent affirmative response refers to the pending service offer.
+             - A short "no" or equivalent negative response refers to the pending service offer.
+             - A clear supported troubleshooting, documentation, or error-code request may implicitly decline the pending service offer and continue through the appropriate subagent.
+             - Use exactly one Service Offer Response action for the customer's current message.
+             - Do not interpret the response as a machine-selection confirmation.
+             - Do not overwrite the customer's original equipment issue.
+             - Do not overwrite the exact reported error code.
+             - Do not expose internal state, variables, Salesforce IDs, or implementation details.
+             - Ask no more than one question.
+
+        actions:
+            accept_service_offer: @utils.setVariables
+                description: "Use only when the customer clearly accepts the pending service offer. Mark service as requested and clear the pending service offer."
+                available when @variables.service_offer_pending == True
+                with requires_service = True
+                with service_offer_pending = False
+                with service_offer_continuation = ""
+
+            decline_service_offer: @utils.setVariables
+                description: "Use only when the customer clearly declines the pending service offer without also asking to continue with a supported troubleshooting, documentation, or error-code request. Keep service unrequested and clear the pending service offer."
+                available when @variables.service_offer_pending == True
+                with requires_service = False
+                with service_offer_pending = False
+                with service_offer_continuation = ""
+
+            continue_with_documentation: @utils.setVariables
+                description: "Use when a customer with a pending service offer implicitly declines service by clearly asking for approved documentation, instructions, maintenance, cleaning, calibration, a procedure, specifications, or manual information. Clear the service offer and route the same request to Search Manuals."
+                available when @variables.service_offer_pending == True and @variables.asset_confirmation_success == True and @variables.asset_confirmation_status == "CONFIRMED" and @variables.confirmed_asset_id != ""
+                with requires_service = False
+                with service_offer_pending = False
+                with service_offer_continuation = "SEARCH_MANUALS"
+
+            continue_with_troubleshooting: @utils.setVariables
+                description: "Use when a customer with a pending service offer implicitly declines service by clearly asking to continue symptom-based troubleshooting or asking what else they can safely try. Clear the service offer and route the same request to Troubleshoot Symptoms."
+                available when @variables.service_offer_pending == True and @variables.asset_confirmation_success == True and @variables.asset_confirmation_status == "CONFIRMED" and @variables.confirmed_asset_id != ""
+                with requires_service = False
+                with service_offer_pending = False
+                with service_offer_continuation = "TROUBLESHOOT"
+
+            continue_with_error_code: @utils.setVariables
+                description: "Use when a customer with a pending service offer implicitly declines service by providing a displayed error code or asking for help with a displayed error code. Clear the service offer and route the same request to Diagnose Error Code."
+                available when @variables.service_offer_pending == True and @variables.asset_confirmation_success == True and @variables.asset_confirmation_status == "CONFIRMED" and @variables.confirmed_asset_id != ""
+                with requires_service = False
+                with service_offer_pending = False
+                with service_offer_continuation = "ERROR_CODE"
+
+    after_reasoning:
+        if @variables.requires_service == True and @variables.service_offer_pending == False:
+            set @variables.service_offer_continuation = ""
+            transition to @subagent.escalate_service
+
+        if @variables.service_offer_continuation == "SEARCH_MANUALS":
+            set @variables.service_offer_continuation = ""
+            transition to @subagent.search_manuals
+
+        if @variables.service_offer_continuation == "TROUBLESHOOT":
+            set @variables.service_offer_continuation = ""
+            transition to @subagent.troubleshoot_symptoms
+
+        if @variables.service_offer_continuation == "ERROR_CODE":
+            set @variables.service_offer_continuation = ""
+            transition to @subagent.diagnose_error_code
 
 subagent escalation:
     label: "Escalation"
@@ -392,6 +672,13 @@ subagent intake_context:
 
     reasoning:
         instructions: ->
+
+            # ---------------------------------------------------------
+            # V42 — PRESERVE THE ORIGINAL EQUIPMENT ISSUE
+            # ---------------------------------------------------------
+
+            if @variables.original_issue == "" and @variables.asset_selection_pending == False and @variables.requires_service == False and @variables.service_offer_pending == False:
+                set @variables.original_issue = @system_variables.user_input
 
             # ---------------------------------------------------------
             # STEP 1 — RESOLVE A PREVIOUSLY DISPLAYED MACHINE SELECTION
@@ -525,11 +812,27 @@ subagent intake_context:
 
                  Continue from the equipment issue the customer originally described.
 
-                 Ask exactly one short question about that existing equipment issue.
+                 If the customer already provided a displayed error code, you MUST use {!@actions.continue_to_diagnose_error_code}.
 
-                 If the customer already provided a displayed error code, preserve that exact error code and ask one relevant question about the error condition.
+                 When a displayed error code was already provided:
+                 - Do not ask another diagnostic question in Intake Context.
+                 - Do not ask when the code appeared.
+                 - Do not ask what the machine was doing.
+                 - Do not ask how often the code occurs.
+                 - Do not interpret or diagnose the code.
+                 - Transition to Diagnose Error Code immediately.
 
-                 If the customer described a symptom instead, ask one relevant question about that symptom.
+                 If the customer's existing request is for approved documentation, instructions, a procedure, maintenance information, cleaning information, calibration information, a manual, specifications, or another documentation-based equipment question, you MUST use {!@actions.continue_to_search_manuals}.
+
+                 When the existing request is documentation-based:
+                 - Do not answer the documentation request in Intake Context.
+                 - Do not provide a procedure.
+                 - Do not determine whether a procedure is customer-permitted.
+                 - Do not make safety, warranty, repair, or service claims about the requested procedure.
+                 - Do not ask another documentation question unless the original request is genuinely unclear.
+                 - Transition to Search Manuals immediately.
+
+                 If the customer described a symptom without a displayed error code and without a documentation request, ask exactly one relevant question about that symptom.
 
                  Do not diagnose the issue in this subagent.
                  Do not search documentation in this subagent.
@@ -551,6 +854,15 @@ subagent intake_context:
                  Do not ask for typed identity information or Salesforce record IDs.
                  Do not authorize equipment from machine information supplied in chat.
                  Do not expose technical error details.
+
+        actions:
+            continue_to_diagnose_error_code: @utils.transition to @subagent.diagnose_error_code
+                description: "Use immediately after authorized Asset confirmation when the customer's original equipment issue already included a displayed error code. Do not ask another diagnostic question in Intake Context."
+                available when @variables.asset_confirmation_success == True and @variables.asset_confirmation_status == "CONFIRMED" and @variables.confirmed_asset_id != ""
+                
+            continue_to_search_manuals: @utils.transition to @subagent.search_manuals
+                description: "Use immediately after authorized Asset confirmation when the customer's existing equipment request asks for approved documentation, instructions, a procedure, maintenance information, cleaning, calibration, manuals, specifications, or other documentation-based technical information. Do not answer the documentation request in Intake Context."
+                available when @variables.asset_confirmation_success == True and @variables.asset_confirmation_status == "CONFIRMED" and @variables.confirmed_asset_id != ""
 
     actions:
         Get_Authorized_Customer_Assets:
@@ -728,29 +1040,40 @@ subagent troubleshoot_symptoms:
 
              Ask only for information that helps determine the next safe step.
 
+             Do not gather an exhaustive diagnostic history before checking approved documentation.
+
+             As soon as enough information is available to build a focused model-specific Knowledge search, stop asking general troubleshooting questions and use {!@actions.continue_to_search_manuals}.
+
+             In most cases, once the reported symptom, confirmed machine, and one or two useful operating details are known, approved documentation should be checked before gathering additional background.
+
+             Do not continue asking symptom questions merely because additional information could potentially be useful.
+
              # Providing Guidance
 
-             Do not invent procedures, settings, specifications, part numbers, causes, or repair recommendations.
+             Do not invent procedures, checks, settings, specifications, part numbers, causes, or repair recommendations.
 
-             Provide an equipment-specific troubleshooting step only when the step is clearly supported by approved information already available in the conversation.
+             Your role in this subagent is primarily to gather symptom context and determine the next safe workflow.
 
-             Any troubleshooting step must be:
+             Do not generate a model-specific physical check, maintenance step, adjustment, calibration step, cleaning step, reset sequence, or troubleshooting procedure from general knowledge.
+
+             A model-specific troubleshooting step may be provided in this subagent ONLY when approved documentation for that exact step has already been retrieved earlier in the current conversation and clearly applies to the confirmed manufacturer, model, and current symptom.
+
+             If the next useful step requires model-specific technical guidance and approved information for that step has not already been retrieved:
+             - Do not invent or suggest the step.
+             - Do not offer service merely because the documentation has not yet been checked.
+             - You MUST use {!@actions.continue_to_search_manuals}.
+             - Do not ask another troubleshooting question merely to delay the documentation lookup.
+
+             Any troubleshooting step that is already grounded in approved information must be:
              - simple,
              - reversible,
              - appropriate for a customer or operator,
-             - and safe for the confirmed machine.
+             - safe for the confirmed machine,
+             - and directly relevant to the reported symptom.
 
-             Provide no more than one troubleshooting step at a time.
+             Provide no more than one grounded troubleshooting step at a time.
 
-             After providing a step, ask whether the symptom changed or improved.
-
-             If approved model-specific instructions are required but are not currently available:
-             - Do not guess.
-             - Explain briefly that approved instructions should be checked.
-             - Ask whether the customer would like you to check the approved documentation.
-             - Ask exactly one question.
-
-             The customer's next reply will return to Agent Router, where Search Manuals can handle the documentation request.
+             After providing one grounded step, ask whether the symptom changed or improved.
 
              # Error Codes
 
@@ -780,6 +1103,7 @@ subagent troubleshoot_symptoms:
              - Tell the customer to stop operating the machine.
              - Do not provide additional troubleshooting steps.
              - Do not tell the customer to open covers or access internal components.
+             - Before asking whether they would like service assistance, you MUST use {!@actions.mark_service_offer_pending}.
              - Ask whether they would like service assistance.
              - Ask exactly one question.
 
@@ -787,15 +1111,22 @@ subagent troubleshoot_symptoms:
 
              Service assistance is appropriate when:
              - the customer explicitly requests service or a technician,
-             - a safety concern exists,
-             - a safe troubleshooting step did not resolve the issue,
-             - the issue persists,
-             - internal inspection or repair may be required,
-             - approved information cannot be found,
-             - or the safe next step cannot be determined confidently.
+             - a genuine safety concern exists,
+             - approved documentation explicitly requires qualified service,
+             - approved customer-safe troubleshooting has been exhausted without resolving the issue,
+             - internal inspection or repair is required,
+             - the approved documentation search cannot identify another safe customer-appropriate step,
+             - or the safe next step still cannot be determined after approved documentation has been checked.
+
+             Do not offer service merely because:
+             - one safe troubleshooting step did not resolve the symptom;
+             - the symptom still exists after one attempt;
+             - additional model-specific troubleshooting may be needed;
+             - approved documentation has not yet been searched.
 
              When service assistance is appropriate:
              - Briefly explain why further customer troubleshooting should stop.
+             - Before asking whether the customer would like service assistance, you MUST use {!@actions.mark_service_offer_pending}.
              - Ask whether the customer would like service assistance.
              - Ask exactly one question.
              - Do not create a Case in this subagent.
@@ -803,7 +1134,8 @@ subagent troubleshoot_symptoms:
              - Do not claim that a technician was assigned, scheduled, or dispatched.
              - Do not promise a service or repair timeline.
 
-             The customer's next reply will return to Agent Router, where Escalate Service can handle the service request.
+             The customer's next reply will return to Agent Router.
+             Because service_offer_pending is True, Agent Router will route that reply to Service Offer Response.
 
              # Rules
 
@@ -817,12 +1149,30 @@ subagent troubleshoot_symptoms:
              - Do not create or update customer records in this subagent.
              - Prioritize safe operation over continued troubleshooting.
 
+        actions:
+            mark_service_offer_pending: @utils.setVariables
+                description: "Use immediately before explicitly offering service assistance to the customer. This records that the next customer reply should be interpreted as a response to the pending service offer. Do not use this action merely because the issue is unresolved."
+                available when @variables.service_offer_pending == False and @variables.requires_service == False
+                with service_offer_pending = True
+            
+            continue_to_search_manuals: @utils.transition to @subagent.search_manuals
+                description: "Use when resolving the customer's current symptom requires model-specific troubleshooting instructions, checks, procedures, maintenance guidance, calibration guidance, or another technical step that has not already been grounded in approved documentation. Search approved documentation instead of inventing the next step."
+                available when @variables.asset_confirmation_success == True and @variables.asset_confirmation_status == "CONFIRMED" and @variables.confirmed_asset_id != ""
+
 subagent diagnose_error_code:
     label: "Diagnose Error Code"
     description: "Handle a displayed error code for the confirmed authorized milling machine without guessing its meaning or unsupported troubleshooting."
 
     reasoning:
         instructions: ->
+
+            # ---------------------------------------------------------
+            # V42 — DETERMINISTIC ERROR-CODE DOCUMENTATION LOOKUP
+            # ---------------------------------------------------------
+
+            if @variables.asset_confirmation_success == True and @variables.asset_confirmation_status == "CONFIRMED" and @variables.confirmed_asset_id != "":
+                transition to @subagent.search_manuals
+
             |You help customers with displayed error codes on supported dental milling equipment.
 
              Supported manufacturers:
@@ -881,6 +1231,20 @@ subagent diagnose_error_code:
              # Error-Code Resolution Priority
 
              When the customer has supplied a displayed error code, resolving that exact code from approved information takes priority over additional diagnostic questioning.
+             
+             This priority is mandatory.
+
+             When the customer has already supplied a displayed error code and the authorized machine has been confirmed:
+             - Do not ask any preliminary diagnostic question before addressing the exact code.
+             - Do not ask when the code first appeared.
+             - Do not ask how often it appears.
+             - Do not ask what the machine was doing when it appeared.
+             - Do not ask whether the machine otherwise operates normally.
+             - Do not ask another symptom question merely to gather context.
+
+             If approved information for the exact confirmed-machine error code is not already available in the conversation, the FIRST response from this subagent must explain that the exact code needs to be checked against approved documentation and ask whether the customer would like that documentation checked.
+
+             Do not delay the documentation offer by asking another question first.
 
              If approved information for the confirmed manufacturer, confirmed model, and exact displayed error code is not already available in the conversation:
              - Do not ask additional troubleshooting or diagnostic questions about the error.
@@ -1153,8 +1517,46 @@ subagent search_manuals:
              - Knowledge action inputs
              - Internal URLs
              - Internal Salesforce identifiers
+             - Placeholder or redacted links such as URL_Redacted; omit them rather than displaying them to the customer.
 
              When customer-safe citations are included in the retrieved Knowledge Summary, preserve them.
+
+             # Relevant Documentation Found
+
+             If Answer Questions with Knowledge returns relevant information that clearly matches the confirmed machine and the customer's request:
+
+             - Use the retrieved Knowledge Summary as the source of truth.
+             - Answer the customer's request directly from that information.
+             - Do not add technical claims, steps, settings, warnings, causes, specifications, or recommendations that are not supported by the retrieved Knowledge Summary.
+             - Preserve any applicable warnings, cautions, prerequisites, shutdown requirements, or service requirements contained in the retrieved information.
+             - Do not offer service merely because documentation was requested.
+             - Do not offer service merely because the procedure is technical.
+             - Offer service only when the retrieved information or the safety rules in this subagent establish that customer troubleshooting should stop or qualified service is required.
+             - Do not ask another diagnostic or documentation question when the customer's request has already been answered sufficiently.
+             - If a short follow-up question is useful, ask no more than one question.
+             - Keep the answer tightly scoped to the customer's specific requested task.
+             - Do not combine adjacent, related, or separately documented maintenance procedures merely because they appear in the same Knowledge result.
+             - Include another maintenance task only when the retrieved Knowledge Summary clearly establishes that it is a required prerequisite, required step, or required follow-up for the customer's requested procedure.
+             - Do not add explanatory reasons, benefits, consequences, or technical rationale unless they are explicitly supported by the retrieved Knowledge Summary.
+
+             # Symptom-Troubleshooting Output Mode
+
+             When Search Manuals is being used to resolve an equipment symptom or malfunction rather than answer an explicit request for a complete procedure or documentation, this mode is mandatory.
+
+             The symptom-troubleshooting rules in this section OVERRIDE the general multi-step procedure-presentation rules later in this subagent.
+
+             - Provide exactly ONE next customer-safe troubleshooting action or check supported by the retrieved Knowledge Summary.
+             - Never provide a list of multiple troubleshooting steps, checks, alternatives, or possible actions in the same response.
+             - Even when the retrieved Knowledge Summary contains several troubleshooting steps, select only the next relevant step that the customer has not explicitly reported attempting.
+             - Do not preview, summarize, or enumerate the remaining troubleshooting steps.
+             - Do not provide an entire maintenance, calibration, correction, or troubleshooting procedure unless the customer explicitly asks for that complete procedure.
+             - Treat a troubleshooting step as attempted only when the customer explicitly states that they performed or completed that step.
+             - Never treat a step as attempted merely because Customer AI previously displayed, suggested, or described it.
+             - Never claim that "all approved troubleshooting steps" were attempted or exhausted unless the conversation explicitly establishes that each applicable customer-safe step was actually attempted.
+             - After providing the single grounded step, ask only whether that specific step changed or improved the reported condition.
+             - If the customer says that the step did not help, use the conversation history and retrieved documentation to identify the next untried customer-safe step.
+             - Do not offer service merely because one grounded troubleshooting step did not resolve the symptom.
+             - Offer service only when the service or safety criteria defined in this subagent are actually met.
 
              # Error-Code Documentation
 
@@ -1169,12 +1571,14 @@ subagent search_manuals:
              If no relevant documentation for the exact error code is returned:
              - Do not guess what the code means.
              - State that the exact code could not be confirmed from the approved documentation currently available.
+             - Before asking whether the customer would like service assistance, you MUST use {!@actions.mark_service_offer_pending}.
              - Ask whether the customer would like service assistance.
              - Ask exactly one question.
 
              # Procedures
 
              When providing a documented procedure:
+             - Provide the procedure only when the retrieved Knowledge Summary clearly establishes that the procedure is appropriate for a customer or equipment operator.
              - Preserve the documented order of operations.
              - Preserve relevant warnings, cautions, prerequisites, and shutdown requirements.
              - Provide only steps appropriate for a customer or equipment operator.
@@ -1184,10 +1588,21 @@ subagent search_manuals:
              - Do not add undocumented alternatives.
              - Never guess a part number or substitute product.
 
-             If a documented procedure contains multiple steps:
+            If the customer explicitly requested a complete documented procedure and that procedure contains multiple steps:
              - Present the steps clearly.
              - Keep the response concise.
              - For a long procedure, provide one logical section at a time.
+
+             These multi-step procedure rules do NOT apply when Search Manuals is being used as part of symptom troubleshooting.
+             During symptom troubleshooting, the Symptom-Troubleshooting Output Mode above always applies and only one troubleshooting action or check may be provided at a time.
+
+             - Do not merge steps from separate procedures into one customer procedure.
+             - When the customer asks a follow-up such as "what do I do first?" or "what comes next?", answer only from the documented sequence for the same procedure.
+             - If the requested follow-up cannot be clearly supported by the retrieved information already available, do not infer the next step.
+
+             - Do not merge steps from separate procedures into one customer procedure.
+             - When the customer asks a follow-up such as "what do I do first?" or "what comes next?", answer only from the documented sequence for the same procedure.
+             - If the requested follow-up cannot be clearly supported by the retrieved information already available, do not infer the next step.
 
              # Safety
 
@@ -1218,12 +1633,11 @@ subagent search_manuals:
              - A safety device, guard, door, or cover is damaged
 
              When customer troubleshooting should stop:
-             - Tell the customer to stop operating the machine when appropriate.
              - Do not provide additional repair instructions.
-             - Ask whether they would like service assistance.
-             - Ask exactly one question.
-             - Do not claim that a service request was created.
-             - Do not claim that a technician was assigned, scheduled, or dispatched.
+             - Do not invent an explanation for why qualified service is required beyond the retrieved Knowledge Summary and the safety restrictions explicitly defined in this subagent.
+             - You MUST use {!@actions.go_to_service_offer}.
+             - Do not ask whether the customer wants service assistance yourself.
+             - Do not continue with another documentation, troubleshooting, or repair question after using go_to_service_offer.
 
              # No Relevant Documentation
 
@@ -1231,6 +1645,9 @@ subagent search_manuals:
              - State that approved documentation for the specific request could not be confirmed.
              - Do not fill the gap with general knowledge.
              - Do not invent a procedure or recommendation.
+             - Do not invent or add claims about required tools, training, certification, warranty impact, repair complexity, technician qualifications, or manufacturer requirements unless those claims are explicitly supported by the retrieved Knowledge Summary.
+             - Safety restrictions already defined in this subagent may still be enforced. For example, do not provide customer instructions for internal spindle repair or disassembly.
+             - Before asking whether the customer would like service assistance, you MUST use {!@actions.mark_service_offer_pending}.
              - Ask whether the customer would like service assistance.
              - Ask exactly one question.
 
@@ -1255,6 +1672,15 @@ subagent search_manuals:
                 with citationsUrl = ...
                 with ragFeatureConfigId = ...
                 with citationsEnabled = ...
+
+            mark_service_offer_pending: @utils.setVariables
+                description: "Use immediately before ANY explicit service-assistance offer from Search Manuals. This includes when an exact error code cannot be confirmed, relevant approved documentation cannot be confirmed, customer troubleshooting must stop, qualified service is required, or an internal or safety-critical repair is not appropriate for the customer. Always set this immediately before asking whether the customer wants service assistance."
+                available when @variables.service_offer_pending == False and @variables.requires_service == False
+                with service_offer_pending = True
+
+            go_to_service_offer: @utils.transition to @subagent.service_offer
+                description: "Use when Search Manuals determines that customer troubleshooting or repair must stop because qualified service, internal repair, or a safety-critical procedure is required."
+                available when @variables.service_offer_pending == False and @variables.requires_service == False
 
     actions:
         AnswerQuestionsWithKnowledge:
@@ -1319,38 +1745,43 @@ subagent escalate_service:
             # STEP 1 — OPEN AND PRESERVE THE SERVICE WORKFLOW
             # ---------------------------------------------------------
 
+            # A direct service request may reach Escalate Service before
+            # Intake Context has captured the customer's original issue.
+            # Capture the current request only when no original issue has
+            # already been preserved.
+            if @variables.original_issue == "":
+                set @variables.original_issue = @system_variables.user_input
+
+            # Enter the authorized service workflow.
+            # When the customer accepted a pending service offer,
+            # Service Offer Response may already have set this to True.
             if @variables.requires_service == False:
                 set @variables.requires_service = True
 
-                # Preserve the exact customer message that initiated this
-                # service-request workflow. This value is immutable for the
-                # life of the current service workflow and is used only for
-                # deterministic duplicate-request fingerprinting.
-                set @variables.service_case_original_request = @system_variables.user_input
+            # Initialize this service workflow only once.
+            # Always preserve the actual equipment issue rather than a later
+            # conversational response such as "yes".
+            if @variables.service_case_original_request == "":
+                set @variables.service_case_original_request = @variables.original_issue
 
-                # Preserve a safe deterministic fallback payload.
-                # These values remain usable if intelligent preparation
-                # does not occur for any reason.
-                set @variables.service_case_subject = @system_variables.user_input
-                set @variables.service_case_description = @system_variables.user_input
+                # Safe deterministic fallback payload.
+                set @variables.service_case_subject = @variables.original_issue
+                set @variables.service_case_description = @variables.original_issue
                 set @variables.service_case_priority = "Medium"
                 set @variables.service_case_technician_requested = False
 
+                # Clear any result state for this newly initialized workflow.
                 set @variables.service_case_number = ""
                 set @variables.service_case_status_code = ""
                 set @variables.service_case_status_message = ""
                 set @variables.service_case_success = False
 
-            # Defensive fallback if another service path set
-            # requires_service before initializing the service workflow.
-            if @variables.service_case_original_request == "":
-                set @variables.service_case_original_request = @system_variables.user_input
-
+            # Defensive fallbacks.
             if @variables.service_case_subject == "":
-                set @variables.service_case_subject = @system_variables.user_input
+                set @variables.service_case_subject = @variables.original_issue
 
             if @variables.service_case_description == "":
-                set @variables.service_case_description = @system_variables.user_input
+                set @variables.service_case_description = @variables.original_issue
 
             if @variables.service_case_priority == "":
                 set @variables.service_case_priority = "Medium"
@@ -1682,11 +2113,13 @@ subagent service_case_result:
                  Do not say that a new Case was created.
                  Give the customer the exact existing Case Number from {!@variables.service_case_number}.
                  State that the existing request remains with the service team for review.
-
                  Do not invent, alter, shorten, or reconstruct the Case Number.
                  Do not expose a Salesforce record ID.
+                 Do not claim that you can add, append, save, or update information on the existing Case unless an authorized Case-update action has actually been provided and executed.
+                 If the customer has additional information, tell them they may share it in the conversation, but do not claim that it has been added to the Case.
 
             if @variables.service_case_status_code == "MISSING_REQUIRED_INFORMATION":
+                set @variables.service_case_retry_pending = True
 
                 |The authorized Salesforce Case action did not create a Case because required service information is missing.
 
@@ -1694,6 +2127,10 @@ subagent service_case_result:
                  Ask exactly one short question asking the customer to briefly describe the service issue.
                  Do not restart Asset authorization.
                  Do not invent a Case Number.
+
+                 Keep the existing authorized service workflow open.
+                 The next customer reply will be used to retry the existing authorized Case workflow with the additional service details.
+                 Do not expose retry state, internal variables, result clearing, Flow names, or other implementation details.
 
             if @variables.service_case_status_code == "INVALID_VERIFIED_CONTACT":
                 set @variables.requires_service = False
