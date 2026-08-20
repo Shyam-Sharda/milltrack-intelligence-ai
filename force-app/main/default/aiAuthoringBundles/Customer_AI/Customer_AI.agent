@@ -98,13 +98,13 @@ variables:
 
     service_offer_continuation: mutable string = ""
         label: "Service Offer Continuation"
-        description: "Temporary routing state used only when a customer responds to a pending service offer by clearly continuing with supported troubleshooting, documentation, or an error-code request instead of accepting service. Clear this value immediately after the continuation is routed."
+        description: "Temporary routing state used when a customer responds to a pending service offer by continuing with supported troubleshooting, documentation, error-code help, a factual update to an already authorized current Case, or by explicitly starting a new or different equipment issue. Supported continuation values include SEARCH_MANUALS, TROUBLESHOOT, ERROR_CODE, CASE_UPDATE, and NEW_ISSUE. Clear this value immediately after the continuation is routed."
 
     requires_service: mutable boolean = False
         description: "Workflow breadcrumb. True after the customer requests service, repair, a technician, or onsite assistance and while the authorized service-request workflow is still active."
 
     case_id: mutable string = ""
-        description: "Created Case Id when service is initiated"
+        description: "Internal authorized Case ID returned only by an authorized Case workflow, either the service Case workflow for a newly created or existing matching Case or the existing-Case resolver for a customer-referenced Case. Never display this value and never populate it from a customer-typed Salesforce record ID."
 
     authorized_asset_options: mutable string
         label: "Asset Options"
@@ -187,6 +187,50 @@ variables:
         label: "Service Case Retry Pending"
         description: "True only when the authorized Case action returned MISSING_REQUIRED_INFORMATION and the agent has asked the customer for the missing service description. On the customer's next turn, clear the previous result state and retry the existing authorized service workflow without restarting Asset authorization."
 
+    case_comment_success: mutable boolean = False
+        label: "Case Comment Success"
+        description: "Authoritative success result returned by the authorized Case Comment Flow. True only when the customer update was successfully appended to the authorized Case."
+
+    case_comment_status_code: mutable string = ""
+        label: "Case Comment Status Code"
+        description: "Authoritative result code returned by the authorized Case Comment Flow, such as COMMENT_CREATED, INVALID_VERIFIED_CONTACT, CASE_NOT_AUTHORIZED, MISSING_COMMENT, or SYSTEM_ERROR."
+
+    case_comment_status_message: mutable string = ""
+        label: "Case Comment Status Message"
+        description: "Customer-safe result message returned by the authorized Case Comment Flow." 
+
+    case_comment_case_number: mutable string = ""
+        label: "Case Comment Case Number"
+        description: "Customer-safe Case Number returned by the authorized Case Comment Flow after the Case has been reauthorized. Never invent or reconstruct this value."
+
+    requested_case_number: mutable string = ""
+        label: "Requested Case Number"
+        description: "Customer-visible Case Number supplied by the customer as a selector for an existing service request. This value is never authorization by itself and must be revalidated through the authorized Case resolver before any Case record is used."
+
+    case_resolution_success: mutable boolean = False
+        label: "Case Resolution Success"
+        description: "Authoritative success result returned by the authorized existing-Case resolver."
+
+    case_resolution_status_code: mutable string = ""
+        label: "Case Resolution Status Code"
+        description: "Authoritative result code returned by the existing-Case resolver, such as AUTHORIZED_CASE_FOUND, INVALID_VERIFIED_CONTACT, MISSING_CASE_NUMBER, CASE_NOT_AUTHORIZED, or SYSTEM_ERROR."
+
+    case_resolution_status_message: mutable string = ""
+        label: "Case Resolution Status Message"
+        description: "Customer-safe result message returned by the authorized existing-Case resolver."
+
+    case_resolution_case_number: mutable string = ""
+        label: "Resolved Case Number"
+        description: "Customer-safe Case Number returned after the existing Case has been reauthorized. Never invent or reconstruct this value."
+
+    case_resolution_case_status: mutable string = ""
+        label: "Resolved Case Status"
+        description: "Customer-safe Case Status returned by the authorized existing-Case resolver."
+
+    case_resolution_intent: mutable string = ""
+        label: "Case Resolution Intent"
+        description: "Purpose of the authorized existing-Case lookup. Supported values are UPDATE and STATUS. This controls only the customer-safe response after authorization succeeds and never bypasses Case authorization."
+
 knowledge:
     rag_feature_config_id: "ARFPC_1JDgK000008WRZxWAO"
     citations_url: ""
@@ -235,6 +279,118 @@ start_agent agent_router:
              # Routing Priority
 
              Apply these rules in order.
+
+             NEW / DIFFERENT ISSUE RULE
+
+                If the customer clearly and explicitly starts a new or different equipment problem from the issue currently being handled, use go_to_new_issue_reset.
+
+                This includes when the customer:
+                - says they have a different problem;
+                - says they need help with another machine;
+                - switches from the current machine to another machine;
+                - clearly abandons the current issue and introduces a separate equipment problem;
+                - asks to start over with a different equipment issue.
+
+                Examples include:
+                - "Actually, I need help with my other machine. It is showing error E123."
+                - "This is a different problem. My other mill won't start."
+                - "Forget the vibration issue. I need help with another machine."
+                - "I want to start a new issue for my other milling machine."
+
+                A new or different issue takes priority over Current Case Update routing.
+
+                Do NOT use go_to_new_issue_reset when the customer is:
+                - providing another fact about the same current problem;
+                - describing a worsening or additional symptom that clearly belongs to the same issue;
+                - answering a troubleshooting question;
+                - asking what else they can try for the current issue;
+                - providing an error code for the current issue;
+                - asking for documentation about the current issue;
+                - providing information intended for the current Case.
+
+                Examples that are NOT a new issue:
+                - "The vibration is getting worse."
+                - "It is now happening during every job."
+                - "I also noticed coolant leaking while the vibration happens."
+                - "The machine now shows error E123."
+                - "What else can I try?"
+
+                Use go_to_new_issue_reset only when the conversation already contains issue, Asset, service, or Case context that should no longer apply to the customer's newly introduced problem.
+
+             EXISTING CASE REFERENCE RULE
+
+             If @variables.case_id is blank and the customer explicitly provides a customer-visible Case Number because they want to either:
+             - add factual information to or update an existing service request; OR
+             - check the current status of that service request;
+
+             use go_to_resolve_existing_case.
+
+             Examples of UPDATE requests include:
+             - "I need to add something to Case 00001137."
+             - "I have more information for Case 00001137."
+             - "I want to update my service request 00001137."
+             - "I need to add another detail to Case 00001137."
+
+             Examples of STATUS requests include:
+             - "What is the status of Case 00001137?"
+             - "Can you check Case 00001137?"
+             - "Is Case 00001137 still open?"
+             - "What is happening with service request 00001137?"
+
+             A customer-provided Case Number is only a selector and is never authorization by itself.
+
+             Do not use go_to_resolve_existing_case when:
+             - @variables.case_id is already populated;
+             - the customer provides a Salesforce record ID instead of a customer-visible Case Number;
+             - the customer is asking to create a new service request;
+             - the customer does not reference an existing service request or Case Number;
+             - the customer is asking about assignment, scheduling, technician arrival, service history, or another service-record detail that CUST_06 does not return.
+
+             For a status request, only the exact customer-safe Case Status returned by the authorized resolver may be provided.
+
+             Never claim that the referenced Case belongs to the customer before the authorized Case resolver confirms it.
+             Never reveal Case status or any Case information before authorization succeeds.
+
+             CURRENT CASE UPDATE RULE
+
+             If @variables.case_id is populated, the current conversation already has a trusted authorized service Case available.
+
+             When the customer's current message clearly provides new factual information about that same current service issue, use go_to_current_case_update.
+
+             When @variables.case_id is populated and the customer's latest message is a declarative factual statement about the same current service issue, with no request for troubleshooting, documentation, error-code interpretation, new service, or human assistance, you MUST use {!@actions.go_to_current_case_update}.
+
+             This rule applies even when the factual update contains symptoms, operating behavior, severity changes, timing information, or the absence of an error code.
+
+             Do not route a factual Case update to Troubleshoot Symptoms merely because the message describes machine behavior or symptoms.
+
+             Examples:
+             - "It powers on, begins startup, and then stops before I can start a milling job. There is no error code displayed."
+             - "The noise now happens halfway through every job."
+             - "There are still no warning messages."
+             - "The machine stopped completely this afternoon."
+
+             Examples of factual Case updates include:
+             - "The tapping noise has become much louder since this morning."
+             - "The machine has now stopped completely."
+             - "I also noticed coolant leaking from the left side."
+             - "The error started happening every time I run a job."
+             - "We tried the approved cleaning step and the problem is still happening."
+
+             Use go_to_current_case_update only when the customer is supplying information that should be recorded as an update to the current service request.
+
+             Do NOT use go_to_current_case_update when the customer:
+             - asks a troubleshooting question;
+             - asks what else they can try;
+             - asks about an error code;
+             - asks for approved instructions, documentation, maintenance information, or a procedure;
+             - asks a general question about the current machine;
+             - explicitly describes a new or different equipment problem;
+             - asks to create another service request;
+             - asks to speak with a human.
+
+             A message occurring after Case creation is not automatically a Case update.
+
+             If the message is a request for troubleshooting, documentation, error-code assistance, service assistance, or human assistance, continue using the existing routing rules instead.
 
              1. If the customer explicitly asks to speak with a live person, representative, support agent, customer support, or human, use go_to_escalation.
 
@@ -316,11 +472,17 @@ start_agent agent_router:
 
              A short confirmation or numbered machine selection is not a new troubleshooting request.
 
-             5. After an authorized machine has been confirmed:
-             - Use go_to_escalate_service for an explicit request for service, repair, a technician, or onsite assistance.
-             - Use go_to_diagnose_error_code when the customer provides a displayed equipment error code.
-             - Use go_to_search_manuals when the customer requests approved instructions, maintenance information, cleaning, calibration, procedures, manuals, or other documentation.
-             - Use go_to_troubleshoot_symptoms for equipment symptoms or malfunctions without a displayed error code and without a higher-priority service or documentation request.
+             5. After an authorized machine has been confirmed, apply the following rules ONLY when the customer's current message continues the same machine / issue context.
+
+                If the customer clearly switches to another machine or starts a new / different equipment problem, the NEW / DIFFERENT ISSUE RULE above takes priority over every rule in this section. You MUST use go_to_new_issue_reset before handling any symptom, error code, documentation request, or service request for that new problem.
+
+                Do not reuse the currently confirmed Asset merely because the new message contains an error code, symptom, documentation request, or service intent.
+
+                For the SAME current machine / issue:
+                - Use go_to_escalate_service for an explicit request for service, repair, a technician, or onsite assistance.
+                - Use go_to_diagnose_error_code when the customer provides a displayed equipment error code for the current machine / issue.
+                - Use go_to_search_manuals when the customer requests approved instructions, maintenance information, cleaning, calibration, procedures, manuals, or other documentation for the current machine / issue.
+                - Use go_to_troubleshoot_symptoms for equipment symptoms or malfunctions on the current machine / issue without a displayed error code and without a higher-priority service or documentation request.
 
              6. Use go_to_off_topic only when the customer's request is clearly unrelated to supported MillTrack dental milling equipment or service assistance.
 
@@ -339,24 +501,36 @@ start_agent agent_router:
              - Select exactly one available transition.
 
         actions:
+            go_to_new_issue_reset: @utils.transition to @subagent.new_issue_reset
+                description: "Use only when the customer clearly starts a new or different equipment problem and existing issue, Asset, service, or Case conversation state must be discarded before handling the new request. Do not use for additional facts, worsening symptoms, troubleshooting responses, or updates that belong to the current issue."
+                available when (@variables.original_issue is not None and @variables.original_issue != "") or (@variables.case_id is not None and @variables.case_id != "") or @variables.asset_confirmation_success == True or (@variables.confirmed_asset_id is not None and @variables.confirmed_asset_id != "")
+
+            go_to_resolve_existing_case: @utils.transition to @subagent.resolve_existing_case
+                 description: "Use when no trusted current Case is available and the customer explicitly provides a customer-visible Case Number either to add factual information to that service request or to check its current status. The typed Case Number is only a selector; Resolve Existing Case must reauthorize it against the authenticated customer before any Case information, including status, is used."
+                 available when (@variables.case_id is None or @variables.case_id == "") and @variables.ContactId is not None and @variables.ContactId != ""        
+
+            go_to_current_case_update: @utils.transition to @subagent.current_case_update
+                description: "Use only when a trusted current Case already exists in case_id and the customer clearly provides new factual information about that same current service issue to be recorded on the Case. Do not use for troubleshooting questions, documentation requests, error-code help, general questions, human escalation, or an explicitly new/different equipment problem. When case_id is populated, a declarative factual statement about the same current issue takes priority over symptom-troubleshooting routing unless the customer explicitly asks for troubleshooting or another supported action."
+                available when @variables.case_id is not None and @variables.case_id != ""
+
             go_to_intake_context: @utils.transition to @subagent.intake_context
                 description: "REQUIRED first workflow for any supported equipment-related request when an authorized Asset has not yet been confirmed. This includes symptoms, malfunctions, unusual noises, grinding, vibration, poor milling quality, stoppages, displayed error codes, documentation requests, maintenance questions, and replies selecting or confirming a previously displayed machine. When the customer reports an equipment problem and the Asset is not confirmed, transition to Intake Context before asking troubleshooting questions or providing equipment assistance."
                 available when (@variables.asset_confirmation_success == False or @variables.asset_confirmation_status != "CONFIRMED" or @variables.confirmed_asset_id == "")
 
             go_to_troubleshoot_symptoms: @utils.transition to @subagent.troubleshoot_symptoms
-                description: "Handle symptoms or equipment malfunctions after the affected authorized machine has been confirmed."
+                description: "Handle symptoms or equipment malfunctions only when they belong to the same currently confirmed machine / issue. Never use this transition when the customer explicitly switches to another machine or starts a new / different equipment problem. In that situation use New Issue Reset first."
                 available when @variables.asset_confirmation_success == True and @variables.asset_confirmation_status == "CONFIRMED" and @variables.confirmed_asset_id != ""
 
             go_to_diagnose_error_code: @utils.transition to @subagent.diagnose_error_code
-                description: "Handle a displayed equipment error code after the affected authorized machine has been confirmed."
+                description: "Handle a displayed equipment error code only when it belongs to the same currently confirmed machine / issue. Never use this transition when the customer explicitly switches to another machine or starts a new / different equipment problem, even if the new message contains an error code. In that situation use New Issue Reset first."
                 available when @variables.asset_confirmation_success == True and @variables.asset_confirmation_status == "CONFIRMED" and @variables.confirmed_asset_id != ""
 
             go_to_search_manuals: @utils.transition to @subagent.search_manuals
-                description: "Retrieve approved documentation or procedures after the affected authorized machine has been confirmed."
+                description: "Retrieve approved documentation or procedures only when the request belongs to the same currently confirmed machine / issue. Never use this transition when the customer explicitly switches to another machine or starts a new / different equipment problem. In that situation use New Issue Reset first."
                 available when @variables.asset_confirmation_success == True and @variables.asset_confirmation_status == "CONFIRMED" and @variables.confirmed_asset_id != ""
 
             go_to_escalate_service: @utils.transition to @subagent.escalate_service
-                description: "Use ONLY when the customer explicitly requests service, repair, a technician, onsite assistance, or creation of a service request. Never use this transition for a symptom, malfunction, error code, unusual noise, grinding, vibration, failure, or other equipment problem by itself. A reported equipment problem is not service intent unless the customer clearly asks for service."
+                description: "Use ONLY when the customer explicitly requests service, repair, a technician, onsite assistance, or creation of a service request for the same current machine / issue, or when no prior issue context exists yet. Never use this transition to carry a service request for a newly introduced different machine or different equipment problem through the old Asset context. When the customer explicitly switches machines or starts a new / different equipment problem, use New Issue Reset first. A reported symptom, malfunction, error code, unusual noise, grinding, vibration, failure, or other equipment problem by itself is not service intent."
 
             go_to_escalation: @utils.transition to @subagent.escalation
                 description: "Use when the customer explicitly requests assistance from a live human."
@@ -366,6 +540,78 @@ start_agent agent_router:
 
             go_to_ambiguous_question: @utils.transition to @subagent.ambiguous_question
                 description: "Use only when the customer's actual request cannot be determined from the conversation."
+
+subagent new_issue_reset:
+    label: "New Issue Reset"
+    description: "Clear issue-specific, Asset-specific, service-workflow, and Case-specific conversation state when the customer explicitly starts a new or different equipment problem, while preserving credential-verified customer identity."
+
+    reasoning:
+        instructions: ->
+
+            # ---------------------------------------------------------
+            # V67 — NEW / DIFFERENT ISSUE RESET
+            # ---------------------------------------------------------
+
+            # Preserve credential-verified Messaging identity.
+            # Do NOT clear EndUserId, RoutableId, ContactId,
+            # EndUserLanguage, or VerifiedCustomerId.
+
+            # Clear issue-specific state.
+            set @variables.manufacturer = ""
+            set @variables.model = ""
+            set @variables.serial_number = ""
+            set @variables.symptoms = ""
+            set @variables.error_code = ""
+            set @variables.original_issue = ""
+
+            # Clear service-offer / active-service state.
+            set @variables.service_offer_pending = False
+            set @variables.service_offer_continuation = ""
+            set @variables.requires_service = False
+
+            # Clear trusted current Case context.
+            set @variables.case_id = ""
+
+            # Clear authorized Asset lookup / confirmation state.
+            set @variables.authorized_asset_options = ""
+            set @variables.authorized_asset_references = ""
+            set @variables.asset_lookup_message = ""
+            set @variables.asset_lookup_status = ""
+            set @variables.asset_lookup_success = False
+            set @variables.authorized_asset_count = 0
+            set @variables.asset_selection_pending = False
+            set @variables.confirmed_asset_id = ""
+            set @variables.asset_confirmation_status = ""
+            set @variables.asset_confirmation_success = False
+
+            # Clear service Case workflow state.
+            set @variables.service_case_original_request = ""
+            set @variables.service_case_subject = ""
+            set @variables.service_case_description = ""
+            set @variables.service_case_priority = ""
+            set @variables.service_case_technician_requested = False
+            set @variables.service_case_number = ""
+            set @variables.service_case_status_code = ""
+            set @variables.service_case_status_message = ""
+            set @variables.service_case_success = False
+            set @variables.service_case_retry_pending = False
+
+            # Clear Case Comment result state.
+            set @variables.case_comment_success = False
+            set @variables.case_comment_status_code = ""
+            set @variables.case_comment_status_message = ""
+            set @variables.case_comment_case_number = ""
+
+            # Clear existing-Case resolver state.
+            set @variables.requested_case_number = ""
+            set @variables.case_resolution_success = False
+            set @variables.case_resolution_status_code = ""
+            set @variables.case_resolution_status_message = ""
+            set @variables.case_resolution_case_number = ""
+            set @variables.case_resolution_case_status = ""
+            set @variables.case_resolution_intent = ""
+
+            transition to @subagent.intake_context
 
 subagent service_offer:
     label: "Service Offer"
@@ -378,11 +624,22 @@ subagent service_offer:
             # DETERMINISTIC SERVICE-OFFER STATE
             # ---------------------------------------------------------
 
-            if @variables.service_offer_pending == False and @variables.requires_service == False:
+            if @variables.case_id is not None and @variables.case_id != "":
+                |An authorized service Case already exists for the current issue.
+
+                 Do not create, restart, or re-enter the service-request workflow.
+                 Do not ask whether the customer wants service assistance again.
+                 Tell the customer briefly that their existing service request is already open.
+                 If @variables.service_case_number is populated, give the exact Case Number from {!@variables.service_case_number}.
+                 Do not invent or reconstruct a Case Number.
+                 Do not claim that a technician has been assigned, scheduled, or dispatched.
+                 Ask no more than one question.
+
+            if (@variables.case_id is None or @variables.case_id == "") and @variables.service_offer_pending == False and @variables.requires_service == False:
                 set @variables.service_offer_pending = True
                 set @variables.service_offer_continuation = ""
 
-            |Service assistance is appropriate for the customer's current equipment issue.
+            |When no authorized current service Case exists, service assistance is appropriate for the customer's current equipment issue.
 
              Briefly explain why further customer troubleshooting, maintenance, or repair should stop when that reason is already established in the conversation.
 
@@ -390,13 +647,13 @@ subagent service_offer:
 
              Do not invent additional claims about failed components, required tools, technician training, certification, warranty consequences, repair complexity, or manufacturer requirements.
 
-             Ask whether the customer would like service assistance.
+             Ask whether the customer would like service assistance only when @variables.case_id is blank.
 
              Ask exactly one question.
 
              Do not create a Case.
 
-             Do not claim that a service request already exists or has been created.
+             Do not claim that a service request already exists or has been created unless @variables.case_id is populated from the authorized service workflow.
 
              Do not claim that a technician has been assigned, scheduled, or dispatched.
 
@@ -408,10 +665,8 @@ subagent service_offer:
 
              Do not expose internal state, variables, Salesforce IDs, or implementation details.
 
-             The customer's next reply will return to Agent Router.
+             When @variables.case_id is blank and service_offer_pending is True, the customer's next reply will return to Agent Router and be routed to Service Offer Response.
 
-             Because service_offer_pending is True, Agent Router will route that reply to Service Offer Response.
-                
 subagent service_offer_response:
     label: "Service Offer Response"
     description: "Interpret the customer's response when MillTrack Customer AI has already offered service assistance and is waiting for an answer."
@@ -423,6 +678,55 @@ subagent service_offer_response:
              The customer's latest message is a response to the service offer that was already presented.
 
              Use the customer's current message together with the immediately preceding conversation context.
+
+             # NEW / DIFFERENT ISSUE
+
+             If the customer's latest message clearly starts a new or different equipment problem from the issue for which service was offered, you MUST use {!@actions.continue_with_new_issue}.
+
+             This includes when the customer:
+             - says they have a different problem;
+             - switches to another machine;
+             - says they need help with their other machine;
+             - abandons the current issue and introduces a separate equipment problem;
+             - asks to start over with a different issue.
+
+             Examples:
+             - "Actually, I need help with my other machine."
+             - "Forget this issue. My other mill is showing error E123."
+             - "This is a different problem."
+             - "Never mind about that one. My second machine won't start."
+
+             A clear new or different issue takes priority over:
+             - accepting the old service offer;
+             - declining the old service offer;
+             - documentation continuation;
+             - troubleshooting continuation;
+             - error-code continuation;
+             - Current Case Update.
+
+             Do not use continue_with_new_issue when the customer is merely providing another symptom, error code, troubleshooting result, or factual update about the same current equipment problem.
+
+             # CURRENT CASE FACTUAL UPDATE
+
+             If @variables.case_id is populated, an authorized service Case already exists in the current conversation.
+
+             If the customer's latest message provides new factual information about that same current service issue instead of accepting or declining the service offer, you MUST use {!@actions.continue_with_case_update}.
+
+             Examples include:
+             - "It now happens about halfway through every job."
+             - "The vibration is getting worse."
+             - "The noise now happens every time I mill."
+             - "The machine stopped completely this afternoon."
+             - "I also noticed coolant leaking."
+
+             A factual update takes priority over treating the message as an acceptance of the pending service offer.
+
+             Do not use continue_with_case_update for:
+             - a simple yes or no;
+             - a troubleshooting question;
+             - a documentation request;
+             - an error-code question;
+             - an explicitly new or different equipment problem.
 
              # ACCEPTING SERVICE
 
@@ -473,6 +777,21 @@ subagent service_offer_response:
 
              # DECLINING SERVICE
 
+             An explicit negative response to the service offer takes priority unless the same customer message also contains a separate, affirmative request for another supported action.
+
+             Statements such as:
+             - "No, I don't want to create a service request."
+             - "No, I don't want service right now."
+             - "Not right now."
+             - "No thanks, I don't need a technician."
+             - "I don't want to open a service request."
+
+             are clear declines.
+
+             The words "service", "technician", "service request", or other service-related terms appearing inside a negative statement do NOT make the message a continuation request.
+
+             Do not route a clear decline back to Search Manuals, Troubleshoot Symptoms, Diagnose Error Code, or another equipment-help subagent unless the customer separately asks for that help in the same message.
+
              If the customer clearly declines the pending service offer without also asking to continue with a supported equipment request, including responses such as:
              - no
              - no thanks
@@ -512,6 +831,13 @@ subagent service_offer_response:
              - Ask no more than one question.
 
         actions:
+            continue_with_new_issue: @utils.setVariables
+                description: "Use when the customer clearly abandons the issue for which service was offered and starts a new or different equipment problem. Clear the old pending service offer and route the same customer message through New Issue Reset."
+                available when @variables.service_offer_pending == True
+                with requires_service = False
+                with service_offer_pending = False
+                with service_offer_continuation = "NEW_ISSUE"
+
             accept_service_offer: @utils.setVariables
                 description: "Use only when the customer clearly accepts the pending service offer. Mark service as requested and clear the pending service offer."
                 available when @variables.service_offer_pending == True
@@ -525,6 +851,13 @@ subagent service_offer_response:
                 with requires_service = False
                 with service_offer_pending = False
                 with service_offer_continuation = ""
+
+            continue_with_case_update: @utils.setVariables
+                description: "Use when a trusted current Case already exists and the customer's reply to a pending service offer instead provides new factual information about that same service issue. Clear the pending service offer and route the factual message to Current Case Update."
+                available when @variables.service_offer_pending == True and @variables.case_id is not None and @variables.case_id != ""
+                with requires_service = False
+                with service_offer_pending = False
+                with service_offer_continuation = "CASE_UPDATE"
 
             continue_with_documentation: @utils.setVariables
                 description: "Use when a customer with a pending service offer implicitly declines service by clearly asking for approved documentation, instructions, maintenance, cleaning, calibration, a procedure, specifications, or manual information. Clear the service offer and route the same request to Search Manuals."
@@ -548,9 +881,17 @@ subagent service_offer_response:
                 with service_offer_continuation = "ERROR_CODE"
 
     after_reasoning:
+        if @variables.service_offer_continuation == "NEW_ISSUE":
+            set @variables.service_offer_continuation = ""
+            transition to @subagent.new_issue_reset
+
         if @variables.requires_service == True and @variables.service_offer_pending == False:
             set @variables.service_offer_continuation = ""
             transition to @subagent.escalate_service
+
+        if @variables.service_offer_continuation == "CASE_UPDATE":
+            set @variables.service_offer_continuation = ""
+            transition to @subagent.current_case_update
 
         if @variables.service_offer_continuation == "SEARCH_MANUALS":
             set @variables.service_offer_continuation = ""
@@ -1044,6 +1385,15 @@ subagent troubleshoot_symptoms:
 
              As soon as enough information is available to build a focused model-specific Knowledge search, stop asking general troubleshooting questions and use {!@actions.continue_to_search_manuals}.
 
+             When the confirmed machine, reported symptom, and at least one relevant operating detail are already known, and no higher-priority error-code or safety condition applies, you MUST use {!@actions.continue_to_search_manuals} during the current turn.
+
+             Do not ask the customer whether they want you to check approved documentation.
+             Do not ask permission to search for the next troubleshooting step.
+             Do not present service assistance as an alternative merely because further model-specific guidance requires documentation.
+             Search the approved documentation automatically.
+
+             Only offer service when the service-assistance criteria below are actually met.
+
              In most cases, once the reported symptom, confirmed machine, and one or two useful operating details are known, approved documentation should be checked before gathering additional background.
 
              Do not continue asking symptom questions merely because additional information could potentially be useful.
@@ -1073,7 +1423,7 @@ subagent troubleshoot_symptoms:
 
              Provide no more than one grounded troubleshooting step at a time.
 
-             After providing one grounded step, ask whether the symptom changed or improved.
+             After providing one grounded troubleshooting step, ask exactly one follow-up question. The question may ask for the result of the check OR whether the symptom changed, but never both in the same turn. Use only one interrogative sentence.
 
              # Error Codes
 
@@ -1084,6 +1434,22 @@ subagent troubleshoot_symptoms:
              - Ask whether they would like help with the displayed error code if necessary.
 
              The customer's next reply will return to Agent Router, where Diagnose Error Code can handle the request.
+
+             # EXISTING SERVICE CASE OVERRIDE
+
+             If @variables.case_id is populated, an authorized service Case already exists for the current issue.
+
+             When further customer troubleshooting should stop and @variables.case_id is populated:
+             - Do not use mark_service_offer_pending.
+             - Do not ask whether the customer wants service assistance.
+             - Do not create, restart, or re-enter the service-request workflow.
+             - Briefly explain why further customer troubleshooting should stop using only the reason already established in the conversation, approved documentation, or safety rules.
+             - Tell the customer that their existing service request is already open.
+             - If @variables.service_case_number is populated, give the exact Case Number from {!@variables.service_case_number}.
+             - Do not invent or reconstruct a Case Number.
+             - Do not claim that a technician has been assigned, scheduled, or dispatched.
+             - The customer may continue to provide factual details about the current issue, which can be handled as updates to the existing Case.
+             - Ask no more than one question.
 
              # Safety
 
@@ -1103,8 +1469,9 @@ subagent troubleshoot_symptoms:
              - Tell the customer to stop operating the machine.
              - Do not provide additional troubleshooting steps.
              - Do not tell the customer to open covers or access internal components.
-             - Before asking whether they would like service assistance, you MUST use {!@actions.mark_service_offer_pending}.
-             - Ask whether they would like service assistance.
+             - If @variables.case_id is populated, follow the Existing Service Case Override above and do not offer service again.
+             - If @variables.case_id is blank, you MUST use {!@actions.mark_service_offer_pending} before asking whether the customer would like service assistance.
+             - When @variables.case_id is blank, ask whether they would like service assistance.
              - Ask exactly one question.
 
              # Service Assistance
@@ -1126,16 +1493,15 @@ subagent troubleshoot_symptoms:
 
              When service assistance is appropriate:
              - Briefly explain why further customer troubleshooting should stop.
-             - Before asking whether the customer would like service assistance, you MUST use {!@actions.mark_service_offer_pending}.
-             - Ask whether the customer would like service assistance.
+             - If @variables.case_id is populated, follow the Existing Service Case Override above and do not offer service again.
+             - If @variables.case_id is blank, you MUST use {!@actions.mark_service_offer_pending} before asking whether the customer would like service assistance.
+             - When @variables.case_id is blank, ask whether the customer would like service assistance.
              - Ask exactly one question.
              - Do not create a Case in this subagent.
-             - Do not claim that a service request was created.
              - Do not claim that a technician was assigned, scheduled, or dispatched.
              - Do not promise a service or repair timeline.
 
-             The customer's next reply will return to Agent Router.
-             Because service_offer_pending is True, Agent Router will route that reply to Service Offer Response.
+             When @variables.case_id is blank and service_offer_pending is True, the customer's next reply will return to Agent Router and be routed to Service Offer Response.
 
              # Rules
 
@@ -1152,7 +1518,7 @@ subagent troubleshoot_symptoms:
         actions:
             mark_service_offer_pending: @utils.setVariables
                 description: "Use immediately before explicitly offering service assistance to the customer. This records that the next customer reply should be interpreted as a response to the pending service offer. Do not use this action merely because the issue is unresolved."
-                available when @variables.service_offer_pending == False and @variables.requires_service == False
+                available when @variables.service_offer_pending == False and @variables.requires_service == False and (@variables.case_id is None or @variables.case_id == "")
                 with service_offer_pending = True
             
             continue_to_search_manuals: @utils.transition to @subagent.search_manuals
@@ -1571,8 +1937,9 @@ subagent search_manuals:
              If no relevant documentation for the exact error code is returned:
              - Do not guess what the code means.
              - State that the exact code could not be confirmed from the approved documentation currently available.
-             - Before asking whether the customer would like service assistance, you MUST use {!@actions.mark_service_offer_pending}.
-             - Ask whether the customer would like service assistance.
+             - If @variables.case_id is populated, do not offer service again; tell the customer that their existing service request is already open and, if available, give the exact Case Number from {!@variables.service_case_number}.
+             - If @variables.case_id is blank, you MUST use {!@actions.mark_service_offer_pending} before asking whether the customer would like service assistance.
+             - When @variables.case_id is blank, ask whether the customer would like service assistance.
              - Ask exactly one question.
 
              # Procedures
@@ -1600,9 +1967,23 @@ subagent search_manuals:
              - When the customer asks a follow-up such as "what do I do first?" or "what comes next?", answer only from the documented sequence for the same procedure.
              - If the requested follow-up cannot be clearly supported by the retrieved information already available, do not infer the next step.
 
-             - Do not merge steps from separate procedures into one customer procedure.
-             - When the customer asks a follow-up such as "what do I do first?" or "what comes next?", answer only from the documented sequence for the same procedure.
-             - If the requested follow-up cannot be clearly supported by the retrieved information already available, do not infer the next step.
+             # EXISTING SERVICE CASE OVERRIDE
+
+             If @variables.case_id is populated, an authorized service Case already exists for the current issue.
+
+             When approved documentation indicates that customer troubleshooting should stop, qualified service is required, no safe customer-appropriate step can be confirmed, or relevant documentation cannot be confirmed, and @variables.case_id is populated:
+             - Do not use mark_service_offer_pending.
+             - Do not use go_to_service_offer.
+             - Do not ask whether the customer wants service assistance.
+             - Do not create, restart, or re-enter the service-request workflow.
+             - Briefly explain the documentation or safety result using only facts supported by the retrieved Knowledge Summary or existing safety rules.
+             - Tell the customer that their existing service request is already open.
+             - If @variables.service_case_number is populated, give the exact Case Number from {!@variables.service_case_number}.
+             - Do not invent or reconstruct a Case Number.
+             - Do not claim that a technician has been assigned, scheduled, or dispatched.
+             - The customer may continue to provide factual details about the current issue for the existing service request.
+             - Ask no more than one question.
+             - Do not state that a technician, qualified technician, engineer, or other specific person will review the Case unless an authorized Salesforce action explicitly confirms that fact. Say only that the existing service request remains with the service team for review.
 
              # Safety
 
@@ -1635,8 +2016,9 @@ subagent search_manuals:
              When customer troubleshooting should stop:
              - Do not provide additional repair instructions.
              - Do not invent an explanation for why qualified service is required beyond the retrieved Knowledge Summary and the safety restrictions explicitly defined in this subagent.
-             - You MUST use {!@actions.go_to_service_offer}.
-             - Do not ask whether the customer wants service assistance yourself.
+             - If @variables.case_id is populated, follow the Existing Service Case Override above and do not offer service again.
+             - If @variables.case_id is blank, you MUST use {!@actions.go_to_service_offer}.
+             - When @variables.case_id is blank, do not ask whether the customer wants service assistance yourself; Service Offer owns that question.
              - Do not continue with another documentation, troubleshooting, or repair question after using go_to_service_offer.
 
              # No Relevant Documentation
@@ -1647,8 +2029,9 @@ subagent search_manuals:
              - Do not invent a procedure or recommendation.
              - Do not invent or add claims about required tools, training, certification, warranty impact, repair complexity, technician qualifications, or manufacturer requirements unless those claims are explicitly supported by the retrieved Knowledge Summary.
              - Safety restrictions already defined in this subagent may still be enforced. For example, do not provide customer instructions for internal spindle repair or disassembly.
-             - Before asking whether the customer would like service assistance, you MUST use {!@actions.mark_service_offer_pending}.
-             - Ask whether the customer would like service assistance.
+             - If @variables.case_id is populated, follow the Existing Service Case Override above and do not offer service again.
+             - If @variables.case_id is blank, you MUST use {!@actions.mark_service_offer_pending} before asking whether the customer would like service assistance.
+             - When @variables.case_id is blank, ask whether the customer would like service assistance.
              - Ask exactly one question.
 
              # Rules
@@ -1675,12 +2058,12 @@ subagent search_manuals:
 
             mark_service_offer_pending: @utils.setVariables
                 description: "Use immediately before ANY explicit service-assistance offer from Search Manuals. This includes when an exact error code cannot be confirmed, relevant approved documentation cannot be confirmed, customer troubleshooting must stop, qualified service is required, or an internal or safety-critical repair is not appropriate for the customer. Always set this immediately before asking whether the customer wants service assistance."
-                available when @variables.service_offer_pending == False and @variables.requires_service == False
+                available when @variables.service_offer_pending == False and @variables.requires_service == False and (@variables.case_id is None or @variables.case_id == "")
                 with service_offer_pending = True
 
             go_to_service_offer: @utils.transition to @subagent.service_offer
                 description: "Use when Search Manuals determines that customer troubleshooting or repair must stop because qualified service, internal repair, or a safety-critical procedure is required."
-                available when @variables.service_offer_pending == False and @variables.requires_service == False
+                available when @variables.service_offer_pending == False and @variables.requires_service == False and (@variables.case_id is None or @variables.case_id == "")
 
     actions:
         AnswerQuestionsWithKnowledge:
@@ -1740,7 +2123,40 @@ subagent escalate_service:
 
     reasoning:
         instructions: ->
+            # ---------------------------------------------------------
+            # V68 — NEW / DIFFERENT ISSUE ESCAPE
+            # ---------------------------------------------------------
 
+            |Before continuing the existing service-request workflow, determine whether the customer's current message clearly abandons that issue and starts a new or different equipment problem.
+
+             If the customer clearly:
+             - switches to another machine;
+             - says they have a different equipment problem;
+             - abandons the current service issue and introduces a separate problem;
+             - asks to start over with another machine or issue;
+
+             you MUST use {!@actions.go_to_new_issue_reset} immediately.
+
+             Examples:
+             - "Actually, I need help with my other machine."
+             - "Never mind about this one. My other mill won't start."
+             - "This is a different problem. The second machine is showing error E123."
+             - "Forget this service request. I need help with another machine."
+
+             A clear new or different issue takes priority over continuing or retrying the existing service-request workflow.
+
+             Do NOT use go_to_new_issue_reset when the customer is:
+             - providing missing information requested for the same service request;
+             - adding another fact about the same problem;
+             - confirming the same machine;
+             - accepting service for the same issue;
+             - describing a worsening symptom that belongs to the same issue.
+
+             When go_to_new_issue_reset is used:
+             - do not initialize or overwrite service_case_original_request;
+             - do not prepare a Case payload;
+             - do not create or reuse a Case;
+             - do not continue the previous service workflow.
             # ---------------------------------------------------------
             # STEP 1 — OPEN AND PRESERVE THE SERVICE WORKFLOW
             # ---------------------------------------------------------
@@ -1969,6 +2385,10 @@ subagent escalate_service:
              after reasoning and its result is authoritative.
 
         actions:
+            go_to_new_issue_reset: @utils.transition to @subagent.new_issue_reset
+                description: "Use only when the customer clearly abandons the service issue currently being processed and starts a new or different equipment problem or switches to another machine. Never use for additional information, missing service details, worsening symptoms, or continuation of the same service request."
+                available when @variables.requires_service == True or @variables.service_case_original_request != "" or (@variables.case_id is not None and @variables.case_id != "")
+
             prepare_service_case_payload: @utils.setVariables
                 description: "Prepare the factual service Case payload and exact error-code state from the customer's conversation. Use only explicitly known facts. Never diagnose, invent, or infer missing facts. If error_code is already populated, preserve it exactly. If it is blank and the customer explicitly reported an error code, capture that code character-for-character. If no error code was explicitly reported, leave error_code blank. For Description, omit missing information entirely. Do not infer machine usability or operational impact unless explicitly stated. Subject must be concise. Priority must be exactly Critical, High, Medium, or Low. Technician Requested is true only for an explicit technician or onsite-service request."
                 available when @variables.requires_service == True and @variables.ContactId is not None and @variables.ContactId != "" and @variables.asset_confirmation_success == True and @variables.asset_confirmation_status == "CONFIRMED" and @variables.confirmed_asset_id != "" and @variables.service_case_original_request != "" and @variables.service_case_status_code == ""
@@ -2002,6 +2422,7 @@ subagent escalate_service:
                 with varTechnicianRequested = @variables.service_case_technician_requested
                 with varVerifiedContactId = @variables.ContactId
                 set @variables.service_case_number = @outputs.varCaseNumber
+                set @variables.case_id = @outputs.varCaseId
                 set @variables.service_case_status_code = @outputs.varStatusCode
                 set @variables.service_case_status_message = @outputs.varStatusMessage
                 set @variables.service_case_success = @outputs.varSuccess
@@ -2057,6 +2478,12 @@ subagent escalate_service:
                     description: "Trusted authenticated Contact ID from the customer's Messaging session. Always use @variables.ContactId. Never ask the customer for a Contact ID and never substitute typed identity information."
 
             outputs:
+                varCaseId: string
+                    label: "varCaseId"
+                    is_displayable: False
+                    filter_from_agent: True
+                    description: "Internal Salesforce Case ID returned by the authorized Flow when a Case is created or an existing matching Case is found. Never display or disclose this value to the customer."
+
                 varCaseNumber: string
                     label: "varCaseNumber"
                     is_displayable: False
@@ -2172,4 +2599,500 @@ subagent service_case_result:
                  Do not claim that a Case or service request was created.
                  Do not provide or guess a Case Number.
                  Tell the customer that the service request could not be completed at this time.
+                 Offer human service assistance.
+
+subagent resolve_existing_case:
+    label: "Resolve Existing Case"
+    description: "Resolve a customer-provided Case Number to a trusted authorized Case using the authenticated customer context before any Case status is reported or any Case update is allowed."
+
+    reasoning:
+        instructions: ->
+            |This subagent handles a customer request involving an existing service Case from a conversation where no trusted current Case is yet available.
+
+             A Case Number typed by the customer is only a selector.
+             It is never authorization by itself.
+
+             Use only the credential-verified Contact from @variables.ContactId for authorization.
+
+             # CASE NUMBER AND REQUEST INTENT CAPTURE
+
+             Identify the exact customer-visible Case Number explicitly supplied in the customer's current message.
+
+             Preserve the Case Number exactly as supplied.
+             Do not invent, guess, shorten, extend, normalize, or reconstruct it.
+
+             Determine the customer's purpose for the existing-Case lookup from the current message.
+
+             Use UPDATE when the customer wants to:
+             - add information;
+             - provide another detail;
+             - update the service request;
+             - append factual information to the Case.
+
+             Use STATUS when the customer wants to:
+             - know the current Case status;
+             - check whether the Case is still open;
+             - check what status the service request is currently in;
+             - check the Case without asking to modify it.
+
+             Examples of UPDATE:
+             - "I need to add something to Case 00001141."
+             - "I have more information for Case 00001141."
+             - "I want to update Case 00001141."
+
+             Examples of STATUS:
+             - "What is the status of Case 00001141?"
+             - "Can you check Case 00001141?"
+             - "Is Case 00001141 still open?"
+             - "What status is service request 00001141 in?"
+
+             If the customer supplied a Case Number for an UPDATE request and @variables.requested_case_number is blank, you MUST use {!@actions.capture_update_case_reference}.
+
+             If the customer supplied a Case Number for a STATUS request and @variables.requested_case_number is blank, you MUST use {!@actions.capture_status_case_reference}.
+
+             Use exactly one capture action.
+
+             Do not use:
+             - a Salesforce record ID;
+             - an Asset ID;
+             - a Contact ID;
+             - an Account ID;
+             - a Case Number inferred from conversation history when the customer did not supply one in the current request.
+
+             Do not claim that the Case belongs to the customer until the authorized Case resolver confirms it.
+             Do not reveal Case status or other Case information before authorization succeeds.
+
+        actions:
+            capture_update_case_reference: @utils.setVariables
+                description: "Use only when the customer explicitly supplied a customer-visible Case Number because they want to add factual information to or update that Case. Capture the exact Case Number as a selector and mark the lookup intent as UPDATE. Authorization must still occur through CUST 06."
+                available when @variables.requested_case_number == ""
+                with requested_case_number = ...
+                with case_resolution_intent = "UPDATE"
+
+            capture_status_case_reference: @utils.setVariables
+                description: "Use only when the customer explicitly supplied a customer-visible Case Number because they want to check its current status without modifying it. Capture the exact Case Number as a selector and mark the lookup intent as STATUS. Authorization must still occur through CUST 06."
+                available when @variables.requested_case_number == ""
+                with requested_case_number = ...
+                with case_resolution_intent = "STATUS"
+
+    actions:
+        Resolve_Authorized_Customer_Case:
+            label: "Resolve Authorized Customer Case"
+            description: "Reauthorize a customer-provided Case Number against the credential-verified Contact and Account before returning a trusted internal Case ID and customer-safe Case status."
+
+            target: "flow://CUST_06_Resolve_Authorized_Customer_Case"
+
+            inputs:
+                varVerifiedContactId: string
+                    label: "Verified Contact ID"
+                    description: "Trusted authenticated Contact ID from the Messaging session. Always use @variables.ContactId. Never collect this value from customer-entered information."
+                    is_required: True
+
+                varRequestedCaseNumber: string
+                    label: "Requested Case Number"
+                    description: "Customer-visible Case Number supplied by the customer as a selector. This value is not authorization and must be revalidated by the Flow."
+                    is_required: True
+
+            outputs:
+                outSuccess: boolean
+                    label: "Success"
+                    description: "True only when the requested Case was successfully authorized for the verified customer."
+                    is_displayable: False
+                    filter_from_agent: False
+
+                outStatusCode: string
+                    label: "Status Code"
+                    description: "Authoritative result code returned by the existing-Case resolver."
+                    is_displayable: False
+                    filter_from_agent: False
+
+                outStatusMessage: string
+                    label: "Status Message"
+                    description: "Customer-safe status message returned by the existing-Case resolver."
+                    is_displayable: False
+                    filter_from_agent: False
+
+                outCaseId: string
+                    label: "Authorized Case ID"
+                    description: "Trusted internal Case ID returned only after Contact, Account, and Case authorization succeeds. Never display this value."
+                    is_displayable: False
+                    filter_from_agent: True
+
+                outCaseNumber: string
+                    label: "Case Number"
+                    description: "Customer-safe Case Number returned after successful authorization."
+                    is_displayable: False
+                    filter_from_agent: False
+
+                outCaseStatus: string
+                    label: "Case Status"
+                    description: "Customer-safe status of the authorized Case."
+                    is_displayable: False
+                    filter_from_agent: False
+
+            require_user_confirmation: False
+            include_in_progress_indicator: True
+            progress_indicator_message: "Checking your service request..."
+
+    after_reasoning:
+        if @variables.ContactId is not None and @variables.ContactId != "" and @variables.requested_case_number != "":
+            set @variables.case_resolution_success = False
+            set @variables.case_resolution_status_code = ""
+            set @variables.case_resolution_status_message = ""
+            set @variables.case_resolution_case_number = ""
+            set @variables.case_resolution_case_status = ""
+
+            run @actions.Resolve_Authorized_Customer_Case
+                with varVerifiedContactId = @variables.ContactId
+                with varRequestedCaseNumber = @variables.requested_case_number
+                set @variables.case_resolution_success = @outputs.outSuccess
+                set @variables.case_resolution_status_code = @outputs.outStatusCode
+                set @variables.case_resolution_status_message = @outputs.outStatusMessage
+                set @variables.case_id = @outputs.outCaseId
+                set @variables.case_resolution_case_number = @outputs.outCaseNumber
+                set @variables.case_resolution_case_status = @outputs.outCaseStatus
+
+            transition to @subagent.existing_case_resolution_result
+
+subagent existing_case_resolution_result:
+    label: "Existing Case Resolution Result"
+    description: "Respond only from the authoritative result returned by the authorized existing-Case resolver, using the captured UPDATE or STATUS intent."
+
+    reasoning:
+        instructions: ->
+
+            # ---------------------------------------------------------
+            # AUTHORIZED STATUS LOOKUP — CLOSED CASE
+            # ---------------------------------------------------------
+
+            if @variables.case_resolution_status_code == "AUTHORIZED_CASE_FOUND" and @variables.case_resolution_success == True and @variables.case_resolution_case_status == "Closed" and @variables.case_resolution_intent == "STATUS":
+                set @variables.case_id = ""
+                set @variables.requested_case_number = ""
+                set @variables.case_resolution_intent = ""
+
+                |The authorized Case resolver confirmed that the requested service Case belongs to the authenticated customer.
+
+                 Tell the customer briefly that Case Number {!@variables.case_resolution_case_number} is currently Closed.
+
+                 Provide only the exact customer-safe Case Status returned by the authorized resolver.
+                 Do not expose Salesforce record IDs.
+                 Do not claim that the Case was reopened, changed, assigned, scheduled, or dispatched.
+                 Do not ask what information the customer wants to add.
+                 Do not leave the Case available for an update from this status-only lookup.
+                 Ask no follow-up question unless the customer has also made another clear supported request.
+
+            # ---------------------------------------------------------
+            # AUTHORIZED UPDATE REQUEST — CLOSED CASE
+            # ---------------------------------------------------------
+
+            if @variables.case_resolution_status_code == "AUTHORIZED_CASE_FOUND" and @variables.case_resolution_success == True and @variables.case_resolution_case_status == "Closed" and @variables.case_resolution_intent == "UPDATE":
+                set @variables.case_id = ""
+                set @variables.requested_case_number = ""
+                set @variables.case_resolution_intent = ""
+
+                |The authorized Case resolver confirmed that the requested service Case belongs to the authenticated customer, but the Case is closed.
+
+                 Tell the customer briefly that Case Number {!@variables.case_resolution_case_number} was found and its current status is Closed.
+
+                 Explain that additional information cannot be added to this closed service request through the conversation.
+
+                 Do not claim that the Case was reopened or modified.
+                 Do not expose Salesforce record IDs.
+
+                 If the customer is experiencing the issue again, offer to help with the current equipment problem or help them request new service.
+
+                 Ask exactly one short question.
+
+            # ---------------------------------------------------------
+            # AUTHORIZED STATUS LOOKUP — OPEN / NON-CLOSED CASE
+            # ---------------------------------------------------------
+
+            if @variables.case_resolution_status_code == "AUTHORIZED_CASE_FOUND" and @variables.case_resolution_success == True and @variables.case_resolution_case_status != "Closed" and @variables.case_resolution_intent == "STATUS":
+                set @variables.case_id = ""
+                set @variables.requested_case_number = ""
+                set @variables.case_resolution_intent = ""
+
+                |The authorized Case resolver confirmed that the requested service Case belongs to the authenticated customer.
+
+                 Tell the customer the exact Case Number from {!@variables.case_resolution_case_number}.
+
+                 If @variables.case_resolution_case_status is populated, tell the customer that its current status is exactly {!@variables.case_resolution_case_status}.
+
+                 Do not expose any Salesforce record ID.
+                 Do not claim that anything was added to or changed on the Case.
+                 Do not claim that a technician has been assigned, scheduled, dispatched, or is on the way.
+                 Do not provide assignment, scheduling, history, or other Case details that were not returned by the resolver.
+                 Do not ask what information the customer wants to add.
+                 Do not leave the Case available for an update from this status-only lookup.
+                 Ask no follow-up question unless the customer has also made another clear supported request.
+
+            # ---------------------------------------------------------
+            # AUTHORIZED UPDATE REQUEST — OPEN / NON-CLOSED CASE
+            # ---------------------------------------------------------
+
+            if @variables.case_resolution_status_code == "AUTHORIZED_CASE_FOUND" and @variables.case_resolution_success == True and @variables.case_resolution_case_status != "Closed" and @variables.case_resolution_intent == "UPDATE":
+                set @variables.requested_case_number = ""
+                set @variables.service_case_number = @variables.case_resolution_case_number
+                set @variables.case_resolution_intent = ""
+
+                |The authorized Case resolver confirmed that the requested service Case belongs to the authenticated customer.
+
+                 Tell the customer briefly that the service request was found.
+
+                 Give the exact Case Number from {!@variables.case_resolution_case_number}.
+
+                 If @variables.case_resolution_case_status is populated, you may give the exact customer-safe Case Status from {!@variables.case_resolution_case_status}.
+
+                 Do not expose @variables.case_id or any Salesforce record ID.
+
+                 Do not claim that anything has been added to or changed on the Case yet.
+
+                 Ask exactly one short question asking what information the customer would like to add to this service request.
+
+            # ---------------------------------------------------------
+            # AUTHORIZED RESULT WITH UNCLEAR CAPTURED INTENT
+            # ---------------------------------------------------------
+
+            if @variables.case_resolution_status_code == "AUTHORIZED_CASE_FOUND" and @variables.case_resolution_success == True and @variables.case_resolution_intent != "UPDATE" and @variables.case_resolution_intent != "STATUS":
+                set @variables.case_id = ""
+                set @variables.requested_case_number = ""
+                set @variables.case_resolution_intent = ""
+
+                |The authorized Case resolver confirmed the service request, but the customer's requested operation was not captured reliably.
+
+                 Do not reveal Case status or other Case details from this lookup.
+                 Do not claim that anything was changed.
+                 Ask exactly one short question asking whether the customer wants to check the Case status or add information to the Case.
+
+            # ---------------------------------------------------------
+            # FAILURE RESULTS
+            # ---------------------------------------------------------
+
+            if @variables.case_resolution_status_code == "MISSING_CASE_NUMBER":
+                set @variables.case_id = ""
+                set @variables.requested_case_number = ""
+                set @variables.case_resolution_intent = ""
+
+                |The authorized Case resolver did not receive a usable Case Number.
+
+                 Do not claim that a Case was found.
+
+                 Ask the customer for the customer-visible Case Number shown on their service request.
+
+                 Do not ask for a Salesforce record ID, Contact ID, Account ID, or Asset ID.
+
+                 Ask exactly one question.
+
+            if @variables.case_resolution_status_code == "CASE_NOT_AUTHORIZED":
+                set @variables.case_id = ""
+                set @variables.requested_case_number = ""
+                set @variables.case_resolution_intent = ""
+
+                |The requested Case could not be authorized for the authenticated customer.
+
+                 Do not reveal whether the Case Number exists for another customer.
+
+                 Do not expose customer, Account, Contact, Asset, or Case information from the failed lookup.
+
+                 Explain briefly that the service request could not be accessed through the signed-in account.
+
+                 Offer human assistance.
+
+                 Do not ask for a Salesforce record ID.
+
+            if @variables.case_resolution_status_code == "INVALID_VERIFIED_CONTACT":
+                set @variables.case_id = ""
+                set @variables.requested_case_number = ""
+                set @variables.case_resolution_intent = ""
+
+                |The authorized Case resolver could not verify the authenticated customer.
+
+                 Do not claim that a Case was found.
+
+                 Do not ask the customer for a Contact ID, Account ID, email address, or other identity information as a workaround.
+
+                 Explain briefly that the signed-in customer information could not be verified.
+
+                 Offer human assistance.
+
+            if @variables.case_resolution_status_code == "SYSTEM_ERROR":
+                set @variables.case_id = ""
+                set @variables.requested_case_number = ""
+                set @variables.case_resolution_intent = ""
+
+                |The authorized Case resolver returned a system error.
+
+                 Do not claim that a Case was found.
+
+                 Explain briefly that the service request could not be checked at this time.
+
+                 Offer human assistance.
+
+                 Do not expose Flow names, Salesforce IDs, stack traces, or technical error details.
+
+            if @variables.case_resolution_status_code == "" and @variables.case_resolution_success == False:
+                set @variables.case_id = ""
+                set @variables.requested_case_number = ""
+                set @variables.case_resolution_intent = ""
+
+                |No authoritative existing-Case result was returned.
+
+                 Do not claim that a Case was found or authorized.
+
+                 Tell the customer that the service request could not be checked at this time.
+
+                 Offer human assistance.
+
+subagent current_case_update:
+    label: "Current Case Update"
+    description: "Append customer-provided factual follow-up information to the trusted authorized Case from the current conversation."
+
+    reasoning:
+        instructions: ->
+            |This subagent handles factual customer updates to an authorized service Case that is already trusted in the current conversation.
+
+             Do not use this subagent unless @variables.case_id contains a trusted Case ID returned by an authorized Salesforce workflow, either the service Case workflow or the existing-Case resolver.
+
+             Do not invent or alter the customer's update.
+
+             Do not expose Salesforce record IDs.
+
+             Do not claim that the Case was updated unless the authorized Case Comment action confirms success.
+
+             This subagent is reached when Agent Router identifies the customer's current message as factual follow-up information for a trusted authorized Case, when Service Offer Response identifies a factual Case update while a service offer is pending, or after the existing-Case resolver has securely authorized a customer-referenced Case in the current conversation.
+
+    actions:
+        Add_Authorized_Case_Comment:
+            label: "Add Authorized Case Comment"
+            description: "Append the customer's exact current message to the trusted authorized open Case after the Flow revalidates the authenticated Contact, Account, and Case."
+
+            target: "flow://CUST_05_Add_Authorized_Case_Comment"
+
+            inputs:
+                varVerifiedContactId: string
+                    label: "Verified Contact ID"
+                    description: "Trusted authenticated Contact ID from the Messaging session. Always use @variables.ContactId. Never collect or accept this value from customer-entered information."
+                    is_required: True
+
+                varCaseId: string
+                    label: "Authorized Case ID"
+                    description: "Trusted internal Case ID previously returned by the authorized Case workflow. Always use @variables.case_id. Never use a Salesforce record ID supplied by the customer."
+                    is_required: True
+
+                varCommentBody: string
+                    label: "Customer Update"
+                    description: "The customer's exact current message to append to the authorized Case. Preserve the customer's actual wording."
+                    is_required: True
+
+            outputs:
+                varSuccess: boolean
+                    label: "Success"
+                    description: "True only when the authorized Case Comment Flow successfully creates the Case Comment."
+                    is_displayable: False
+                    filter_from_agent: False
+
+                varStatusCode: string
+                    label: "Status Code"
+                    description: "Authoritative Case Comment result code returned by the Flow."
+                    is_displayable: False
+                    filter_from_agent: False
+
+                varStatusMessage: string
+                    label: "Status Message"
+                    description: "Customer-safe status information returned by the Flow."
+                    is_displayable: False
+                    filter_from_agent: False
+
+                varCaseNumber: string
+                    label: "Case Number"
+                    description: "Customer-safe Case Number returned after the Case has been reauthorized. Never invent or reconstruct this value."
+                    is_displayable: False
+                    filter_from_agent: False
+
+            require_user_confirmation: False
+            include_in_progress_indicator: True
+            progress_indicator_message: "Adding your update..."
+
+    after_reasoning:
+
+        # ---------------------------------------------------------
+        # EXECUTE AUTHORIZED CURRENT-CASE UPDATE
+        # ---------------------------------------------------------
+
+        if @variables.ContactId is not None and @variables.ContactId != "" and @variables.case_id is not None and @variables.case_id != "":
+            set @variables.case_comment_success = False
+            set @variables.case_comment_status_code = ""
+            set @variables.case_comment_status_message = ""
+            set @variables.case_comment_case_number = ""
+
+            run @actions.Add_Authorized_Case_Comment
+                with varVerifiedContactId = @variables.ContactId
+                with varCaseId = @variables.case_id
+                with varCommentBody = @system_variables.user_input
+                set @variables.case_comment_success = @outputs.varSuccess
+                set @variables.case_comment_status_code = @outputs.varStatusCode
+                set @variables.case_comment_status_message = @outputs.varStatusMessage
+                set @variables.case_comment_case_number = @outputs.varCaseNumber
+            
+            transition to @subagent.case_comment_result
+
+subagent case_comment_result:
+    label: "Case Comment Result"
+    description: "Respond to the customer only from the authoritative result returned by the authorized Case Comment process."
+
+    reasoning:
+        instructions: ->
+
+            if @variables.case_comment_status_code == "COMMENT_CREATED" and @variables.case_comment_success == True:
+                |The authorized Salesforce Case Comment action confirmed that the customer's update was successfully added to the current service request.
+
+                 Tell the customer briefly that the update was added successfully.
+
+                 Give the customer the exact Case Number from {!@variables.case_comment_case_number}.
+
+                 Do not invent, alter, shorten, or reconstruct the Case Number.
+                 Do not expose a Salesforce record ID.
+                 Do not claim that any other Case field was changed.
+                 Do not claim that a technician has been assigned, scheduled, or dispatched.
+                 Do not claim that the service request was newly created.
+
+            if @variables.case_comment_status_code == "MISSING_COMMENT":
+                |The authorized Case Comment action did not add an update because there was no usable customer update to save.
+
+                 Do not claim that the Case was updated.
+                 Ask exactly one short question asking what information the customer would like to add to the service request.
+                 Do not ask them to repeat the Case Number.
+                 Do not expose internal implementation details.
+
+            if @variables.case_comment_status_code == "CASE_NOT_AUTHORIZED":
+                set @variables.case_id = ""
+                |The authorized Case Comment action could not authorize the current Case for an update.
+
+                 Do not claim that information was added.
+                 Do not expose whether another customer's Case exists.
+                 Do not ask the customer for a Salesforce record ID.
+                 Explain briefly that the service request could not be updated through the current conversation.
+                 Offer human service assistance.
+
+            if @variables.case_comment_status_code == "INVALID_VERIFIED_CONTACT":
+                |The authorized Case Comment action could not verify the authenticated customer for this Case update.
+
+                 Do not claim that information was added.
+                 Do not ask the customer for a Contact ID, Account ID, email address, or other identity information as a workaround.
+                 Explain briefly that the signed-in customer information could not be verified for the update.
+                 Offer human service assistance.
+
+            if @variables.case_comment_status_code == "SYSTEM_ERROR":
+                |The authorized Case Comment action returned a system error.
+
+                 Do not claim that information was added to the Case.
+                 Explain briefly that the update could not be saved at this time.
+                 Offer human service assistance.
+                 Do not expose Flow names, Salesforce IDs, stack traces, or technical error details.
+
+            if @variables.case_comment_status_code == "" and @variables.case_comment_success == False:
+                |No authoritative Case Comment result was returned.
+
+                 Do not claim that the Case was updated.
+                 Tell the customer that the update could not be completed at this time.
                  Offer human service assistance.
