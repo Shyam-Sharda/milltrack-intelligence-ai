@@ -133,6 +133,13 @@
                                     <span>{asset.machineStatus}</span>
                                 </div>
 
+                                <div class="detail-item">
+                                    <span class="detail-label">
+                                        Previous Failure
+                                    </span>
+                                    <span>{previousFailureLabel}</span>
+                                </div>
+
                                 <template lwc:if={asset.description}>
                                     <div class="detail-item full-width">
                                         <span class="detail-label">
@@ -449,6 +456,59 @@
                                             </span>
                                         </div>
                                     </template>
+                                </template>
+                            </div>
+                        </lightning-accordion-section>
+                    </template>
+
+                    <!-- Work Order Details -->
+                    <template lwc:if={showWorkOrderDetails}>
+                        <lightning-accordion-section
+                            name="workOrderDetails"
+                            label="Work Order Details"
+                        >
+                            <div class="detail-grid">
+                                <template lwc:if={serviceManager}>
+                                    <div class="detail-item">
+                                        <span class="detail-label">
+                                            Service Manager
+                                        </span>
+                                        <span>{serviceManager.name}</span>
+                                    </div>
+                                </template>
+
+                                <template lwc:if={workOrder.workStartedDateTime}>
+                                    <div class="detail-item">
+                                        <span class="detail-label">
+                                            Work Started Date &amp; Time
+                                        </span>
+                                        <lightning-formatted-date-time
+                                            value={workOrder.workStartedDateTime}
+                                            year="numeric"
+                                            month="short"
+                                            day="2-digit"
+                                            hour="2-digit"
+                                            minute="2-digit"
+                                        ></lightning-formatted-date-time>
+                                    </div>
+                                </template>
+
+                                <div></div>
+
+                                <template lwc:if={workOrder.workEndedDateTime}>
+                                    <div class="detail-item">
+                                        <span class="detail-label">
+                                            Work Ended Date &amp; Time
+                                        </span>
+                                        <lightning-formatted-date-time
+                                            value={workOrder.workEndedDateTime}
+                                            year="numeric"
+                                            month="short"
+                                            day="2-digit"
+                                            hour="2-digit"
+                                            minute="2-digit"
+                                        ></lightning-formatted-date-time>
+                                    </div>
                                 </template>
                             </div>
                         </lightning-accordion-section>

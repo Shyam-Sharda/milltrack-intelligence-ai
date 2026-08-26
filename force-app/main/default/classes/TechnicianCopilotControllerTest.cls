@@ -97,6 +97,11 @@ private class TechnicianCopilotControllerTest {
         setFieldIfCreateable(currentWorkOrder, 'Dispatch_Response__c', 'Likely mechanical wear in the spindle assembly.');
         setFieldIfCreateable(currentWorkOrder, 'Technician_Notes__c', 'Initial technician notes.');
         setFieldIfCreateable(currentWorkOrder, 'Labor_Hours__c', Decimal.valueOf('1.5'));
+        setFieldIfCreateable(
+            currentWorkOrder,
+            'Work_Ended_Date_Time__c',
+            Datetime.newInstance(2026, 8, 26, 9, 30, 0)
+        );
         setFieldIfCreateable(currentWorkOrder, 'Suggested_Technician__c', UserInfo.getUserId());
         setFieldIfCreateable(currentWorkOrder, 'Service_Manager__c', UserInfo.getUserId());
 
@@ -148,7 +153,8 @@ private class TechnicianCopilotControllerTest {
                 AccountId,
                 ContactId,
                 CaseId,
-                AssetId
+                AssetId,
+                Work_Ended_Date_Time__c
             FROM WorkOrder
             WHERE Subject = 'Diagnose spindle vibration'
             LIMIT 1
@@ -171,6 +177,11 @@ private class TechnicianCopilotControllerTest {
         System.assertEquals('Torque wrench, hex key set, dial indicator', response.workOrder.recommendedTools);
         System.assertEquals('Initial technician notes.', response.workOrder.technicianNotes);
         System.assertEquals(Decimal.valueOf('1.5'), response.workOrder.laborHours);
+        System.assertEquals(
+            currentWorkOrder.Work_Ended_Date_Time__c,
+            response.workOrder.workEndedDateTime,
+            'Work Ended Date & Time should be returned by the controller.'
+        );
         System.assertNotEquals(null, response.asset, 'Asset information should be returned.');
         System.assertEquals('MillTrack Test Milling Machine', response.asset.name);
         System.assertEquals('MT-TEST-1001', response.asset.serialNumber);

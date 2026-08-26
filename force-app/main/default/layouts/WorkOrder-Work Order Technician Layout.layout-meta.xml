@@ -29,10 +29,6 @@
             </layoutItems>
             <layoutItems>
                 <behavior>Edit</behavior>
-                <field>Resolution_Status__c</field>
-            </layoutItems>
-            <layoutItems>
-                <behavior>Edit</behavior>
                 <field>Dispatch_Status__c</field>
             </layoutItems>
             <layoutItems>
@@ -50,6 +46,18 @@
             <layoutItems>
                 <behavior>Edit</behavior>
                 <field>Labor_Hours__c</field>
+            </layoutItems>
+            <layoutItems>
+                <behavior>Edit</behavior>
+                <field>Recommended_Fix_Summary__c</field>
+            </layoutItems>
+            <layoutItems>
+                <behavior>Edit</behavior>
+                <field>Scheduled_Visit__c</field>
+            </layoutItems>
+            <layoutItems>
+                <behavior>Edit</behavior>
+                <field>Work_Ended_Date_Time__c</field>
             </layoutItems>
         </layoutColumns>
         <layoutColumns>
@@ -105,6 +113,10 @@
             <layoutItems>
                 <behavior>Edit</behavior>
                 <field>Problem_Summary__c</field>
+            </layoutItems>
+            <layoutItems>
+                <behavior>Edit</behavior>
+                <field>Recommended_Tools__c</field>
             </layoutItems>
         </layoutColumns>
         <style>OneColumn</style>

@@ -1,15 +1,244 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Flow xmlns="http://soap.sforce.com/2006/04/metadata">
+    <actionCalls>
+        <name>Navigate_to_Maintenance_Log</name>
+        <label>Navigate to Maintenance Log</label>
+        <locationX>173</locationX>
+        <locationY>825</locationY>
+        <actionName>c:flowNavigateToRecord</actionName>
+        <actionType>lwcComponent</actionType>
+        <flowTransactionModel>CurrentTransaction</flowTransactionModel>
+        <inputParameters>
+            <name>recordId</name>
+            <value>
+                <elementReference>Create_Visit_Maintenance_Log.Id</elementReference>
+                <inputConfiguratorMode>Resource</inputConfiguratorMode>
+            </value>
+        </inputParameters>
+        <inputParameters>
+            <name>objectApiName</name>
+            <value>
+                <inputConfiguratorMode>Resource</inputConfiguratorMode>
+                <stringValue>Maintenance_Log</stringValue>
+            </value>
+        </inputParameters>
+        <nameSegment>c:flowNavigateToRecord</nameSegment>
+        <offset>0</offset>
+    </actionCalls>
+    <actionCalls>
+        <name>Notify_Service_Manager_of_Parts_Request</name>
+        <label>Notify Service Manager of Parts Request</label>
+        <locationX>324</locationX>
+        <locationY>598</locationY>
+        <actionName>customNotificationAction</actionName>
+        <actionType>customNotificationAction</actionType>
+        <connector>
+            <targetReference>Parts_Request_Submitted</targetReference>
+        </connector>
+        <flowTransactionModel>CurrentTransaction</flowTransactionModel>
+        <inputParameters>
+            <name>customNotifTypeId</name>
+            <value>
+                <elementReference>Get_Parts_Request_Notification_Type.Id</elementReference>
+                <inputConfiguratorMode>Resource</inputConfiguratorMode>
+            </value>
+        </inputParameters>
+        <inputParameters>
+            <name>recipientIds</name>
+            <value>
+                <elementReference>recipientIds</elementReference>
+            </value>
+        </inputParameters>
+        <inputParameters>
+            <name>title</name>
+            <value>
+                <elementReference>partsRequestNotificationTitle</elementReference>
+                <inputConfiguratorMode>Resource</inputConfiguratorMode>
+            </value>
+        </inputParameters>
+        <inputParameters>
+            <name>body</name>
+            <value>
+                <elementReference>partsRequestNotificationBody</elementReference>
+                <inputConfiguratorMode>Resource</inputConfiguratorMode>
+            </value>
+        </inputParameters>
+        <inputParameters>
+            <name>targetId</name>
+            <value>
+                <elementReference>recordId</elementReference>
+                <inputConfiguratorMode>Resource</inputConfiguratorMode>
+            </value>
+        </inputParameters>
+        <nameSegment>customNotificationAction</nameSegment>
+        <offset>0</offset>
+    </actionCalls>
     <apiVersion>67.0</apiVersion>
     <areMetricsLoggedToDataCloud>false</areMetricsLoggedToDataCloud>
+    <assignments>
+        <name>Add_Service_Manager_as_Notification_Recipient</name>
+        <label>Add Service Manager as Notification Recipient</label>
+        <locationX>482</locationX>
+        <locationY>598</locationY>
+        <assignmentItems>
+            <assignToReference>recipientIds</assignToReference>
+            <operator>Add</operator>
+            <value>
+                <elementReference>Get_Work_Order.Service_Manager__c</elementReference>
+            </value>
+        </assignmentItems>
+        <connector>
+            <targetReference>Notify_Service_Manager_of_Parts_Request</targetReference>
+        </connector>
+    </assignments>
     <customProperties>
         <name>ScreenProgressIndicator</name>
         <value>
             <stringValue>{&quot;location&quot;:&quot;top&quot;,&quot;type&quot;:&quot;simple&quot;}</stringValue>
         </value>
     </customProperties>
+    <decisions>
+        <name>Request_Parts_Eligible</name>
+        <label>Request Parts Eligible?</label>
+        <locationX>511</locationX>
+        <locationY>411</locationY>
+        <defaultConnector>
+            <targetReference>Request_Parts_Not_Available</targetReference>
+        </defaultConnector>
+        <defaultConnectorLabel>Not Eligible</defaultConnectorLabel>
+        <rules>
+            <name>Work_In_Progress</name>
+            <conditionLogic>and</conditionLogic>
+            <conditions>
+                <leftValueReference>Get_Work_Order.Dispatch_Status__c</leftValueReference>
+                <operator>EqualTo</operator>
+                <rightValue>
+                    <stringValue>In Progress</stringValue>
+                </rightValue>
+            </conditions>
+            <connector>
+                <targetReference>Get_Service_Manager_Queue</targetReference>
+            </connector>
+            <label>Work In Progress</label>
+        </rules>
+    </decisions>
+    <decisions>
+        <name>Service_Manager_Available</name>
+        <label>Service Manager Available</label>
+        <locationX>853</locationX>
+        <locationY>600</locationY>
+        <defaultConnector>
+            <targetReference>Parts_Request_Submitted_Missing_Manager</targetReference>
+        </defaultConnector>
+        <defaultConnectorLabel>Manager Not Found</defaultConnectorLabel>
+        <rules>
+            <name>Manager_Found</name>
+            <conditionLogic>and</conditionLogic>
+            <conditions>
+                <leftValueReference>Get_Work_Order.Service_Manager__c</leftValueReference>
+                <operator>IsNull</operator>
+                <rightValue>
+                    <booleanValue>false</booleanValue>
+                </rightValue>
+            </conditions>
+            <connector>
+                <targetReference>Get_Parts_Request_Notification_Type</targetReference>
+            </connector>
+            <label>Manager Found</label>
+        </rules>
+    </decisions>
+    <decisions>
+        <name>Service_Manager_Queue_Found</name>
+        <label>Service Manager Queue Found?</label>
+        <locationX>826</locationX>
+        <locationY>412</locationY>
+        <defaultConnector>
+            <targetReference>Service_Manager_Queue_Missing</targetReference>
+        </defaultConnector>
+        <defaultConnectorLabel>Queue Not Found</defaultConnectorLabel>
+        <rules>
+            <name>Queue_Found</name>
+            <conditionLogic>and</conditionLogic>
+            <conditions>
+                <leftValueReference>Get_Service_Manager_Queue.Id</leftValueReference>
+                <operator>IsNull</operator>
+                <rightValue>
+                    <booleanValue>false</booleanValue>
+                </rightValue>
+            </conditions>
+            <connector>
+                <targetReference>Request_Parts</targetReference>
+            </connector>
+            <label>Queue Found</label>
+        </rules>
+    </decisions>
+    <decisions>
+        <name>Work_Order_Found</name>
+        <label>Work Order Found?</label>
+        <locationX>319</locationX>
+        <locationY>412</locationY>
+        <defaultConnector>
+            <targetReference>Work_Order_Not_Found</targetReference>
+        </defaultConnector>
+        <defaultConnectorLabel>Not Found</defaultConnectorLabel>
+        <rules>
+            <name>Found</name>
+            <conditionLogic>and</conditionLogic>
+            <conditions>
+                <leftValueReference>Get_Work_Order.Id</leftValueReference>
+                <operator>IsNull</operator>
+                <rightValue>
+                    <booleanValue>false</booleanValue>
+                </rightValue>
+            </conditions>
+            <connector>
+                <targetReference>Request_Parts_Eligible</targetReference>
+            </connector>
+            <label>Found</label>
+        </rules>
+    </decisions>
     <environments>Default</environments>
+    <formulas>
+        <name>Maintenance_Type_Formula</name>
+        <dataType>String</dataType>
+        <expression>IF(
+    {!Temporary_Fix_Applied},
+    &quot;Temporary Repair&quot;,
+    &quot;Inspection&quot;
+)</expression>
+    </formulas>
+    <formulas>
+        <name>Temporary_Repair_Applied_Text</name>
+        <dataType>String</dataType>
+        <expression>IF(
+    {!Temporary_Fix_Applied},
+    &quot;Yes&quot;,
+    &quot;No&quot;
+)</expression>
+    </formulas>
+    <formulas>
+        <name>Update_Technician_Notes</name>
+        <dataType>String</dataType>
+        <expression>IF(
+    ISBLANK({!Get_Work_Order.Technician_Notes__c}),
+    {!Visit_Summary},
+    {!Get_Work_Order.Technician_Notes__c}
+    &amp; BR() &amp; BR()
+    &amp; &quot;Parts Request Visit:&quot;
+    &amp; BR()
+    &amp; {!Visit_Summary}
+)</expression>
+    </formulas>
+    <formulas>
+        <name>Updated_Labor_Hours</name>
+        <dataType>Number</dataType>
+        <expression>BLANKVALUE({!Get_Work_Order.Labor_Hours__c}, 0)
++
+BLANKVALUE({!Visit_Labor_Hours}, 0)</expression>
+        <scale>2</scale>
+    </formulas>
     <interviewLabel>Request Parts {!$Flow.CurrentDateTime}</interviewLabel>
+    <isAdditionalPermissionRequiredToRun>true</isAdditionalPermissionRequiredToRun>
     <label>Request Parts</label>
     <processMetadataValues>
         <name>BuilderType</name>
@@ -31,12 +260,89 @@
     </processMetadataValues>
     <processType>Flow</processType>
     <recordCreates>
+        <name>Create_Visit_Maintenance_Log</name>
+        <label>Create Visit Maintenance Log</label>
+        <locationX>1426</locationX>
+        <locationY>598</locationY>
+        <connector>
+            <targetReference>Return_Work_Order_to_Manager</targetReference>
+        </connector>
+        <inputAssignments>
+            <field>Asset__c</field>
+            <value>
+                <elementReference>Get_Work_Order.AssetId</elementReference>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>Follow_Up_Required__c</field>
+            <value>
+                <booleanValue>true</booleanValue>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>Issue_Resolved__c</field>
+            <value>
+                <booleanValue>false</booleanValue>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>Labor_Hours__c</field>
+            <value>
+                <elementReference>Visit_Labor_Hours</elementReference>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>Maintenance_Date__c</field>
+            <value>
+                <elementReference>$Flow.CurrentDate</elementReference>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>Maintenance_Type__c</field>
+            <value>
+                <elementReference>Maintenance_Type_Formula</elementReference>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>Performed_By__c</field>
+            <value>
+                <elementReference>$User.Id</elementReference>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>Root_Cause__c</field>
+            <value>
+                <elementReference>Suspected_Root_Cause</elementReference>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>Summary__c</field>
+            <value>
+                <elementReference>Visit_Summary</elementReference>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>Technician_Notes__c</field>
+            <value>
+                <elementReference>Visit_Notes_Template</elementReference>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>Work_Order__c</field>
+            <value>
+                <elementReference>Get_Work_Order.Id</elementReference>
+            </value>
+        </inputAssignments>
+        <object>Maintenance_Log__c</object>
+        <storeOutputAutomatically>true</storeOutputAutomatically>
+    </recordCreates>
+    <recordCreates>
         <name>Create_Work_Order_Part</name>
         <label>Create Work Order Part</label>
-        <locationX>461</locationX>
-        <locationY>312</locationY>
+        <locationX>1426</locationX>
+        <locationY>407</locationY>
         <connector>
-            <targetReference>Update_Work_Order_To_Waiting_On_Parts</targetReference>
+            <targetReference>Create_Visit_Maintenance_Log</targetReference>
         </connector>
         <inputAssignments>
             <field>Machine__c</field>
@@ -53,43 +359,19 @@
         <inputAssignments>
             <field>Order_Status__c</field>
             <value>
-                <stringValue>Pending</stringValue>
-            </value>
-        </inputAssignments>
-        <inputAssignments>
-            <field>Order_URL__c</field>
-            <value>
-                <elementReference>Get_Selected_Parts_Catalog.Order_URL__c</elementReference>
-            </value>
-        </inputAssignments>
-        <inputAssignments>
-            <field>Ordered_By__c</field>
-            <value>
-                <elementReference>$User.Id</elementReference>
+                <stringValue>Requested</stringValue>
             </value>
         </inputAssignments>
         <inputAssignments>
             <field>Part_Catalog__c</field>
             <value>
-                <elementReference>Selected_Part.recordId</elementReference>
+                <elementReference>Get_Selected_Parts_Catalog.Id</elementReference>
             </value>
         </inputAssignments>
         <inputAssignments>
             <field>Quantity__c</field>
             <value>
                 <elementReference>Quantity</elementReference>
-            </value>
-        </inputAssignments>
-        <inputAssignments>
-            <field>Supplier_Name__c</field>
-            <value>
-                <elementReference>Get_Selected_Parts_Catalog.Supplier_Name__c</elementReference>
-            </value>
-        </inputAssignments>
-        <inputAssignments>
-            <field>Supplier_Phone__c</field>
-            <value>
-                <elementReference>Get_Selected_Parts_Catalog.Supplier_Phone__c</elementReference>
             </value>
         </inputAssignments>
         <inputAssignments>
@@ -102,13 +384,34 @@
         <storeOutputAutomatically>true</storeOutputAutomatically>
     </recordCreates>
     <recordLookups>
-        <name>Get_Selected_Parts_Catalog</name>
-        <label>Get Selected Parts Catalog</label>
-        <locationX>324</locationX>
-        <locationY>312</locationY>
+        <name>Get_Parts_Request_Notification_Type</name>
+        <label>Get Parts Request Notification Type</label>
+        <locationX>640</locationX>
+        <locationY>598</locationY>
         <assignNullValuesIfNoRecordsFound>false</assignNullValuesIfNoRecordsFound>
         <connector>
-            <targetReference>Create_Work_Order_Part</targetReference>
+            <targetReference>Add_Service_Manager_as_Notification_Recipient</targetReference>
+        </connector>
+        <filterLogic>and</filterLogic>
+        <filters>
+            <field>DeveloperName</field>
+            <operator>EqualTo</operator>
+            <value>
+                <stringValue>Parts_Request</stringValue>
+            </value>
+        </filters>
+        <getFirstRecordOnly>true</getFirstRecordOnly>
+        <object>CustomNotificationType</object>
+        <storeOutputAutomatically>true</storeOutputAutomatically>
+    </recordLookups>
+    <recordLookups>
+        <name>Get_Selected_Parts_Catalog</name>
+        <label>Get Selected Parts Catalog</label>
+        <locationX>1157</locationX>
+        <locationY>407</locationY>
+        <assignNullValuesIfNoRecordsFound>false</assignNullValuesIfNoRecordsFound>
+        <connector>
+            <targetReference>End_Current_Visit</targetReference>
         </connector>
         <filterLogic>and</filterLogic>
         <filters>
@@ -123,13 +426,41 @@
         <storeOutputAutomatically>true</storeOutputAutomatically>
     </recordLookups>
     <recordLookups>
-        <name>Get_Work_Order</name>
-        <label>Get Work Order</label>
-        <locationX>174</locationX>
-        <locationY>179</locationY>
+        <name>Get_Service_Manager_Queue</name>
+        <label>Get Service Manager Queue</label>
+        <locationX>702</locationX>
+        <locationY>410</locationY>
         <assignNullValuesIfNoRecordsFound>false</assignNullValuesIfNoRecordsFound>
         <connector>
-            <targetReference>Request_Parts</targetReference>
+            <targetReference>Service_Manager_Queue_Found</targetReference>
+        </connector>
+        <filterLogic>and</filterLogic>
+        <filters>
+            <field>Type</field>
+            <operator>EqualTo</operator>
+            <value>
+                <stringValue>Queue</stringValue>
+            </value>
+        </filters>
+        <filters>
+            <field>DeveloperName</field>
+            <operator>EqualTo</operator>
+            <value>
+                <stringValue>Service_Manager_Queue</stringValue>
+            </value>
+        </filters>
+        <getFirstRecordOnly>true</getFirstRecordOnly>
+        <object>Group</object>
+        <storeOutputAutomatically>true</storeOutputAutomatically>
+    </recordLookups>
+    <recordLookups>
+        <name>Get_Work_Order</name>
+        <label>Get Work Order</label>
+        <locationX>176</locationX>
+        <locationY>410</locationY>
+        <assignNullValuesIfNoRecordsFound>false</assignNullValuesIfNoRecordsFound>
+        <connector>
+            <targetReference>Work_Order_Found</targetReference>
         </connector>
         <filterLogic>and</filterLogic>
         <filters>
@@ -144,10 +475,67 @@
         <storeOutputAutomatically>true</storeOutputAutomatically>
     </recordLookups>
     <recordUpdates>
+        <name>Return_Work_Order_to_Manager</name>
+        <label>Return Work Order to Manager</label>
+        <locationX>1293</locationX>
+        <locationY>598</locationY>
+        <connector>
+            <targetReference>Update_Related_Case_to_Waiting_on_Parts</targetReference>
+        </connector>
+        <filterLogic>and</filterLogic>
+        <filters>
+            <field>Id</field>
+            <operator>EqualTo</operator>
+            <value>
+                <elementReference>Get_Work_Order.Id</elementReference>
+            </value>
+        </filters>
+        <inputAssignments>
+            <field>Dispatch_Status__c</field>
+            <value>
+                <stringValue>Waiting on Parts</stringValue>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>Labor_Hours__c</field>
+            <value>
+                <elementReference>Updated_Labor_Hours</elementReference>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>OwnerId</field>
+            <value>
+                <elementReference>Get_Service_Manager_Queue.Id</elementReference>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>Scheduled_Visit__c</field>
+            <value>
+                <elementReference>Blank_Scheduled_Visit</elementReference>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>Suggested_Technician__c</field>
+            <value>
+                <elementReference>Blank_Technician_Id</elementReference>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>Technician_Notes__c</field>
+            <value>
+                <elementReference>Update_Technician_Notes</elementReference>
+            </value>
+        </inputAssignments>
+        <object>WorkOrder</object>
+    </recordUpdates>
+    <recordUpdates>
         <name>Update_Machine</name>
         <label>Update Machine</label>
-        <locationX>623</locationX>
-        <locationY>151</locationY>
+        <locationX>1007</locationX>
+        <locationY>598</locationY>
+        <connector>
+            <targetReference>Service_Manager_Available</targetReference>
+        </connector>
         <filterLogic>and</filterLogic>
         <filters>
             <field>Id</field>
@@ -165,10 +553,10 @@
         <object>Asset</object>
     </recordUpdates>
     <recordUpdates>
-        <name>Update_Work_Order_To_Waiting_On_Parts</name>
-        <label>Update Work Order To Waiting on Parts</label>
-        <locationX>464</locationX>
-        <locationY>155</locationY>
+        <name>Update_Related_Case_to_Waiting_on_Parts</name>
+        <label>Update Related Case to Waiting on Parts</label>
+        <locationX>1153</locationX>
+        <locationY>598</locationY>
         <connector>
             <targetReference>Update_Machine</targetReference>
         </connector>
@@ -177,28 +565,213 @@
             <field>Id</field>
             <operator>EqualTo</operator>
             <value>
-                <elementReference>Get_Work_Order.Id</elementReference>
+                <elementReference>Get_Work_Order.CaseId</elementReference>
             </value>
         </filters>
         <inputAssignments>
-            <field>Dispatch_Status__c</field>
+            <field>Status</field>
             <value>
                 <stringValue>Waiting on Parts</stringValue>
             </value>
         </inputAssignments>
-        <inputAssignments>
-            <field>Technician_Notes__c</field>
-            <value>
-                <elementReference>requestPartsNoteTemplate</elementReference>
-            </value>
-        </inputAssignments>
-        <object>WorkOrder</object>
+        <object>Case</object>
     </recordUpdates>
+    <runInMode>SystemModeWithSharing</runInMode>
+    <screens>
+        <description>Captures the technician&apos;s work and visit outcome before creating the Maintenance Log and returning the Work Order to manager coordination.</description>
+        <name>End_Current_Visit</name>
+        <label>End Current Visit</label>
+        <locationX>1293</locationX>
+        <locationY>407</locationY>
+        <allowBack>true</allowBack>
+        <allowFinish>true</allowFinish>
+        <allowPause>false</allowPause>
+        <connector>
+            <targetReference>Create_Work_Order_Part</targetReference>
+        </connector>
+        <fields>
+            <name>Visit_Outcome_Instructions</name>
+            <fieldText>&lt;p&gt;&lt;strong&gt;Document the work completed during this visit&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;Submitting this request will create the part request, create a service-history entry for this visit, and return the Work Order to manager coordination while the required part is ordered.&lt;/p&gt;&lt;p&gt;&lt;br&gt;&lt;/p&gt;&lt;p&gt;Requested Part: {!Get_Selected_Parts_Catalog.Name}&lt;/p&gt;</fieldText>
+            <fieldType>DisplayText</fieldType>
+            <styleProperties>
+                <verticalAlignment>
+                    <stringValue>top</stringValue>
+                </verticalAlignment>
+                <width>
+                    <stringValue>12</stringValue>
+                </width>
+            </styleProperties>
+        </fields>
+        <fields>
+            <name>Visit_Summary</name>
+            <fieldText>Diagnostic Summary</fieldText>
+            <fieldType>LargeTextArea</fieldType>
+            <helpText>&lt;p&gt;Summarize what was diagnosed and why the requested part is required.&lt;/p&gt;</helpText>
+            <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
+            <isRequired>true</isRequired>
+            <styleProperties>
+                <verticalAlignment>
+                    <stringValue>top</stringValue>
+                </verticalAlignment>
+                <width>
+                    <stringValue>12</stringValue>
+                </width>
+            </styleProperties>
+        </fields>
+        <fields>
+            <name>Work_Performed_During_This_Visit</name>
+            <fieldText>Work Performed During This Visit</fieldText>
+            <fieldType>LargeTextArea</fieldType>
+            <helpText>&lt;p&gt;Describe the inspections, tests, adjustments, or repair attempts completed during this visit.&lt;/p&gt;</helpText>
+            <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
+            <isRequired>true</isRequired>
+            <styleProperties>
+                <verticalAlignment>
+                    <stringValue>top</stringValue>
+                </verticalAlignment>
+                <width>
+                    <stringValue>12</stringValue>
+                </width>
+            </styleProperties>
+        </fields>
+        <fields>
+            <name>Temporary_Fix_Applied</name>
+            <dataType>Boolean</dataType>
+            <fieldText>A temporary repair was applied</fieldText>
+            <fieldType>InputField</fieldType>
+            <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
+            <isRequired>true</isRequired>
+            <styleProperties>
+                <verticalAlignment>
+                    <stringValue>top</stringValue>
+                </verticalAlignment>
+                <width>
+                    <stringValue>12</stringValue>
+                </width>
+            </styleProperties>
+        </fields>
+        <fields>
+            <name>Temporary_Fix_Details</name>
+            <fieldText>Temporary Repair Details</fieldText>
+            <fieldType>LargeTextArea</fieldType>
+            <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
+            <isRequired>true</isRequired>
+            <styleProperties>
+                <verticalAlignment>
+                    <stringValue>top</stringValue>
+                </verticalAlignment>
+                <width>
+                    <stringValue>12</stringValue>
+                </width>
+            </styleProperties>
+            <visibilityRule>
+                <conditionLogic>and</conditionLogic>
+                <conditions>
+                    <leftValueReference>Temporary_Fix_Applied</leftValueReference>
+                    <operator>EqualTo</operator>
+                    <rightValue>
+                        <booleanValue>true</booleanValue>
+                    </rightValue>
+                </conditions>
+            </visibilityRule>
+        </fields>
+        <fields>
+            <name>Visit_Labor_Hours</name>
+            <dataType>Number</dataType>
+            <fieldText>Labor Hours for This Visit</fieldText>
+            <fieldType>InputField</fieldType>
+            <helpText>&lt;p&gt;Enter the labor performed during this visit, such as 1.50.&lt;/p&gt;</helpText>
+            <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
+            <isRequired>true</isRequired>
+            <scale>2</scale>
+            <styleProperties>
+                <verticalAlignment>
+                    <stringValue>top</stringValue>
+                </verticalAlignment>
+                <width>
+                    <stringValue>12</stringValue>
+                </width>
+            </styleProperties>
+        </fields>
+        <fields>
+            <name>Suspected_Root_Cause</name>
+            <fieldText>Suspected Root Cause</fieldText>
+            <fieldType>LargeTextArea</fieldType>
+            <helpText>&lt;p&gt;Enter the suspected root cause if it is currently known.&lt;/p&gt;</helpText>
+            <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
+            <isRequired>false</isRequired>
+            <styleProperties>
+                <verticalAlignment>
+                    <stringValue>top</stringValue>
+                </verticalAlignment>
+                <width>
+                    <stringValue>12</stringValue>
+                </width>
+            </styleProperties>
+        </fields>
+        <nextOrFinishButtonLabel>Next</nextOrFinishButtonLabel>
+        <showFooter>true</showFooter>
+        <showHeader>false</showHeader>
+    </screens>
+    <screens>
+        <name>Parts_Request_Submitted</name>
+        <label>Parts Request Submitted</label>
+        <locationX>173</locationX>
+        <locationY>598</locationY>
+        <allowBack>false</allowBack>
+        <allowFinish>true</allowFinish>
+        <allowPause>false</allowPause>
+        <connector>
+            <targetReference>Navigate_to_Maintenance_Log</targetReference>
+        </connector>
+        <fields>
+            <name>ConfirmationText</name>
+            <fieldText>&lt;p&gt;&lt;strong style=&quot;font-size: 14px;&quot;&gt;Parts Request Submitted&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;br&gt;&lt;/p&gt;&lt;p&gt;The requested part has been recorded and this service visit has been added to the machine’s maintenance history.&lt;/p&gt;&lt;p&gt;&lt;br&gt;&lt;/p&gt;&lt;p&gt;The Work Order is now Waiting on Parts and has been returned to manager coordination. A manager will order the part and schedule a new visit after all required parts arrive.&lt;/p&gt;</fieldText>
+            <fieldType>DisplayText</fieldType>
+            <styleProperties>
+                <verticalAlignment>
+                    <stringValue>top</stringValue>
+                </verticalAlignment>
+                <width>
+                    <stringValue>12</stringValue>
+                </width>
+            </styleProperties>
+        </fields>
+        <showFooter>true</showFooter>
+        <showHeader>false</showHeader>
+    </screens>
+    <screens>
+        <name>Parts_Request_Submitted_Missing_Manager</name>
+        <label>Parts Request Submitted- Missing Manager</label>
+        <locationX>861</locationX>
+        <locationY>825</locationY>
+        <allowBack>false</allowBack>
+        <allowFinish>true</allowFinish>
+        <allowPause>false</allowPause>
+        <connector>
+            <targetReference>Navigate_to_Maintenance_Log</targetReference>
+        </connector>
+        <fields>
+            <name>ConfirmationTextMissingManager</name>
+            <fieldText>&lt;p&gt;&lt;strong style=&quot;font-size: 14px;&quot;&gt;Parts Request Submitted&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;br&gt;&lt;/p&gt;&lt;p&gt;The requested part and service visit were recorded successfully. The Work Order was returned to the Service Manager Queue, but no individual Service Manager was available for direct notification.&lt;/p&gt;&lt;p&gt;&lt;br&gt;&lt;/p&gt;&lt;p&gt;Contact the service team if immediate follow-up is required.&lt;/p&gt;</fieldText>
+            <fieldType>DisplayText</fieldType>
+            <styleProperties>
+                <verticalAlignment>
+                    <stringValue>top</stringValue>
+                </verticalAlignment>
+                <width>
+                    <stringValue>12</stringValue>
+                </width>
+            </styleProperties>
+        </fields>
+        <showFooter>true</showFooter>
+        <showHeader>false</showHeader>
+    </screens>
     <screens>
         <name>Request_Parts</name>
         <label>Request Parts</label>
-        <locationX>172</locationX>
-        <locationY>313</locationY>
+        <locationX>1032</locationX>
+        <locationY>407</locationY>
         <allowBack>false</allowBack>
         <allowFinish>true</allowFinish>
         <allowPause>false</allowPause>
@@ -290,6 +863,80 @@
                 </width>
             </styleProperties>
         </fields>
+        <nextOrFinishButtonLabel>Next</nextOrFinishButtonLabel>
+        <showFooter>true</showFooter>
+        <showHeader>false</showHeader>
+    </screens>
+    <screens>
+        <name>Request_Parts_Not_Available</name>
+        <label>Request Parts Not Available</label>
+        <locationX>520</locationX>
+        <locationY>192</locationY>
+        <allowBack>false</allowBack>
+        <allowFinish>true</allowFinish>
+        <allowPause>false</allowPause>
+        <fields>
+            <name>RequestPartsNotAvailableText</name>
+            <fieldText>&lt;p&gt;&lt;strong style=&quot;font-size: 14px;&quot;&gt;Parts can only be requested while the Work Order is In Progress&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;br&gt;&lt;/p&gt;&lt;p&gt;Close this Flow and confirm that the technician has started the Work Order.&lt;/p&gt;</fieldText>
+            <fieldType>DisplayText</fieldType>
+            <styleProperties>
+                <verticalAlignment>
+                    <stringValue>top</stringValue>
+                </verticalAlignment>
+                <width>
+                    <stringValue>12</stringValue>
+                </width>
+            </styleProperties>
+        </fields>
+        <showFooter>true</showFooter>
+        <showHeader>false</showHeader>
+    </screens>
+    <screens>
+        <name>Service_Manager_Queue_Missing</name>
+        <label>Service Manager Queue Missing</label>
+        <locationX>835</locationX>
+        <locationY>186</locationY>
+        <allowBack>false</allowBack>
+        <allowFinish>true</allowFinish>
+        <allowPause>false</allowPause>
+        <fields>
+            <name>Queue_Missing_Message</name>
+            <fieldText>&lt;p&gt;&lt;strong style=&quot;font-size: 14px;&quot;&gt;The Service Manager Queue could not be found&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;The parts request cannot be submitted because the Work Order cannot be returned to manager coordination. Contact your Salesforce administrator.&lt;/p&gt;</fieldText>
+            <fieldType>DisplayText</fieldType>
+            <styleProperties>
+                <verticalAlignment>
+                    <stringValue>top</stringValue>
+                </verticalAlignment>
+                <width>
+                    <stringValue>12</stringValue>
+                </width>
+            </styleProperties>
+        </fields>
+        <nextOrFinishButtonLabel>Close</nextOrFinishButtonLabel>
+        <showFooter>true</showFooter>
+        <showHeader>false</showHeader>
+    </screens>
+    <screens>
+        <name>Work_Order_Not_Found</name>
+        <label>Work Order Not Found</label>
+        <locationX>324</locationX>
+        <locationY>201</locationY>
+        <allowBack>false</allowBack>
+        <allowFinish>true</allowFinish>
+        <allowPause>false</allowPause>
+        <fields>
+            <name>WorkOrderNotFoundText</name>
+            <fieldText>&lt;p&gt;&lt;strong style=&quot;font-size: 14px;&quot;&gt;The Work Order could not be found&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;br&gt;&lt;/p&gt;&lt;p&gt;Close this Flow and launch Request Parts again from a valid Work Order record.&lt;/p&gt;</fieldText>
+            <fieldType>DisplayText</fieldType>
+            <styleProperties>
+                <verticalAlignment>
+                    <stringValue>top</stringValue>
+                </verticalAlignment>
+                <width>
+                    <stringValue>12</stringValue>
+                </width>
+            </styleProperties>
+        </fields>
         <showFooter>true</showFooter>
         <showHeader>false</showHeader>
     </screens>
@@ -301,6 +948,23 @@
         </connector>
     </start>
     <status>Active</status>
+    <textTemplates>
+        <name>partsRequestNotificationBody</name>
+        <isViewedAsPlainText>true</isViewedAsPlainText>
+        <text>{!$User.FirstName} {!$User.LastName} requested a part for Work Order {!Get_Work_Order.WorkOrderNumber} 
+
+Part: {!Get_Selected_Parts_Catalog.Name}
+Quantity Needed: {!Quantity}
+
+Notes: {!Request_Notes}
+
+The Work Order is now waiting on parts.</text>
+    </textTemplates>
+    <textTemplates>
+        <name>partsRequestNotificationTitle</name>
+        <isViewedAsPlainText>true</isViewedAsPlainText>
+        <text>Parts Requested - Work Order {!Get_Work_Order.WorkOrderNumber}</text>
+    </textTemplates>
     <textTemplates>
         <name>requestPartsNoteTemplate</name>
         <isViewedAsPlainText>true</isViewedAsPlainText>
@@ -321,6 +985,42 @@ Quantity:
 Reason:
 {!Request_Notes}</text>
     </textTemplates>
+    <textTemplates>
+        <name>Visit_Notes_Template</name>
+        <isViewedAsPlainText>true</isViewedAsPlainText>
+        <text>WORK PERFORMED:
+{!Work_Performed_During_This_Visit}
+
+TEMPORARY REPAIR APPLIED:
+{!Temporary_Repair_Applied_Text}
+
+TEMPORARY REPAIR DETAILS:
+{!Temporary_Fix_Details}
+
+PART REQUEST NOTES:
+{!Request_Notes}</text>
+    </textTemplates>
+    <variables>
+        <name>Blank_Scheduled_Visit</name>
+        <dataType>DateTime</dataType>
+        <isCollection>false</isCollection>
+        <isInput>false</isInput>
+        <isOutput>false</isOutput>
+    </variables>
+    <variables>
+        <name>Blank_Technician_Id</name>
+        <dataType>String</dataType>
+        <isCollection>false</isCollection>
+        <isInput>false</isInput>
+        <isOutput>false</isOutput>
+    </variables>
+    <variables>
+        <name>recipientIds</name>
+        <dataType>String</dataType>
+        <isCollection>true</isCollection>
+        <isInput>false</isInput>
+        <isOutput>false</isOutput>
+    </variables>
     <variables>
         <name>recordId</name>
         <dataType>String</dataType>

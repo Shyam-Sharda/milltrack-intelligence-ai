@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FlowDefinition xmlns="http://soap.sforce.com/2006/04/metadata">
+    <activeVersionNumber>2</activeVersionNumber>
+    <description>Service Manager screen flow used to record the receipt of ordered Work Order parts. It updates the applicable Work Order Part records to Received and supports the transition of eligible Work Orders out of Waiting on Parts. Direct access is restricted to Service Managers and System Administrators.</description>
+    <masterLabel>MGR 03 - Receive Work Order Parts</masterLabel>
+</FlowDefinition>

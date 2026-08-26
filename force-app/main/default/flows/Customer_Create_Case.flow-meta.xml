@@ -414,6 +414,7 @@
     </decisions>
     <environments>Default</environments>
     <interviewLabel>Customer Create Case {!$Flow.CurrentDateTime}</interviewLabel>
+    <isAdditionalPermissionRequiredToRun>true</isAdditionalPermissionRequiredToRun>
     <label>Customer Create Case</label>
     <processMetadataValues>
         <name>BuilderType</name>
@@ -632,7 +633,7 @@
             <targetReference>Was_Serial_Number_Provided</targetReference>
         </connector>
     </start>
-    <status>Active</status>
+    <status>Draft</status>
     <variables>
         <name>varAccountName</name>
         <dataType>String</dataType>

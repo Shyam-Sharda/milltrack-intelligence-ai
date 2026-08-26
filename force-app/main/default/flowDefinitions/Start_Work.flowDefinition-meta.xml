@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FlowDefinition xmlns="http://soap.sforce.com/2006/04/metadata">
+    <activeVersionNumber>4</activeVersionNumber>
+    <description>Technician screen flow used to begin work on an assigned Work Order. It confirms the technician’s assignment, records the start of service activity, and updates the Work Order to In Progress. Direct access is restricted to assigned Technicians and System Administrators.</description>
+    <masterLabel>TECH 01 - Start Work</masterLabel>
+</FlowDefinition>

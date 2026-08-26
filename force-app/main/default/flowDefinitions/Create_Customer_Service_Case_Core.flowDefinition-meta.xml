@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FlowDefinition xmlns="http://soap.sforce.com/2006/04/metadata">
+    <activeVersionNumber>2</activeVersionNumber>
+    <description>Shared autolaunched flow that securely creates a customer service Case from validated Account, Contact, and Asset IDs. It verifies that the Contact and Asset belong to the supplied Account, normalizes priority, creates the Case, and returns the Case ID, Case Number, success result, and customer-safe status message. This flow is called by approved parent flows and is not exposed directly to customers.</description>
+    <masterLabel>CORE 01 - Create Customer Service Case</masterLabel>
+</FlowDefinition>

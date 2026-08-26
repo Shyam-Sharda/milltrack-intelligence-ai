@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ValidationRule xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Technician_Protect_MaintenanceLog_Fields</fullName>
+    <active>true</active>
+    <description>Prevents MillTrack technicians from directly changing the Work Order, Maintenance Date, Maintenance Type and Labor Hours on an existing Maintenance Log.</description>
+    <errorConditionFormula>AND(
+    $Permission.MillTrack_Technician_Restricted_Editing,
+    NOT(ISNEW()),
+    OR(
+        ISCHANGED( Work_Order__c ),
+        ISCHANGED( Maintenance_Date__c ),
+        ISCHANGED( Maintenance_Type__c ),
+        ISCHANGED( Labor_Hours__c )
+    )
+)</errorConditionFormula>
+    <errorMessage>Technicians cannot change the Work Order, Maintenance Date, Maintenance Type, or Labor Hours on an existing Maintenance Log. Use the approved service workflow instead.</errorMessage>
+</ValidationRule>

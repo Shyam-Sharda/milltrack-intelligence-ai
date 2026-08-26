@@ -91,6 +91,14 @@ private class ManagerOperationsCenterControllerTest {
                 testAccount.Id,
                 testAsset.Id,
                 testCase.Id
+            ),
+            buildWorkOrder(
+                'Completed visit with retained schedule',
+                'Completed',
+                System.now().addDays(1),
+                testAccount.Id,
+                testAsset.Id,
+                testCase.Id
             )
         };
         insert workOrders;
@@ -238,6 +246,11 @@ private class ManagerOperationsCenterControllerTest {
         );
 
         System.assert(
+            data.followUpRequiredCount >= 1,
+            'The Temporary Fix Work Order should appear in Follow-Up Required.'
+        );
+
+        System.assert(
             data.partsToOrderCount >= 2,
             'Parts to Order should include the pre-dispatch Work Order ' +
             'and the Requested Work Order Part.'
@@ -254,14 +267,14 @@ private class ManagerOperationsCenterControllerTest {
         );
 
         System.assertEquals(
-            1,
+            2,
             data.assignedVisitsCount,
-            'Only the future Assigned visit should be returned.'
+            'Both future and past Work Orders with Dispatch Status Assigned should be returned.'
         );
 
         System.assert(
-            data.activeRepairsCount >= 2,
-            'In Progress and Temporary Fix should both be active repairs.'
+            data.activeRepairsCount >= 1,
+            'The In Progress Work Order should appear in Active Repairs.'
         );
 
         Case expectedCase = [
@@ -330,6 +343,49 @@ private class ManagerOperationsCenterControllerTest {
             'Review Work Order',
             'Generate_Work_Order_Proposal_From_Case',
             pendingWorkOrder.Id
+        );
+
+        WorkOrder temporaryFixWorkOrder = [
+            SELECT Id
+            FROM WorkOrder
+            WHERE Subject = 'Temporary repair needs follow-up'
+            LIMIT 1
+        ];
+
+        ManagerOperationsCenterController.QueueItem followUpItem =
+            findItemByRecordId(
+                data.followUpRequired,
+                temporaryFixWorkOrder.Id
+            );
+
+        System.assertNotEquals(
+            null,
+            followUpItem,
+            'The Temporary Fix Work Order should appear in Follow-Up Required.'
+        );
+
+        System.assertEquals(
+            null,
+            findItemByRecordId(
+                data.activeRepairs,
+                temporaryFixWorkOrder.Id
+            ),
+            'Temporary Fix should no longer appear in Active Repairs.'
+        );
+
+        System.assertEquals(
+            'Temporary Fix',
+            followUpItem.status,
+            'The Follow-Up Required row should retain the Temporary Fix status.'
+        );
+
+        assertAction(
+            followUpItem,
+            'FLOW',
+            'REVIEW_WORK_ORDER',
+            'Review Work Order',
+            'Generate_Work_Order_Proposal_From_Case',
+            temporaryFixWorkOrder.Id
         );
 
         WorkOrder preDispatchWorkOrder = [
@@ -585,13 +641,47 @@ private class ManagerOperationsCenterControllerTest {
             LIMIT 1
         ];
 
+        ManagerOperationsCenterController.QueueItem pastAssignedItem =
+            findItemByRecordId(
+                data.assignedVisits,
+                pastAssignedWorkOrder.Id
+            );
+
+        System.assertNotEquals(
+            null,
+            pastAssignedItem,
+            'A past scheduled visit should remain visible while the Work Order is still Assigned.'
+        );
+
+        System.assertEquals(
+            'Assigned',
+            pastAssignedItem.status,
+            'The past scheduled visit should remain in Assigned Visits until its lifecycle status changes.'
+        );
+
+        assertAction(
+            pastAssignedItem,
+            'NAVIGATE',
+            'VIEW_WORK_ORDER',
+            'Open Work Order',
+            null,
+            pastAssignedWorkOrder.Id
+        );
+
+        WorkOrder completedWorkOrder = [
+            SELECT Id
+            FROM WorkOrder
+            WHERE Subject = 'Completed visit with retained schedule'
+            LIMIT 1
+        ];
+
         System.assertEquals(
             null,
             findItemByRecordId(
                 data.assignedVisits,
-                pastAssignedWorkOrder.Id
+                completedWorkOrder.Id
             ),
-            'A past Assigned visit must not appear in the upcoming queue.'
+            'A Completed Work Order must not appear in Assigned Visits even when Scheduled Visit remains populated.'
         );
     }
 
@@ -712,6 +802,7 @@ private class ManagerOperationsCenterControllerTest {
 
         System.assertEquals(0, data.newCasesCount);
         System.assertEquals(0, data.requiresReviewCount);
+        System.assertEquals(0, data.followUpRequiredCount);
         System.assertEquals(0, data.partsToOrderCount);
         System.assertEquals(0, data.waitingOnPartsCount);
         System.assertEquals(0, data.readyToAssignCount);
@@ -720,6 +811,7 @@ private class ManagerOperationsCenterControllerTest {
 
         System.assertNotEquals(null, data.newCases);
         System.assertNotEquals(null, data.requiresReview);
+        System.assertNotEquals(null, data.followUpRequired);
         System.assertNotEquals(null, data.partsToOrder);
         System.assertNotEquals(null, data.waitingOnParts);
         System.assertNotEquals(null, data.readyToAssign);
@@ -765,6 +857,11 @@ private class ManagerOperationsCenterControllerTest {
         if (dispatchStatus == 'Temporary Fix') {
             workOrder.Technician_Notes__c =
                 'Temporary repair completed for testing.';
+        }
+
+        if (dispatchStatus == 'Completed') {
+            workOrder.Technician_Notes__c =
+                'Completed repair notes for testing.';
         }
 
         return workOrder;
@@ -881,6 +978,11 @@ private class ManagerOperationsCenterControllerTest {
         System.assertEquals(
             data.requiresReview.size(),
             data.requiresReviewCount
+        );
+
+        System.assertEquals(
+            data.followUpRequired.size(),
+            data.followUpRequiredCount
         );
 
         System.assertEquals(

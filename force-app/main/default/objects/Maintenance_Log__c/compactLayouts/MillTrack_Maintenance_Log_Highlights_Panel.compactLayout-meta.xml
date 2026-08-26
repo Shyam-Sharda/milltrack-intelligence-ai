@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CompactLayout xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>MillTrack_Maintenance_Log_Highlights_Panel</fullName>
+    <fields>Name</fields>
+    <fields>Asset__c</fields>
+    <fields>Work_Order__c</fields>
+    <fields>Maintenance_Type__c</fields>
+    <fields>Maintenance_Date__c</fields>
+    <fields>Performed_By__c</fields>
+    <fields>Issue_Resolved__c</fields>
+    <label>MillTrack Maintenance Log Highlights Panel</label>
+</CompactLayout>

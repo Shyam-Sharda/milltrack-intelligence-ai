@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FlowDefinition xmlns="http://soap.sforce.com/2006/04/metadata">
+    <activeVersionNumber>2</activeVersionNumber>
+    <description>Service Manager screen flow for processing a part request submitted by a field technician. It records supplier and ordering information, updates the Work Order Part from Requested to Ordered, and maintains the related Work Order’s parts status. Direct access is restricted to Service Managers and System Administrators.</description>
+    <masterLabel>MGR 05 - Order Technician-Requested Part</masterLabel>
+</FlowDefinition>

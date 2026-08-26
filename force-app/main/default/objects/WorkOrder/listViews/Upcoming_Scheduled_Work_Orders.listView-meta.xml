@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ListView xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Upcoming_Scheduled_Work_Orders</fullName>
+    <columns>Scheduled_Visit__c</columns>
+    <columns>Name</columns>
+    <columns>Subject</columns>
+    <columns>Account</columns>
+    <columns>Asset</columns>
+    <columns>Priority</columns>
+    <columns>Dispatch_Status__c</columns>
+    <filterScope>Mine</filterScope>
+    <filters>
+        <field>Scheduled_Visit__c</field>
+        <operation>equals</operation>
+        <value>NEXT_N_DAYS:7</value>
+    </filters>
+    <filters>
+        <field>Dispatch_Status__c</field>
+        <operation>notEqual</operation>
+        <value>Completed</value>
+    </filters>
+    <label>Upcoming Scheduled Work Orders</label>
+    <sharedTo>
+        <group>MillTrack_Service_Managers</group>
+        <group>MillTrack_Technicians</group>
+    </sharedTo>
+</ListView>

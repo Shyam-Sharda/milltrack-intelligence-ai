@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CompactLayout xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>MillTrack_Part_Catalog_Highlights_Panel</fullName>
+    <fields>Part_Number__c</fields>
+    <fields>Name</fields>
+    <fields>Manufacturer__c</fields>
+    <fields>Compatible_Model__c</fields>
+    <fields>Supplier_Name__c</fields>
+    <fields>Stock_Status__c</fields>
+    <label>MillTrack Part Catalog Highlights Panel</label>
+</CompactLayout>

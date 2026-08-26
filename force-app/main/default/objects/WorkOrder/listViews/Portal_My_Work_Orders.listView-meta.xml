@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ListView xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Portal_My_Work_Orders</fullName>
+    <columns>Name</columns>
+    <columns>Subject</columns>
+    <columns>Status</columns>
+    <columns>Scheduled_Visit__c</columns>
+    <columns>Dispatch_Status__c</columns>
+    <filterScope>Everything</filterScope>
+    <label>My Work Orders</label>
+</ListView>

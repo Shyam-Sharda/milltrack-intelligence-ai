@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ListView xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Today_s_Scheduled_Work_Orders</fullName>
+    <columns>Scheduled_Visit__c</columns>
+    <columns>Name</columns>
+    <columns>Subject</columns>
+    <columns>Account</columns>
+    <columns>Asset</columns>
+    <columns>Priority</columns>
+    <columns>Dispatch_Status__c</columns>
+    <columns>Contact</columns>
+    <filterScope>Mine</filterScope>
+    <filters>
+        <field>Scheduled_Visit__c</field>
+        <operation>equals</operation>
+        <value>TODAY</value>
+    </filters>
+    <filters>
+        <field>Dispatch_Status__c</field>
+        <operation>equals</operation>
+        <value>Assigned,In Progress</value>
+    </filters>
+    <label>Today&apos;s Scheduled Work Orders</label>
+    <sharedTo>
+        <group>MillTrack_Service_Managers</group>
+        <group>MillTrack_Technicians</group>
+    </sharedTo>
+</ListView>

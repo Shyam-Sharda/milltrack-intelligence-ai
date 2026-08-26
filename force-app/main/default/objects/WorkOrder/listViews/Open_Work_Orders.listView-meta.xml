@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ListView xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Open_Work_Orders</fullName>
+    <columns>Name</columns>
+    <columns>Subject</columns>
+    <columns>Asset</columns>
+    <columns>Priority</columns>
+    <columns>Owner</columns>
+    <columns>Dispatch_Status__c</columns>
+    <columns>Account</columns>
+    <columns>Contact</columns>
+    <filterScope>Everything</filterScope>
+    <filters>
+        <field>Dispatch_Status__c</field>
+        <operation>notEqual</operation>
+        <value>Completed</value>
+    </filters>
+    <label>Open Work Orders</label>
+    <sharedTo>
+        <group>MillTrack_Administrators</group>
+        <group>MillTrack_Service_Managers</group>
+    </sharedTo>
+</ListView>

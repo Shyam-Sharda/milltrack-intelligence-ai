@@ -133,6 +133,16 @@
                 <identifier>RecordWork_Started_Date_Time_cField</identifier>
             </fieldInstance>
         </itemInstances>
+        <itemInstances>
+            <fieldInstance>
+                <fieldInstanceProperties>
+                    <name>uiBehavior</name>
+                    <value>none</value>
+                </fieldInstanceProperties>
+                <fieldItem>Record.Work_Ended_Date_Time__c</fieldItem>
+                <identifier>RecordWork_Ended_Date_Time_cField</identifier>
+            </fieldInstance>
+        </itemInstances>
         <name>Facet-3e29b35a-b14d-4056-8f8b-262cd83ce7c2</name>
         <type>Facet</type>
     </flexiPageRegions>
@@ -181,16 +191,6 @@
                 <identifier>RecordRecommended_Solution_cField</identifier>
             </fieldInstance>
         </itemInstances>
-        <itemInstances>
-            <fieldInstance>
-                <fieldInstanceProperties>
-                    <name>uiBehavior</name>
-                    <value>none</value>
-                </fieldInstanceProperties>
-                <fieldItem>Record.Recommended_Tools__c</fieldItem>
-                <identifier>RecordRecommended_Tools_cField</identifier>
-            </fieldInstance>
-        </itemInstances>
         <name>Facet-bc65ef1e-d033-4f85-90e1-b7fa1d2e3c02</name>
         <type>Facet</type>
     </flexiPageRegions>
@@ -213,6 +213,16 @@
                 </fieldInstanceProperties>
                 <fieldItem>Record.Recommended_Parts__c</fieldItem>
                 <identifier>RecordRecommended_Parts__cField</identifier>
+            </fieldInstance>
+        </itemInstances>
+        <itemInstances>
+            <fieldInstance>
+                <fieldInstanceProperties>
+                    <name>uiBehavior</name>
+                    <value>none</value>
+                </fieldInstanceProperties>
+                <fieldItem>Record.Recommended_Tools__c</fieldItem>
+                <identifier>RecordRecommended_Tools_cField</identifier>
             </fieldInstance>
         </itemInstances>
         <name>Facet-0ae60b10-c03f-4b5b-8574-5dddeee26295</name>

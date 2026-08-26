@@ -52,6 +52,10 @@
                 <behavior>Edit</behavior>
                 <field>Service_Manager__c</field>
             </layoutItems>
+            <layoutItems>
+                <behavior>Edit</behavior>
+                <field>Work_Ended_Date_Time__c</field>
+            </layoutItems>
         </layoutColumns>
         <layoutColumns>
             <layoutItems>

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FlowDefinition xmlns="http://soap.sforce.com/2006/04/metadata">
+    <activeVersionNumber>11</activeVersionNumber>
+    <description>Technician screen flow for documenting a temporary repair when the permanent repair cannot be completed during the current visit. It captures the temporary resolution and technician notes, updates the Work Order to Temporary Fix, and ends the visit while preserving the remaining service requirement. Direct access is restricted to Technicians and System Administrators.</description>
+    <masterLabel>TECH 03 - Record Temporary Repair and End Visit</masterLabel>
+</FlowDefinition>

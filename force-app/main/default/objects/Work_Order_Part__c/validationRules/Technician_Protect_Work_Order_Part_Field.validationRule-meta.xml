@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ValidationRule xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Technician_Protect_Work_Order_Part_Field</fullName>
+    <active>true</active>
+    <description>Prevents MillTrack technicians from directly changing the Work Order or Part Catalog on an existing Work Order Part.</description>
+    <errorConditionFormula>AND(
+    $Permission.MillTrack_Technician_Restricted_Editing,
+    NOT(ISNEW()),
+    OR(
+        ISCHANGED( Part_Catalog__c ),
+        ISCHANGED( Work_Order__c )
+    )
+)</errorConditionFormula>
+    <errorMessage>Technicians cannot change the Work Order or Part Catalog on an existing Work Order Part. Use the approved service workflow instead.</errorMessage>
+</ValidationRule>

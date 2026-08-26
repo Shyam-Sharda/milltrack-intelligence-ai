@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <FlowDefinition xmlns="http://soap.sforce.com/2006/04/metadata">
-    <activeVersionNumber>10</activeVersionNumber>
+    <activeVersionNumber>11</activeVersionNumber>
+    <description>Shared autolaunched flow that retrieves service history associated with a dental milling machine. It gathers relevant Work Orders, Maintenance Logs, previous failures, repair notes, and parts information for use by approved AI and internal service experiences. This helper flow is invoked by parent automation and has no direct profile access.</description>
+    <masterLabel>CORE 03 - Retrieve Machine Service History</masterLabel>
 </FlowDefinition>

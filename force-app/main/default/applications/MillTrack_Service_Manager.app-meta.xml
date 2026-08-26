@@ -1,5 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CustomApplication xmlns="http://soap.sforce.com/2006/04/metadata">
+    <actionOverrides>
+        <actionName>Tab</actionName>
+        <content>Service_Manager_Home_Page</content>
+        <formFactor>Large</formFactor>
+        <skipRecordTypeSelect>false</skipRecordTypeSelect>
+        <type>Flexipage</type>
+        <pageOrSobjectType>standard-home</pageOrSobjectType>
+    </actionOverrides>
     <brand>
         <headerColor>#0070D2</headerColor>
         <shouldOverrideOrgTheme>false</shouldOverrideOrgTheme>
@@ -14,7 +22,7 @@
     <navType>Standard</navType>
     <profileActionOverrides>
         <actionName>Tab</actionName>
-        <content>MillTrack_Manager_Home</content>
+        <content>Service_Manager_Home_Page</content>
         <formFactor>Large</formFactor>
         <pageOrSobjectType>standard-home</pageOrSobjectType>
         <type>Flexipage</type>
@@ -22,23 +30,7 @@
     </profileActionOverrides>
     <profileActionOverrides>
         <actionName>View</actionName>
-        <content>Work_Order_Record_Page2</content>
-        <formFactor>Small</formFactor>
-        <pageOrSobjectType>WorkOrder</pageOrSobjectType>
-        <type>Flexipage</type>
-        <profile>MillTrack Service Manager</profile>
-    </profileActionOverrides>
-    <profileActionOverrides>
-        <actionName>View</actionName>
-        <content>Work_Order_Record_Page2</content>
-        <formFactor>Large</formFactor>
-        <pageOrSobjectType>WorkOrder</pageOrSobjectType>
-        <type>Flexipage</type>
-        <profile>MillTrack Service Manager</profile>
-    </profileActionOverrides>
-    <profileActionOverrides>
-        <actionName>View</actionName>
-        <content>Case_Record_Page1</content>
+        <content>Service_Manager_Case_Record_Page</content>
         <formFactor>Small</formFactor>
         <pageOrSobjectType>Case</pageOrSobjectType>
         <type>Flexipage</type>
@@ -46,16 +38,297 @@
     </profileActionOverrides>
     <profileActionOverrides>
         <actionName>View</actionName>
-        <content>Case_Record_Page1</content>
+        <content>Service_Manager_Case_Record_Page</content>
         <formFactor>Large</formFactor>
         <pageOrSobjectType>Case</pageOrSobjectType>
         <type>Flexipage</type>
         <profile>MillTrack Service Manager</profile>
+    </profileActionOverrides>
+    <profileActionOverrides>
+        <actionName>View</actionName>
+        <content>Service_Manager_Work_Order_Record_Page</content>
+        <formFactor>Small</formFactor>
+        <pageOrSobjectType>WorkOrder</pageOrSobjectType>
+        <type>Flexipage</type>
+        <profile>MillTrack Service Manager</profile>
+    </profileActionOverrides>
+    <profileActionOverrides>
+        <actionName>View</actionName>
+        <content>Service_Manager_Work_Order_Record_Page</content>
+        <formFactor>Large</formFactor>
+        <pageOrSobjectType>WorkOrder</pageOrSobjectType>
+        <type>Flexipage</type>
+        <profile>MillTrack Service Manager</profile>
+    </profileActionOverrides>
+    <profileActionOverrides>
+        <actionName>View</actionName>
+        <content>Service_Manager_Work_Order_Record_Page</content>
+        <formFactor>Small</formFactor>
+        <pageOrSobjectType>WorkOrder</pageOrSobjectType>
+        <type>Flexipage</type>
+        <profile>Admin</profile>
+    </profileActionOverrides>
+    <profileActionOverrides>
+        <actionName>View</actionName>
+        <content>Service_Manager_Work_Order_Record_Page</content>
+        <formFactor>Large</formFactor>
+        <pageOrSobjectType>WorkOrder</pageOrSobjectType>
+        <type>Flexipage</type>
+        <profile>Admin</profile>
+    </profileActionOverrides>
+    <profileActionOverrides>
+        <actionName>View</actionName>
+        <content>Service_Manager_Asset_Record_Page</content>
+        <formFactor>Small</formFactor>
+        <pageOrSobjectType>Asset</pageOrSobjectType>
+        <type>Flexipage</type>
+        <profile>MillTrack Service Manager</profile>
+    </profileActionOverrides>
+    <profileActionOverrides>
+        <actionName>View</actionName>
+        <content>Service_Manager_Asset_Record_Page</content>
+        <formFactor>Large</formFactor>
+        <pageOrSobjectType>Asset</pageOrSobjectType>
+        <type>Flexipage</type>
+        <profile>MillTrack Service Manager</profile>
+    </profileActionOverrides>
+    <profileActionOverrides>
+        <actionName>View</actionName>
+        <content>Service_Manager_Asset_Record_Page</content>
+        <formFactor>Small</formFactor>
+        <pageOrSobjectType>Asset</pageOrSobjectType>
+        <type>Flexipage</type>
+        <profile>Admin</profile>
+    </profileActionOverrides>
+    <profileActionOverrides>
+        <actionName>View</actionName>
+        <content>Service_Manager_Asset_Record_Page</content>
+        <formFactor>Large</formFactor>
+        <pageOrSobjectType>Asset</pageOrSobjectType>
+        <type>Flexipage</type>
+        <profile>Admin</profile>
+    </profileActionOverrides>
+    <profileActionOverrides>
+        <actionName>View</actionName>
+        <content>Service_Manager_Work_Order_Part_Record_Page</content>
+        <formFactor>Small</formFactor>
+        <pageOrSobjectType>Work_Order_Part__c</pageOrSobjectType>
+        <type>Flexipage</type>
+        <profile>MillTrack Service Manager</profile>
+    </profileActionOverrides>
+    <profileActionOverrides>
+        <actionName>View</actionName>
+        <content>Service_Manager_Work_Order_Part_Record_Page</content>
+        <formFactor>Large</formFactor>
+        <pageOrSobjectType>Work_Order_Part__c</pageOrSobjectType>
+        <type>Flexipage</type>
+        <profile>MillTrack Service Manager</profile>
+    </profileActionOverrides>
+    <profileActionOverrides>
+        <actionName>View</actionName>
+        <content>Service_Manager_Work_Order_Part_Record_Page</content>
+        <formFactor>Small</formFactor>
+        <pageOrSobjectType>Work_Order_Part__c</pageOrSobjectType>
+        <type>Flexipage</type>
+        <profile>Admin</profile>
+    </profileActionOverrides>
+    <profileActionOverrides>
+        <actionName>View</actionName>
+        <content>Service_Manager_Work_Order_Part_Record_Page</content>
+        <formFactor>Large</formFactor>
+        <pageOrSobjectType>Work_Order_Part__c</pageOrSobjectType>
+        <type>Flexipage</type>
+        <profile>Admin</profile>
+    </profileActionOverrides>
+    <profileActionOverrides>
+        <actionName>View</actionName>
+        <content>Service_Manager_Maintenance_Log_Record_Page</content>
+        <formFactor>Small</formFactor>
+        <pageOrSobjectType>Maintenance_Log__c</pageOrSobjectType>
+        <type>Flexipage</type>
+        <profile>MillTrack Service Manager</profile>
+    </profileActionOverrides>
+    <profileActionOverrides>
+        <actionName>View</actionName>
+        <content>Service_Manager_Maintenance_Log_Record_Page</content>
+        <formFactor>Large</formFactor>
+        <pageOrSobjectType>Maintenance_Log__c</pageOrSobjectType>
+        <type>Flexipage</type>
+        <profile>MillTrack Service Manager</profile>
+    </profileActionOverrides>
+    <profileActionOverrides>
+        <actionName>View</actionName>
+        <content>Service_Manager_Maintenance_Log_Record_Page</content>
+        <formFactor>Small</formFactor>
+        <pageOrSobjectType>Maintenance_Log__c</pageOrSobjectType>
+        <type>Flexipage</type>
+        <profile>Admin</profile>
+    </profileActionOverrides>
+    <profileActionOverrides>
+        <actionName>View</actionName>
+        <content>Service_Manager_Maintenance_Log_Record_Page</content>
+        <formFactor>Large</formFactor>
+        <pageOrSobjectType>Maintenance_Log__c</pageOrSobjectType>
+        <type>Flexipage</type>
+        <profile>Admin</profile>
+    </profileActionOverrides>
+    <profileActionOverrides>
+        <actionName>View</actionName>
+        <content>Service_Manager_Part_Catalog_Record_Page</content>
+        <formFactor>Small</formFactor>
+        <pageOrSobjectType>Part_Catalog__c</pageOrSobjectType>
+        <type>Flexipage</type>
+        <profile>MillTrack Service Manager</profile>
+    </profileActionOverrides>
+    <profileActionOverrides>
+        <actionName>View</actionName>
+        <content>Service_Manager_Part_Catalog_Record_Page</content>
+        <formFactor>Large</formFactor>
+        <pageOrSobjectType>Part_Catalog__c</pageOrSobjectType>
+        <type>Flexipage</type>
+        <profile>MillTrack Service Manager</profile>
+    </profileActionOverrides>
+    <profileActionOverrides>
+        <actionName>View</actionName>
+        <content>Service_Manager_Part_Catalog_Record_Page</content>
+        <formFactor>Small</formFactor>
+        <pageOrSobjectType>Part_Catalog__c</pageOrSobjectType>
+        <type>Flexipage</type>
+        <profile>Admin</profile>
+    </profileActionOverrides>
+    <profileActionOverrides>
+        <actionName>View</actionName>
+        <content>Service_Manager_Part_Catalog_Record_Page</content>
+        <formFactor>Large</formFactor>
+        <pageOrSobjectType>Part_Catalog__c</pageOrSobjectType>
+        <type>Flexipage</type>
+        <profile>Admin</profile>
+    </profileActionOverrides>
+    <profileActionOverrides>
+        <actionName>View</actionName>
+        <content>Service_Manager_Service_Manual_Record_Page</content>
+        <formFactor>Small</formFactor>
+        <pageOrSobjectType>Service_Manual__c</pageOrSobjectType>
+        <type>Flexipage</type>
+        <profile>MillTrack Service Manager</profile>
+    </profileActionOverrides>
+    <profileActionOverrides>
+        <actionName>View</actionName>
+        <content>Service_Manager_Service_Manual_Record_Page</content>
+        <formFactor>Large</formFactor>
+        <pageOrSobjectType>Service_Manual__c</pageOrSobjectType>
+        <type>Flexipage</type>
+        <profile>MillTrack Service Manager</profile>
+    </profileActionOverrides>
+    <profileActionOverrides>
+        <actionName>View</actionName>
+        <content>Service_Manager_Service_Manual_Record_Page</content>
+        <formFactor>Small</formFactor>
+        <pageOrSobjectType>Service_Manual__c</pageOrSobjectType>
+        <type>Flexipage</type>
+        <profile>Admin</profile>
+    </profileActionOverrides>
+    <profileActionOverrides>
+        <actionName>View</actionName>
+        <content>Service_Manager_Service_Manual_Record_Page</content>
+        <formFactor>Large</formFactor>
+        <pageOrSobjectType>Service_Manual__c</pageOrSobjectType>
+        <type>Flexipage</type>
+        <profile>Admin</profile>
+    </profileActionOverrides>
+    <profileActionOverrides>
+        <actionName>View</actionName>
+        <content>Service_Manager_Case_Record_Page</content>
+        <formFactor>Small</formFactor>
+        <pageOrSobjectType>Case</pageOrSobjectType>
+        <type>Flexipage</type>
+        <profile>Admin</profile>
+    </profileActionOverrides>
+    <profileActionOverrides>
+        <actionName>View</actionName>
+        <content>Service_Manager_Case_Record_Page</content>
+        <formFactor>Large</formFactor>
+        <pageOrSobjectType>Case</pageOrSobjectType>
+        <type>Flexipage</type>
+        <profile>Admin</profile>
+    </profileActionOverrides>
+    <profileActionOverrides>
+        <actionName>View</actionName>
+        <content>Service_Manager_Account_Record_Page</content>
+        <formFactor>Small</formFactor>
+        <pageOrSobjectType>Account</pageOrSobjectType>
+        <type>Flexipage</type>
+        <profile>MillTrack Service Manager</profile>
+    </profileActionOverrides>
+    <profileActionOverrides>
+        <actionName>View</actionName>
+        <content>Service_Manager_Account_Record_Page</content>
+        <formFactor>Large</formFactor>
+        <pageOrSobjectType>Account</pageOrSobjectType>
+        <type>Flexipage</type>
+        <profile>MillTrack Service Manager</profile>
+    </profileActionOverrides>
+    <profileActionOverrides>
+        <actionName>View</actionName>
+        <content>Service_Manager_Account_Record_Page</content>
+        <formFactor>Small</formFactor>
+        <pageOrSobjectType>Account</pageOrSobjectType>
+        <type>Flexipage</type>
+        <profile>Admin</profile>
+    </profileActionOverrides>
+    <profileActionOverrides>
+        <actionName>View</actionName>
+        <content>Service_Manager_Account_Record_Page</content>
+        <formFactor>Large</formFactor>
+        <pageOrSobjectType>Account</pageOrSobjectType>
+        <type>Flexipage</type>
+        <profile>Admin</profile>
+    </profileActionOverrides>
+    <profileActionOverrides>
+        <actionName>View</actionName>
+        <content>Service_Manager_Contact_Record_Page</content>
+        <formFactor>Small</formFactor>
+        <pageOrSobjectType>Contact</pageOrSobjectType>
+        <type>Flexipage</type>
+        <profile>MillTrack Service Manager</profile>
+    </profileActionOverrides>
+    <profileActionOverrides>
+        <actionName>View</actionName>
+        <content>Service_Manager_Contact_Record_Page</content>
+        <formFactor>Large</formFactor>
+        <pageOrSobjectType>Contact</pageOrSobjectType>
+        <type>Flexipage</type>
+        <profile>MillTrack Service Manager</profile>
+    </profileActionOverrides>
+    <profileActionOverrides>
+        <actionName>View</actionName>
+        <content>Service_Manager_Contact_Record_Page</content>
+        <formFactor>Small</formFactor>
+        <pageOrSobjectType>Contact</pageOrSobjectType>
+        <type>Flexipage</type>
+        <profile>Admin</profile>
+    </profileActionOverrides>
+    <profileActionOverrides>
+        <actionName>View</actionName>
+        <content>Service_Manager_Contact_Record_Page</content>
+        <formFactor>Large</formFactor>
+        <pageOrSobjectType>Contact</pageOrSobjectType>
+        <type>Flexipage</type>
+        <profile>Admin</profile>
+    </profileActionOverrides>
+    <profileActionOverrides>
+        <actionName>Tab</actionName>
+        <content>Service_Manager_Home_Page</content>
+        <formFactor>Large</formFactor>
+        <pageOrSobjectType>standard-home</pageOrSobjectType>
+        <type>Flexipage</type>
+        <profile>Admin</profile>
     </profileActionOverrides>
     <tabs>standard-home</tabs>
     <tabs>standard-Case</tabs>
     <tabs>standard-WorkOrder</tabs>
     <tabs>Work_Order_Part__c</tabs>
+    <tabs>Maintenance_Log__c</tabs>
     <tabs>standard-Asset</tabs>
     <tabs>Part_Catalog__c</tabs>
     <tabs>Service_Manual__c</tabs>

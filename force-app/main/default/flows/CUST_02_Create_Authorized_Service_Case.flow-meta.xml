@@ -32,6 +32,28 @@
         <offset>0</offset>
         <storeOutputAutomatically>true</storeOutputAutomatically>
     </actionCalls>
+    <actionCalls>
+        <name>Resolve_Service_Manager_Queue</name>
+        <label>Resolve Service Manager Queue</label>
+        <locationX>2191</locationX>
+        <locationY>276</locationY>
+        <actionName>GetServiceManagerQueue</actionName>
+        <actionType>apex</actionType>
+        <connector>
+            <targetReference>Was_Service_Manager_Queue_Resolved</targetReference>
+        </connector>
+        <flowTransactionModel>Automatic</flowTransactionModel>
+        <inputParameters>
+            <name>queueDeveloperName</name>
+            <value>
+                <inputConfiguratorMode>Resource</inputConfiguratorMode>
+                <stringValue>Service_Manager_Queue</stringValue>
+            </value>
+        </inputParameters>
+        <nameSegment>GetServiceManagerQueue</nameSegment>
+        <offset>0</offset>
+        <storeOutputAutomatically>true</storeOutputAutomatically>
+    </actionCalls>
     <apiVersion>67.0</apiVersion>
     <areMetricsLoggedToDataCloud>false</areMetricsLoggedToDataCloud>
     <assignments>
@@ -64,8 +86,8 @@
     <assignments>
         <name>Set_Created_Case_Result</name>
         <label>Set Created Case Result</label>
-        <locationX>2419</locationX>
-        <locationY>281</locationY>
+        <locationX>2764</locationX>
+        <locationY>497</locationY>
         <assignmentItems>
             <assignToReference>varSuccess</assignToReference>
             <operator>Assign</operator>
@@ -92,6 +114,13 @@
             <operator>Assign</operator>
             <value>
                 <elementReference>txtCreatedCaseMessage</elementReference>
+            </value>
+        </assignmentItems>
+        <assignmentItems>
+            <assignToReference>varCaseId</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <elementReference>Create_Authorized_Service_Case.Id</elementReference>
             </value>
         </assignmentItems>
     </assignments>
@@ -126,6 +155,13 @@
             <operator>Assign</operator>
             <value>
                 <elementReference>txtExistingCaseMessage</elementReference>
+            </value>
+        </assignmentItems>
+        <assignmentItems>
+            <assignToReference>varCaseId</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <elementReference>Get_Matching_Open_Case.Id</elementReference>
             </value>
         </assignmentItems>
     </assignments>
@@ -305,7 +341,7 @@
         <locationX>1964</locationX>
         <locationY>278</locationY>
         <defaultConnector>
-            <targetReference>Create_Authorized_Service_Case</targetReference>
+            <targetReference>Resolve_Service_Manager_Queue</targetReference>
         </defaultConnector>
         <defaultConnectorLabel>No Matching Case</defaultConnectorLabel>
         <rules>
@@ -322,6 +358,38 @@
                 <targetReference>Set_Existing_Case_Result</targetReference>
             </connector>
             <label>Matching Case Found</label>
+        </rules>
+    </decisions>
+    <decisions>
+        <name>Was_Service_Manager_Queue_Resolved</name>
+        <label>Was Service Manager Queue Resolved?</label>
+        <locationX>2390</locationX>
+        <locationY>391</locationY>
+        <defaultConnector>
+            <targetReference>Set_System_Error_Result</targetReference>
+        </defaultConnector>
+        <defaultConnectorLabel>Queue Not Resolved</defaultConnectorLabel>
+        <rules>
+            <name>Queue_Resolved</name>
+            <conditionLogic>and</conditionLogic>
+            <conditions>
+                <leftValueReference>Resolve_Service_Manager_Queue.success</leftValueReference>
+                <operator>EqualTo</operator>
+                <rightValue>
+                    <booleanValue>true</booleanValue>
+                </rightValue>
+            </conditions>
+            <conditions>
+                <leftValueReference>Resolve_Service_Manager_Queue.queueId</leftValueReference>
+                <operator>IsNull</operator>
+                <rightValue>
+                    <booleanValue>false</booleanValue>
+                </rightValue>
+            </conditions>
+            <connector>
+                <targetReference>Create_Authorized_Service_Case</targetReference>
+            </connector>
+            <label>Queue Resolved</label>
         </rules>
     </decisions>
     <decisions>
@@ -401,8 +469,8 @@
     <recordCreates>
         <name>Create_Authorized_Service_Case</name>
         <label>Create Authorized Service Case</label>
-        <locationX>2227</locationX>
-        <locationY>423</locationY>
+        <locationX>2617</locationX>
+        <locationY>497</locationY>
         <connector>
             <targetReference>Set_Created_Case_Result</targetReference>
         </connector>
@@ -443,6 +511,12 @@
             <field>Origin</field>
             <value>
                 <stringValue>Customer AI</stringValue>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>OwnerId</field>
+            <value>
+                <elementReference>Resolve_Service_Manager_Queue.queueId</elementReference>
             </value>
         </inputAssignments>
         <inputAssignments>
@@ -612,6 +686,13 @@
         <isCollection>false</isCollection>
         <isInput>true</isInput>
         <isOutput>false</isOutput>
+    </variables>
+    <variables>
+        <name>varCaseId</name>
+        <dataType>String</dataType>
+        <isCollection>false</isCollection>
+        <isInput>false</isInput>
+        <isOutput>true</isOutput>
     </variables>
     <variables>
         <name>varCaseNumber</name>

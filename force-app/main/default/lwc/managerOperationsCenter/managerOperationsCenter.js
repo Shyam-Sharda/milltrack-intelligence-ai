@@ -19,6 +19,12 @@ const QUEUE_CONFIG = [
         description: 'AI proposals awaiting manager review'
     },
     {
+        key: 'followUpRequired',
+        countKey: 'followUpRequiredCount',
+        label: 'Follow-Up Required',
+        description: 'Temporary repairs awaiting manager follow-up'
+    },
+    {
         key: 'partsToOrder',
         countKey: 'partsToOrderCount',
         label: 'Parts to Order',
@@ -284,6 +290,9 @@ export default class ManagerOperationsCenter
             case 'requiresReview':
                 return REQUIRES_REVIEW_COLUMNS;
 
+            case 'followUpRequired':
+                return REQUIRES_REVIEW_COLUMNS;
+
             case 'partsToOrder':
                 return PARTS_TO_ORDER_COLUMNS;
 
@@ -373,7 +382,7 @@ export default class ManagerOperationsCenter
         if (isWorkOrderPart) {
             displayPartSummary = row.partName || row.recordNumber || 'Part request';
         } else if (isPreDispatchWorkOrder) {
-            displayPartSummary =row.subject || 'Pre-dispatch parts required';
+            displayPartSummary = row.subject || 'Pre-dispatch parts required';
         }
 
         const hasPrimaryAction = Boolean(row.actionType && row.actionName);
@@ -421,7 +430,7 @@ export default class ManagerOperationsCenter
 
             actionDisabled:
                 !hasPrimaryAction ||
-                (row.actionType === 'FLOW' &&(!row.flowApiName || !row.actionRecordId)) ||
+                (row.actionType === 'FLOW' && (!row.flowApiName || !row.actionRecordId)) ||
                 (row.actionType === 'NAVIGATE' &&(!row.recordId || !row.objectApiName))
         };
     }

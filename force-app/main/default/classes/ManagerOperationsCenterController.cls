@@ -103,19 +103,19 @@ public with sharing class ManagerOperationsCenterController {
 
             if (workOrder.Dispatch_Status__c == 'Pending') {
                 data.requiresReview.add(item);
+            } else if (workOrder.Dispatch_Status__c == 'Temporary Fix') {
+                data.followUpRequired.add(item);
             } else if (workOrder.Dispatch_Status__c == 'Parts to Order') {
                 data.partsToOrder.add(item);
             } else if (workOrder.Dispatch_Status__c == 'Ready_to_Assign') {
                 data.readyToAssign.add(item);
-            } else if (workOrder.Dispatch_Status__c == 'In Progress' || workOrder.Dispatch_Status__c == 'Temporary Fix') {
+            } else if (workOrder.Dispatch_Status__c == 'In Progress') {
                 data.activeRepairs.add(item);
             }
         }
     }
 
     private static void loadAssignedVisits(OperationsData data) {
-        Datetime currentMoment = System.now();
-
         List<WorkOrder> assignedWorkOrders = [
             SELECT
                 Id,
@@ -136,9 +136,9 @@ public with sharing class ManagerOperationsCenterController {
                 CreatedDate,
                 LastModifiedDate
             FROM WorkOrder
-            WHERE Dispatch_Status__c = 'Assigned' AND Scheduled_Visit__c >= :currentMoment
+            WHERE Dispatch_Status__c = 'Assigned'
             WITH USER_MODE
-            ORDER BY Scheduled_Visit__c ASC, Priority ASC
+            ORDER BY Scheduled_Visit__c ASC NULLS LAST, Priority ASC
             LIMIT :WORK_ORDER_ROW_LIMIT
         ];
 
@@ -297,7 +297,7 @@ public with sharing class ManagerOperationsCenterController {
     }
 
     private static void configureWorkOrderAction(QueueItem item, String dispatchStatus) {
-        if (dispatchStatus == 'Pending') {
+        if (dispatchStatus == 'Pending' || dispatchStatus == 'Temporary Fix') {
             configureFlowAction(item, 'REVIEW_WORK_ORDER', 'Review Work Order', FLOW_REVIEW_WORK_ORDER, item.workOrderId);
         } else if (dispatchStatus == 'Parts to Order') {
             configureFlowAction(item, 'ORDER_REQUIRED_PARTS', 'Order Required Parts', FLOW_ORDER_PARTS, item.workOrderId);
@@ -360,6 +360,7 @@ public with sharing class ManagerOperationsCenterController {
     public class OperationsData {
         @AuraEnabled public List<QueueItem> newCases { get; set; }
         @AuraEnabled public List<QueueItem> requiresReview { get; set; }
+        @AuraEnabled public List<QueueItem> followUpRequired { get; set; }
         @AuraEnabled public List<QueueItem> partsToOrder { get; set; }
         @AuraEnabled public List<QueueItem> waitingOnParts { get; set; }
         @AuraEnabled public List<QueueItem> readyToAssign { get; set; }
@@ -368,6 +369,7 @@ public with sharing class ManagerOperationsCenterController {
 
         @AuraEnabled public Integer newCasesCount { get; set; }
         @AuraEnabled public Integer requiresReviewCount { get; set; }
+        @AuraEnabled public Integer followUpRequiredCount { get; set; }
         @AuraEnabled public Integer partsToOrderCount { get; set; }
         @AuraEnabled public Integer waitingOnPartsCount { get; set; }
         @AuraEnabled public Integer readyToAssignCount { get; set; }
@@ -379,6 +381,7 @@ public with sharing class ManagerOperationsCenterController {
         public OperationsData() {
             newCases = new List<QueueItem>();
             requiresReview = new List<QueueItem>();
+            followUpRequired = new List<QueueItem>();
             partsToOrder = new List<QueueItem>();
             waitingOnParts = new List<QueueItem>();
             readyToAssign = new List<QueueItem>();
@@ -389,6 +392,7 @@ public with sharing class ManagerOperationsCenterController {
         public void calculateCounts() {
             newCasesCount = newCases.size();
             requiresReviewCount = requiresReview.size();
+            followUpRequiredCount = followUpRequired.size();
             partsToOrderCount = partsToOrder.size();
             waitingOnPartsCount = waitingOnParts.size();
             readyToAssignCount = readyToAssign.size();

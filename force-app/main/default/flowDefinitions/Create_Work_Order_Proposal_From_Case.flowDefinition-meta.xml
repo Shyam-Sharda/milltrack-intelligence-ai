@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FlowDefinition xmlns="http://soap.sforce.com/2006/04/metadata">
+    <activeVersionNumber>5</activeVersionNumber>
+    <description>Autolaunched manager-assistance flow that generates a proposed service plan from a customer Case. It prepares the problem summary, recommended fix, technician notes, tools, parts, previous-failure information, and suggested priority for manager review. This is an internal helper flow and has no direct customer access.</description>
+    <masterLabel>CORE 02 - Generate Work Order Proposal</masterLabel>
+</FlowDefinition>

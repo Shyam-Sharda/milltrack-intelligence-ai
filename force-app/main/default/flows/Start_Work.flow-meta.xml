@@ -11,8 +11,8 @@
     <decisions>
         <name>Can_Start_Work</name>
         <label>Can Start Work?</label>
-        <locationX>195</locationX>
-        <locationY>287</locationY>
+        <locationX>541</locationX>
+        <locationY>42</locationY>
         <defaultConnector>
             <targetReference>Cannot_Start_Screen</targetReference>
         </defaultConnector>
@@ -35,6 +35,7 @@
     </decisions>
     <environments>Default</environments>
     <interviewLabel>Start Work {!$Flow.CurrentDateTime}</interviewLabel>
+    <isAdditionalPermissionRequiredToRun>true</isAdditionalPermissionRequiredToRun>
     <label>Start Work</label>
     <processMetadataValues>
         <name>BuilderType</name>
@@ -58,8 +59,8 @@
     <recordLookups>
         <name>Get_Work_Order</name>
         <label>Get Work Order</label>
-        <locationX>201</locationX>
-        <locationY>158</locationY>
+        <locationX>420</locationX>
+        <locationY>40</locationY>
         <assignNullValuesIfNoRecordsFound>false</assignNullValuesIfNoRecordsFound>
         <connector>
             <targetReference>Can_Start_Work</targetReference>
@@ -77,12 +78,36 @@
         <storeOutputAutomatically>true</storeOutputAutomatically>
     </recordLookups>
     <recordUpdates>
-        <name>Update_Work_Order_to_In_Progress</name>
-        <label>Update Work Order to In Progress</label>
-        <locationX>383</locationX>
-        <locationY>282</locationY>
+        <name>Update_Related_Case_to_In_Progress</name>
+        <label>Update Related Case to In Progress</label>
+        <locationX>937</locationX>
+        <locationY>40</locationY>
         <connector>
             <targetReference>Confirmation_Screen</targetReference>
+        </connector>
+        <filterLogic>and</filterLogic>
+        <filters>
+            <field>Id</field>
+            <operator>EqualTo</operator>
+            <value>
+                <elementReference>Get_Work_Order.CaseId</elementReference>
+            </value>
+        </filters>
+        <inputAssignments>
+            <field>Status</field>
+            <value>
+                <stringValue>In Progress</stringValue>
+            </value>
+        </inputAssignments>
+        <object>Case</object>
+    </recordUpdates>
+    <recordUpdates>
+        <name>Update_Work_Order_to_In_Progress</name>
+        <label>Update Work Order to In Progress</label>
+        <locationX>779</locationX>
+        <locationY>40</locationY>
+        <connector>
+            <targetReference>Update_Related_Case_to_In_Progress</targetReference>
         </connector>
         <filterLogic>and</filterLogic>
         <filters>
@@ -109,8 +134,8 @@
     <screens>
         <name>Cannot_Start_Screen</name>
         <label>Cannot Start Screen</label>
-        <locationX>203</locationX>
-        <locationY>479</locationY>
+        <locationX>551</locationX>
+        <locationY>245</locationY>
         <allowBack>false</allowBack>
         <allowFinish>true</allowFinish>
         <allowPause>false</allowPause>
@@ -134,8 +159,8 @@
     <screens>
         <name>Confirmation_Screen</name>
         <label>Confirmation Screen</label>
-        <locationX>553</locationX>
-        <locationY>283</locationY>
+        <locationX>1100</locationX>
+        <locationY>40</locationY>
         <allowBack>false</allowBack>
         <allowFinish>true</allowFinish>
         <allowPause>false</allowPause>
@@ -157,8 +182,8 @@
         <showHeader>false</showHeader>
     </screens>
     <start>
-        <locationX>75</locationX>
-        <locationY>37</locationY>
+        <locationX>50</locationX>
+        <locationY>21</locationY>
         <connector>
             <targetReference>Get_Work_Order</targetReference>
         </connector>

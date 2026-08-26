@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FlowDefinition xmlns="http://soap.sforce.com/2006/04/metadata">
+    <activeVersionNumber>1</activeVersionNumber>
+    <description>Authenticated Experience Cloud screen flow that lets a customer select a machine associated with their Account and submit a service request. The flow derives the customer’s Account and Contact from the running user, validates Asset ownership, and calls CORE 01 to create the Case. Direct access is restricted to Customer Community Login users with the MillTrack Customer Portal Access permission set.</description>
+    <masterLabel>CUST 01 - Portal Report an Issue</masterLabel>
+</FlowDefinition>

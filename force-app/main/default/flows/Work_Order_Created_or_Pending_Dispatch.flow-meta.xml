@@ -18,6 +18,7 @@
             <name>Input:dispatchContext</name>
             <value>
                 <elementReference>Get_Technician_Dispatch_Context.outputDispatchContext</elementReference>
+                <inputConfiguratorMode>Resource</inputConfiguratorMode>
             </value>
         </inputParameters>
         <nameSegment>Generate_Dispatch_Briefing</nameSegment>

@@ -46,5 +46,6 @@
     <tabs>AI_Interaction_Log__c</tabs>
     <tabs>Work_Order_Part__c</tabs>
     <tabs>Maintenance_Log__c</tabs>
+    <tabs>standard-DataQuickAttribute</tabs>
     <uiType>Lightning</uiType>
 </CustomApplication>

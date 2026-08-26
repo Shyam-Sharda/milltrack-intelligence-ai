@@ -1,10 +1,39 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Flow xmlns="http://soap.sforce.com/2006/04/metadata">
     <actionCalls>
+        <name>Get_Relevant_Historical_Repairs_for_Case</name>
+        <label>Get Relevant Historical Repairs for Case</label>
+        <locationX>629</locationX>
+        <locationY>135</locationY>
+        <actionName>GetRelevantHistoricalRepairsForCase</actionName>
+        <actionType>apex</actionType>
+        <connector>
+            <targetReference>PromptBuilderAction</targetReference>
+        </connector>
+        <flowTransactionModel>Automatic</flowTransactionModel>
+        <inputParameters>
+            <name>caseId</name>
+            <value>
+                <elementReference>$Record.Id</elementReference>
+                <inputConfiguratorMode>Resource</inputConfiguratorMode>
+            </value>
+        </inputParameters>
+        <inputParameters>
+            <name>maxResults</name>
+            <value>
+                <inputConfiguratorMode>Resource</inputConfiguratorMode>
+                <numberValue>3.0</numberValue>
+            </value>
+        </inputParameters>
+        <nameSegment>GetRelevantHistoricalRepairsForCase</nameSegment>
+        <offset>0</offset>
+        <storeOutputAutomatically>true</storeOutputAutomatically>
+    </actionCalls>
+    <actionCalls>
         <name>Parse_Prompt_Output</name>
         <label>Parse Prompt Output</label>
-        <locationX>175</locationX>
-        <locationY>697</locationY>
+        <locationX>888</locationX>
+        <locationY>135</locationY>
         <actionName>ParseWorkOrderProposalFields</actionName>
         <actionType>apex</actionType>
         <connector>
@@ -15,6 +44,7 @@
             <name>proposalText</name>
             <value>
                 <elementReference>PromptBuilderAction.promptResponse</elementReference>
+                <inputConfiguratorMode>Resource</inputConfiguratorMode>
             </value>
         </inputParameters>
         <nameSegment>ParseWorkOrderProposalFields</nameSegment>
@@ -24,8 +54,8 @@
     <actionCalls>
         <name>PromptBuilderAction</name>
         <label>Prompt Builder Action</label>
-        <locationX>175</locationX>
-        <locationY>542</locationY>
+        <locationX>757</locationX>
+        <locationY>135</locationY>
         <actionName>Generate_Work_Order_Proposal_Fields</actionName>
         <actionType>generatePromptResponse</actionType>
         <connector>
@@ -33,9 +63,17 @@
         </connector>
         <flowTransactionModel>CurrentTransaction</flowTransactionModel>
         <inputParameters>
+            <name>Input:historicalRepairContext</name>
+            <value>
+                <elementReference>Get_Relevant_Historical_Repairs_for_Case.historicalRepairContext</elementReference>
+                <inputConfiguratorMode>Resource</inputConfiguratorMode>
+            </value>
+        </inputParameters>
+        <inputParameters>
             <name>Input:dispatchContext</name>
             <value>
                 <elementReference>ttDispatchContext</elementReference>
+                <inputConfiguratorMode>Resource</inputConfiguratorMode>
             </value>
         </inputParameters>
         <nameSegment>Generate_Work_Order_Proposal_Fields</nameSegment>
@@ -69,8 +107,8 @@
     <recordCreates>
         <name>Create_Work_Order</name>
         <label>Create Work Order</label>
-        <locationX>452</locationX>
-        <locationY>697</locationY>
+        <locationX>1136</locationX>
+        <locationY>135</locationY>
         <connector>
             <targetReference>Update_Triggering_Case</targetReference>
         </connector>
@@ -147,15 +185,15 @@
             </value>
         </inputAssignments>
         <inputAssignments>
-            <field>Subject</field>
+            <field>Recommended_Tools__c</field>
             <value>
-                <elementReference>$Record.Subject</elementReference>
+                <elementReference>Parse_Prompt_Output.recommendedTools</elementReference>
             </value>
         </inputAssignments>
         <inputAssignments>
-            <field>Technician_Notes__c</field>
+            <field>Subject</field>
             <value>
-                <elementReference>Parse_Prompt_Output.technicianNotes</elementReference>
+                <elementReference>$Record.Subject</elementReference>
             </value>
         </inputAssignments>
         <object>WorkOrder</object>
@@ -164,11 +202,11 @@
     <recordLookups>
         <name>Get_Case_Asset</name>
         <label>Get Case Asset</label>
-        <locationX>177</locationX>
-        <locationY>403</locationY>
+        <locationX>505</locationX>
+        <locationY>135</locationY>
         <assignNullValuesIfNoRecordsFound>false</assignNullValuesIfNoRecordsFound>
         <connector>
-            <targetReference>PromptBuilderAction</targetReference>
+            <targetReference>Get_Relevant_Historical_Repairs_for_Case</targetReference>
         </connector>
         <filterLogic>and</filterLogic>
         <filters>
@@ -185,8 +223,8 @@
     <recordLookups>
         <name>Get_Queue</name>
         <label>Get Queue</label>
-        <locationX>311</locationX>
-        <locationY>697</locationY>
+        <locationX>1008</locationX>
+        <locationY>135</locationY>
         <assignNullValuesIfNoRecordsFound>false</assignNullValuesIfNoRecordsFound>
         <connector>
             <targetReference>Create_Work_Order</targetReference>
@@ -213,8 +251,8 @@
     <recordUpdates>
         <name>Update_Triggering_Case</name>
         <label>Update Triggering Case</label>
-        <locationX>621</locationX>
-        <locationY>696</locationY>
+        <locationX>1278</locationX>
+        <locationY>135</locationY>
         <inputAssignments>
             <field>Work_Order_Proposal_Created__c</field>
             <value>
@@ -225,7 +263,7 @@
     </recordUpdates>
     <start>
         <locationX>50</locationX>
-        <locationY>49</locationY>
+        <locationY>25</locationY>
         <connector>
             <targetReference>Get_Case_Asset</targetReference>
         </connector>

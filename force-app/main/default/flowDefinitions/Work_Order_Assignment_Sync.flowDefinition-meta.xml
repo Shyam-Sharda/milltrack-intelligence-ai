@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FlowDefinition xmlns="http://soap.sforce.com/2006/04/metadata">
+    <activeVersionNumber>4</activeVersionNumber>
+    <description>Background automation that keeps Work Order technician-assignment and dispatch information synchronized when assignment records change. It updates the appropriate Work Order fields and supports consistent status reporting across manager and technician experiences. This flow runs through system automation and has no direct user access.</description>
+    <masterLabel>SYS 01 - Synchronize Work Order Assignment</masterLabel>
+</FlowDefinition>

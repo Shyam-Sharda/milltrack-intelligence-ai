@@ -128,6 +128,7 @@ public with sharing class TechnicianCopilotController {
             'Technician_Notes__c',
             'Labor_Hours__c',
             'Work_Started_Date_Time__c',
+            'Work_Ended_Date_Time__c',
             'StartDate',
             'EndDate',
             'Suggested_Technician__c',
@@ -167,6 +168,7 @@ public with sharing class TechnicianCopilotController {
             getDateTime(record, 'Work_Started_Date_Time__c'),
             getDateTime(record, 'StartDate')
         );
+        info.workEndedDateTime = getDateTime(record, 'Work_Ended_Date_Time__c');
         info.endDateTime = getDateTime(record, 'EndDate');
         info.ownerId = getId(record, 'OwnerId');
         info.assignedTechnicianId = getId(record, 'Suggested_Technician__c');
@@ -954,6 +956,7 @@ public with sharing class TechnicianCopilotController {
 
         @AuraEnabled public Decimal laborHours { get; set; }
         @AuraEnabled public Datetime workStartedDateTime { get; set; }
+        @AuraEnabled public Datetime workEndedDateTime { get; set; }
         @AuraEnabled public Datetime endDateTime { get; set; }
 
         @AuraEnabled public Id ownerId { get; set; }

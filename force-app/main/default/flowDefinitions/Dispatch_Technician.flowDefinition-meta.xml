@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FlowDefinition xmlns="http://soap.sforce.com/2006/04/metadata">
+    <activeVersionNumber>8</activeVersionNumber>
+    <description>Service Manager screen flow that assigns a technician and scheduled visit to a reviewed Work Order. It records dispatch information, updates the Work Order’s assignment and dispatch status, and initiates the downstream technician-assignment process. Direct access is restricted to Service Managers and System Administrators.</description>
+    <masterLabel>MGR 04 - Dispatch Technician</masterLabel>
+</FlowDefinition>

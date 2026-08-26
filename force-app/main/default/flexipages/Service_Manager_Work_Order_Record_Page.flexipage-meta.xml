@@ -323,8 +323,8 @@
     <flexiPageRegions>
         <itemInstances>
             <fieldInstance>
-                <fieldItem>Record.Asset.SerialNumber</fieldItem>
-                <identifier>RecordAssetSerialNumberField</identifier>
+                <fieldItem>Record.Asset.Serial_Number__c</fieldItem>
+                <identifier>RecordAssetSerial_Number_cField</identifier>
             </fieldInstance>
         </itemInstances>
         <itemInstances>
@@ -393,6 +393,16 @@
                 <identifier>RecordScheduled_Visit_cField2</identifier>
             </fieldInstance>
         </itemInstances>
+        <itemInstances>
+            <fieldInstance>
+                <fieldInstanceProperties>
+                    <name>uiBehavior</name>
+                    <value>none</value>
+                </fieldInstanceProperties>
+                <fieldItem>Record.Work_Started_Date_Time__c</fieldItem>
+                <identifier>RecordWork_Started_Date_Time_cField</identifier>
+            </fieldInstance>
+        </itemInstances>
         <name>Facet-719d3a68-cf1c-4323-808c-72bb0657a375</name>
         <type>Facet</type>
     </flexiPageRegions>
@@ -415,6 +425,16 @@
                 </fieldInstanceProperties>
                 <fieldItem>Record.Labor_Hours__c</fieldItem>
                 <identifier>RecordLabor_Hours_cField</identifier>
+            </fieldInstance>
+        </itemInstances>
+        <itemInstances>
+            <fieldInstance>
+                <fieldInstanceProperties>
+                    <name>uiBehavior</name>
+                    <value>none</value>
+                </fieldInstanceProperties>
+                <fieldItem>Record.Work_Ended_Date_Time__c</fieldItem>
+                <identifier>RecordWork_Ended_Date_Time_cField</identifier>
             </fieldInstance>
         </itemInstances>
         <name>Facet-08b34d3b-98c1-4439-b8bb-b4c981e0b083</name>

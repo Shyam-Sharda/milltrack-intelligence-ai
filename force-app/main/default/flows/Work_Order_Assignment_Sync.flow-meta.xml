@@ -63,12 +63,6 @@
                 <elementReference>$Record.Suggested_Technician__c</elementReference>
             </value>
         </inputAssignments>
-        <inputAssignments>
-            <field>Service_Manager__c</field>
-            <value>
-                <elementReference>$User.Id</elementReference>
-            </value>
-        </inputAssignments>
         <inputReference>$Record</inputReference>
     </recordUpdates>
     <start>
@@ -77,8 +71,7 @@
         <connector>
             <targetReference>Assigned_Technician_Changed</targetReference>
         </connector>
-        <doesRequireRecordChangedToMeetCriteria>true</doesRequireRecordChangedToMeetCriteria>
-        <filterLogic>1 AND (2 or 3)</filterLogic>
+        <filterLogic>1 AND (2 OR 3)</filterLogic>
         <filters>
             <field>Suggested_Technician__c</field>
             <operator>IsNull</operator>
@@ -90,14 +83,14 @@
             <field>Dispatch_Status__c</field>
             <operator>EqualTo</operator>
             <value>
-                <stringValue>Pending</stringValue>
+                <stringValue>Ready_to_Assign</stringValue>
             </value>
         </filters>
         <filters>
             <field>Dispatch_Status__c</field>
             <operator>EqualTo</operator>
             <value>
-                <stringValue>Manager Reviewed</stringValue>
+                <stringValue>Assigned</stringValue>
             </value>
         </filters>
         <object>WorkOrder</object>

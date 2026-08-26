@@ -46,6 +46,10 @@ export default class TechnicianCopilot extends LightningElement {
         return this.context?.caseRecord;
     }
 
+    get serviceManager() {
+        return this.context?.serviceManager;
+    }
+
     get maintenanceLogs() {
         return this.context?.maintenanceLogs ?? [];
     }
@@ -103,6 +107,14 @@ export default class TechnicianCopilot extends LightningElement {
 
     get showCustomerInformation() {
         return Boolean(this.account || this.contact || this.caseRecord);
+    }
+
+    get showWorkOrderDetails() {
+        return Boolean(this.serviceManager || this.workOrder?.workStartedDateTime || this.workOrder?.workEndedDateTime);
+    }
+
+    get previousFailureLabel() {
+        return this.workOrder?.previousFailure ? 'Yes' : 'No';
     }
 
     getErrorMessage(error) {

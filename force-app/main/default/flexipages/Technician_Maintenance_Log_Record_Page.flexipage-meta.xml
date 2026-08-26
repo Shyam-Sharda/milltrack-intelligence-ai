@@ -206,7 +206,7 @@
             <fieldInstance>
                 <fieldInstanceProperties>
                     <name>uiBehavior</name>
-                    <value>none</value>
+                    <value>readonly</value>
                 </fieldInstanceProperties>
                 <fieldItem>Record.Labor_Hours__c</fieldItem>
                 <identifier>RecordLabor_Hours_cField</identifier>

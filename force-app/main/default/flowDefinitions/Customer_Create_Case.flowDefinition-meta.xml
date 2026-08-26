@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FlowDefinition xmlns="http://soap.sforce.com/2006/04/metadata">
+    <description>Customer Agentforce entry point that receives troubleshooting and customer-intake information, resolves the appropriate Account, Contact, and Asset, and creates a customer service Case. Returns the Case ID and a customer-safe status message to the AI conversation. Direct execution is restricted to the Customer Agentforce runtime user.</description>
+    <masterLabel>ZZZ Depreciated AI Create Service Case</masterLabel>
+</FlowDefinition>

@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <FlowDefinition xmlns="http://soap.sforce.com/2006/04/metadata">
-    <activeVersionNumber>2</activeVersionNumber>
+    <activeVersionNumber>8</activeVersionNumber>
+    <description>Customer Agentforce action that finds an existing service request or Work Order and returns its current service status. Used to answer customer questions about manager review, technician assignment, scheduling, parts, and completion. Direct execution is restricted to the Customer Agentforce runtime user.</description>
+    <masterLabel>CUST 03 - AI Check Work Order Status</masterLabel>
 </FlowDefinition>

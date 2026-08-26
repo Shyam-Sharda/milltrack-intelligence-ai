@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <FlowDefinition xmlns="http://soap.sforce.com/2006/04/metadata">
-    <activeVersionNumber>2</activeVersionNumber>
+    <activeVersionNumber>20</activeVersionNumber>
+    <description>Service Manager screen flow that presents the AI-generated service proposal for human review. The manager can confirm or revise the recommended priority, repair plan, technician notes, tools, and parts before generating or updating the Work Order. Direct access is restricted to Service Managers and System Administrators.</description>
+    <masterLabel>MGR 01 - Review Case and Generate Work Order</masterLabel>
 </FlowDefinition>

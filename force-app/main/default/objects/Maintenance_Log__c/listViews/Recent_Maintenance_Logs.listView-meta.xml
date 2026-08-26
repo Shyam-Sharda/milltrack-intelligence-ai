@@ -3,12 +3,16 @@
     <fullName>Recent_Maintenance_Logs</fullName>
     <columns>NAME</columns>
     <columns>Work_Order__c</columns>
+    <columns>Maintenance_Date__c</columns>
     <columns>Asset__c</columns>
     <columns>Maintenance_Type__c</columns>
     <columns>Issue_Resolved__c</columns>
-    <columns>Summary__c</columns>
-    <columns>Performed_By__c</columns>
-    <columns>Maintenance_Date__c</columns>
+    <columns>Labor_Hours__c</columns>
     <filterScope>Everything</filterScope>
+    <filters>
+        <field>Maintenance_Date__c</field>
+        <operation>equals</operation>
+        <value>LAST_N_DAYS:30</value>
+    </filters>
     <label>Recent Maintenance Logs</label>
 </ListView>

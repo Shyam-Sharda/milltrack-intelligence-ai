@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FlowDefinition xmlns="http://soap.sforce.com/2006/04/metadata">
+    <activeVersionNumber>15</activeVersionNumber>
+    <description>Technician screen flow for requesting parts that are required to continue a repair. It creates or updates Work Order Part requests, records quantities and technician notes, places the Work Order into Waiting on Parts, and ends the current visit. Direct access is restricted to Technicians and System Administrators.</description>
+    <masterLabel>TECH 02 - Request Parts and End Visit</masterLabel>
+</FlowDefinition>

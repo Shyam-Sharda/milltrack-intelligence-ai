@@ -34,10 +34,6 @@
             </layoutItems>
             <layoutItems>
                 <behavior>Edit</behavior>
-                <field>Resolution_Status__c</field>
-            </layoutItems>
-            <layoutItems>
-                <behavior>Edit</behavior>
                 <field>Dispatch_Status__c</field>
             </layoutItems>
             <layoutItems>
@@ -77,6 +73,10 @@
             <layoutItems>
                 <behavior>Edit</behavior>
                 <field>EntitlementId</field>
+            </layoutItems>
+            <layoutItems>
+                <behavior>Edit</behavior>
+                <field>Scheduled_Visit__c</field>
             </layoutItems>
         </layoutColumns>
         <style>TwoColumnsLeftToRight</style>

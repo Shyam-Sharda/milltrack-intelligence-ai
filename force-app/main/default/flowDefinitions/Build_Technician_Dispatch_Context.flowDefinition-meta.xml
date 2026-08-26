@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FlowDefinition xmlns="http://soap.sforce.com/2006/04/metadata">
+    <activeVersionNumber>7</activeVersionNumber>
+    <description>Autolaunched flow that assembles the grounded Work Order context used by the Technician Copilot and Technician AI Chat experiences. It combines Work Order, Case, Asset, warranty, service-history, and required-parts information into a structured technician briefing. This helper flow is not launched directly by end users.</description>
+    <masterLabel>CORE 04 - Build Technician Work Order Context</masterLabel>
+</FlowDefinition>

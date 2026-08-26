@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FlowDefinition xmlns="http://soap.sforce.com/2006/04/metadata">
+    <activeVersionNumber>9</activeVersionNumber>
+    <description>Service Manager screen flow for reviewing and ordering parts required for a Work Order. It captures the selected catalog part, quantity, supplier information, ordering details, and notes while updating the Work Order Part lifecycle. Direct access is restricted to Service Managers and System Administrators.</description>
+    <masterLabel>MGR 02 - Order Required Parts</masterLabel>
+</FlowDefinition>
