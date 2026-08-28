@@ -1,5 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<FlowDefinition xmlns="http://soap.sforce.com/2006/04/metadata">
-    <description>Deprecated test flow. Do not use. Retained because Agentforce metadata dependency prevents deletion.</description>
-    <masterLabel>ZZZ Deprecated - TEST Build AI Dispatch Context</masterLabel>
-</FlowDefinition>

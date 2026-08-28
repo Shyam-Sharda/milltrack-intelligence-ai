@@ -16,7 +16,6 @@
         <members>Create_Work_Order_Proposal_From_Case</members>
         <members>Customer_Create_Case</members>
         <members>Generate_Work_Order_Proposal_From_Case</members>
-        <members>Get_Dispatch_Context</members>
         <members>Request_Parts</members>
         <members>Resume_Work</members>
         <members>Start_Work</members>
@@ -33,7 +32,6 @@
         <members>Create_Work_Order_Proposal_From_Case</members>
         <members>Customer_Create_Case</members>
         <members>Generate_Work_Order_Proposal_From_Case</members>
-        <members>Get_Dispatch_Context</members>
         <members>Request_Parts</members>
         <members>Resume_Work</members>
         <members>Start_Work</members>
@@ -107,7 +105,6 @@
     <types>
         <members>Customer_AI518413218_Permissions</members>
         <members>MillTrack_Admin</members>
-        <members>MillTrack_Dispatch_Agent39821207_Permissions</members>
         <members>MillTrack_Service_Manager</members>
         <members>MillTrack_Technician</members>
         <members>MillTrack_Technician_Agent32645960_Permissions</members>
