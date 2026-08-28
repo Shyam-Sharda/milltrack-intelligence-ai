@@ -49,10 +49,8 @@
 
     <!-- Custom and Customized Standard Objects -->
     <types>
-        <members>AI_Interaction_Log__c</members>
         <members>Asset</members>
         <members>Case</members>
-        <members>Dianostic_Rule__c</members>
         <members>Maintenance_Log__c</members>
         <members>Part_Catalog__c</members>
         <members>Service_Manual__c</members>
@@ -130,8 +128,6 @@
 
     <!-- Custom Object Tabs -->
     <types>
-        <members>AI_Interaction_Log__c</members>
-        <members>Dianostic_Rule__c</members>
         <members>Maintenance_Log__c</members>
         <members>Part_Catalog__c</members>
         <members>Service_Manual__c</members>

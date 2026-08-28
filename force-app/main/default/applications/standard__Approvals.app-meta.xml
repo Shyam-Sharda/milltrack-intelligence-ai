@@ -8,19 +8,13 @@
     <label>Approvals</label>
     <navType>Console</navType>
     <tabs>standard-ApprovalsHome</tabs>
-    <tabs>Dianostic_Rule__c</tabs>
     <tabs>Part_Catalog__c</tabs>
     <tabs>Service_Manual__c</tabs>
-    <tabs>AI_Interaction_Log__c</tabs>
     <tabs>Work_Order_Part__c</tabs>
     <tabs>Maintenance_Log__c</tabs>
     <uiType>Lightning</uiType>
     <workspaceConfig>
         <mappings>
-            <tab>AI_Interaction_Log__c</tab>
-        </mappings>
-        <mappings>
-            <tab>Dianostic_Rule__c</tab>
         </mappings>
         <mappings>
             <tab>Maintenance_Log__c</tab>

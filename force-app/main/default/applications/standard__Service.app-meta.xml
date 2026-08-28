@@ -13,10 +13,8 @@
     <tabs>standard-Solution</tabs>
     <tabs>standard-report</tabs>
     <tabs>standard-Dashboard</tabs>
-    <tabs>Dianostic_Rule__c</tabs>
     <tabs>Part_Catalog__c</tabs>
     <tabs>Service_Manual__c</tabs>
-    <tabs>AI_Interaction_Log__c</tabs>
     <tabs>Work_Order_Part__c</tabs>
     <tabs>Maintenance_Log__c</tabs>
 </CustomApplication>

@@ -40,10 +40,8 @@
     <tabs>standard-SemanticContext</tabs>
     <tabs>standard-KnowledgeSpace</tabs>
     <tabs>standard-DataCleanRoom</tabs>
-    <tabs>Dianostic_Rule__c</tabs>
     <tabs>Part_Catalog__c</tabs>
     <tabs>Service_Manual__c</tabs>
-    <tabs>AI_Interaction_Log__c</tabs>
     <tabs>Work_Order_Part__c</tabs>
     <tabs>Maintenance_Log__c</tabs>
     <tabs>standard-DataQuickAttribute</tabs>

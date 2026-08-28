@@ -347,8 +347,6 @@
     <tabs>Service_Manual__c</tabs>
     <tabs>standard-report</tabs>
     <tabs>standard-Dashboard</tabs>
-    <tabs>AI_Interaction_Log__c</tabs>
-    <tabs>Dianostic_Rule__c</tabs>
     <uiType>Lightning</uiType>
     <utilityBar>MillTrack_Intelligence_UtilityBar</utilityBar>
 </CustomApplication>
