@@ -5,8 +5,6 @@
     <types>
         <members>CreateWorkOrderParts</members>
         <members>CreateWorkOrderPartsTest</members>
-        <members>ShareWorkOrderWithTechnician</members>
-        <members>ShareWorkOrderWithTechnicianTest</members>
         <members>TechnicianCopilotController</members>
         <name>ApexClass</name>
     </types>
@@ -21,7 +19,6 @@
         <members>Get_Dispatch_Context</members>
         <members>Request_Parts</members>
         <members>Resume_Work</members>
-        <members>Share_Work_Order_With_Assigned_Technician</members>
         <members>Start_Work</members>
         <members>Temporary_Fix_From_Work_Order</members>
         <members>Work_Order_Assignment_Sync</members>
@@ -39,7 +36,6 @@
         <members>Get_Dispatch_Context</members>
         <members>Request_Parts</members>
         <members>Resume_Work</members>
-        <members>Share_Work_Order_With_Assigned_Technician</members>
         <members>Start_Work</members>
         <members>Temporary_Fix_From_Work_Order</members>
         <members>Work_Order_Assignment_Sync</members>
