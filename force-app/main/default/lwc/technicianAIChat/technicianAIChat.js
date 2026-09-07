@@ -1,8 +1,10 @@
 import { LightningElement, api } from 'lwc';
+import TECHNICIAN_AI_LOGO from '@salesforce/resourceUrl/MillTrackTechnicianAI';
 import sendMessage from '@salesforce/apex/TechnicianAIChatController.sendMessage';
 
 export default class TechnicianAIChat extends LightningElement {
     @api recordId;
+    technicianAiLogo = TECHNICIAN_AI_LOGO;
 
     sessionId;
     draftMessage = '';

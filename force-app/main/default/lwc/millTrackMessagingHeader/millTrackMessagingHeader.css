@@ -1,0 +1,400 @@
+:host {
+    display: block;
+    width: 100%;
+}
+
+
+/* =========================================================
+   HEADER SHELL
+   ========================================================= */
+
+.header-shell {
+    width: 100%;
+    background: #ffffff;
+}
+
+
+/* =========================================================
+   MAIN HEADER
+   ========================================================= */
+
+.chat-header {
+    min-height: 64px;
+
+    padding: 0 14px;
+
+    background: #08254a;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 12px;
+
+    box-sizing: border-box;
+
+    position: relative;
+    z-index: 20;
+}
+
+
+/* =========================================================
+   BRAND
+   ========================================================= */
+
+.brand {
+    display: flex;
+    align-items: center;
+
+    gap: 10px;
+
+    min-width: 0;
+}
+
+
+.ai-icon {
+    width: 36px;
+    height: 36px;
+
+    border-radius: 50%;
+
+    background: #ffffff;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    flex-shrink: 0;
+
+    overflow: hidden;
+
+    border: 2px solid rgba(255, 255, 255, 0.9);
+}
+
+.bot-avatar {
+    width: 100%;
+    height: 100%;
+
+    display: block;
+
+    object-fit: cover;
+
+    border-radius: 50%;
+}
+
+.brand-text {
+    display: flex;
+    flex-direction: column;
+
+    min-width: 0;
+}
+
+
+.title {
+    color: #ffffff;
+
+    font-size: 15px;
+    font-weight: 700;
+
+    line-height: 1.2;
+}
+
+
+.status {
+    color: #d7e7f7;
+
+    font-size: 11px;
+
+    margin-top: 2px;
+}
+
+
+/* =========================================================
+   HEADER ACTIONS
+   ========================================================= */
+
+.actions {
+    display: flex;
+    align-items: center;
+
+    gap: 7px;
+
+    flex-shrink: 0;
+}
+
+
+
+/* =========================================================
+   ICON BUTTONS
+   ========================================================= */
+
+.icon-button {
+    width: 34px;
+    height: 34px;
+
+    padding: 0;
+
+    border: 0;
+    border-radius: 50%;
+
+    background: transparent;
+
+    cursor: pointer;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    transition: background 0.15s ease;
+}
+
+
+.icon-button:hover {
+    background: rgba(255, 255, 255, 0.12);
+}
+
+
+.icon-button lightning-icon {
+    --slds-c-icon-color-foreground-default: #ffffff;
+}
+
+
+/* =========================================================
+   MORE OPTIONS MENU
+   ========================================================= */
+
+.menu-container {
+    position: relative;
+
+    display: flex;
+    align-items: center;
+}
+
+
+/*
+ * Dropdown appears immediately beneath the three-dot button.
+ */
+.header-menu {
+    position: absolute;
+
+    top: 42px;
+    right: 0;
+
+    min-width: 140px;
+
+    background: #ffffff;
+
+    border: 1px solid #cbd8e6;
+    border-radius: 8px;
+
+    box-shadow:
+        0 4px 12px rgba(8, 37, 74, 0.18);
+
+    overflow: hidden;
+
+    z-index: 1000;
+}
+
+
+/* =========================================================
+   MENU ITEMS
+   ========================================================= */
+
+.menu-item {
+    width: 100%;
+
+    min-height: 42px;
+
+    padding: 9px 13px;
+
+    border: 0;
+
+    background: #ffffff;
+
+    display: flex;
+    align-items: center;
+
+    gap: 8px;
+
+    text-align: left;
+
+    font-size: 12px;
+    font-weight: 600;
+
+    cursor: pointer;
+
+    box-sizing: border-box;
+}
+
+
+.menu-item:hover {
+    background: #f3f6f9;
+}
+
+
+/* End Chat gets subtle destructive styling. */
+
+.end-chat-item {
+    color: #ba0517;
+}
+
+
+.end-chat-item lightning-icon {
+    --slds-c-icon-color-foreground-default: #ba0517;
+}
+
+
+/* =========================================================
+   NEW ISSUE CUE
+   ========================================================= */
+
+.new-issue-cue {
+    padding: 10px 12px;
+
+    border-bottom: 1px solid #cbd8e6;
+
+    background: #f3f8fd;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 10px;
+
+    box-sizing: border-box;
+
+    position: relative;
+    z-index: 10;
+}
+
+
+.cue-text {
+    min-width: 0;
+
+    display: flex;
+    flex-direction: column;
+
+    color: #08254a;
+}
+
+
+.cue-text strong {
+    font-size: 12px;
+    font-weight: 700;
+}
+
+
+.cue-text span {
+    margin-top: 2px;
+
+    color: #52677d;
+
+    font-size: 10px;
+    line-height: 1.3;
+}
+
+
+/* =========================================================
+   CUE BUTTON
+   ========================================================= */
+
+.cue-button {
+    flex-shrink: 0;
+
+    min-height: 30px;
+
+    padding: 0 11px;
+
+    border: 1px solid #1268b3;
+    border-radius: 16px;
+
+    background: #ffffff;
+    color: #1268b3;
+
+    font-size: 11px;
+    font-weight: 700;
+
+    cursor: pointer;
+
+    display: inline-flex;
+    align-items: center;
+
+    gap: 5px;
+
+    white-space: nowrap;
+}
+
+
+.cue-button:hover {
+    background: #eaf4ff;
+}
+
+
+.cue-button:disabled {
+    cursor: default;
+    opacity: 0.65;
+}
+
+
+.cue-button lightning-icon {
+    --slds-c-icon-color-foreground-default: #1268b3;
+}
+
+
+/* =========================================================
+   ERROR FALLBACK
+   ========================================================= */
+
+.error-cue {
+    padding: 8px 12px;
+
+    border-bottom: 1px solid #e5b8b8;
+
+    background: #fff4f4;
+
+    color: #8c1d18;
+
+    font-size: 11px;
+    line-height: 1.3;
+
+    box-sizing: border-box;
+}
+
+
+/* =========================================================
+   SMALL CHAT WINDOW SAFETY
+   ========================================================= */
+
+@media (max-width: 420px) {
+
+    .chat-header {
+        padding-left: 10px;
+        padding-right: 10px;
+    }
+
+    .brand {
+        gap: 7px;
+    }
+
+    .ai-icon {
+        width: 30px;
+        height: 30px;
+    }
+
+    .title {
+        font-size: 13px;
+    }
+
+    .status {
+        font-size: 10px;
+    }
+
+    .new-issue-cue {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .cue-button {
+        align-self: flex-end;
+    }
+}

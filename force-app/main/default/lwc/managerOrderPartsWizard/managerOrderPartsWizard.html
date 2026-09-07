@@ -1,0 +1,1714 @@
+<template>
+
+    <div class="wizard-shell">
+
+        <!-- =====================================================
+             LOADING
+             ===================================================== -->
+
+        <template if:true={isLoading}>
+
+            <div class="loading-state">
+
+                <lightning-spinner
+                    alternative-text="Loading parts ordering"
+                    size="medium">
+                </lightning-spinner>
+
+            </div>
+
+        </template>
+
+
+        <!-- =====================================================
+             LOADED
+             ===================================================== -->
+
+        <template if:false={isLoading}>
+
+            <!-- ERROR -->
+
+            <template if:true={errorMessage}>
+
+                <div class="error-state">
+
+                    <lightning-icon
+                        icon-name="utility:error"
+                        size="small">
+                    </lightning-icon>
+
+                    <div>
+                        <h2>Unable to Load Parts Ordering</h2>
+                        <p>{errorMessage}</p>
+                    </div>
+
+                </div>
+
+                <footer class="wizard-footer approval-footer">
+
+                    <button
+                        type="button"
+                        class="secondary-button"
+                        onclick={handleCancel}>
+                        Close
+                    </button>
+
+                </footer>
+
+            </template>
+
+
+            <!-- MAIN WIZARD -->
+
+            <template if:false={errorMessage}>
+
+                <template if:false={isTechnicianRequestMode}>
+
+                <!-- =====================================================
+                     HEADER
+                     ===================================================== -->
+
+                <header class="wizard-header">
+
+                    <div class="header-content">
+
+                        <div class="header-icon">
+
+                            <lightning-icon
+                                icon-name="standard:product_item"
+                                size="small">
+                            </lightning-icon>
+
+                        </div>
+
+                        <div>
+
+                            <p class="eyebrow">
+                                Manager Parts
+                            </p>
+
+                            <h1>
+                                Order Required Parts
+                            </h1>
+
+                            <p class="header-subtitle">
+                                Confirm required parts, place supplier orders,
+                                and record ordering progress.
+                            </p>
+
+                            <div class="header-meta">
+
+                                <span class="work-order-number">
+                                    {workOrderNumber}
+                                </span>
+
+                                <span class="header-meta-divider"></span>
+
+                                <span class="header-machine">
+
+                                    <lightning-icon
+                                        icon-name="standard:asset_object"
+                                        size="xx-small">
+                                    </lightning-icon>
+
+                                    <span>
+                                        {assetName}
+                                    </span>
+
+                                </span>
+
+                                <span class="header-meta-divider"></span>
+
+                                <span class="status-badge parts-status-badge">
+                                    {dispatchStatus}
+                                </span>
+
+                                <span class="status-badge requested-count-badge">
+                                    {requestedCountLabel}
+                                </span>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </header>
+
+
+                <!-- =====================================================
+                     PROGRESS
+                     ===================================================== -->
+
+                <div class="progress-shell">
+
+                    <div class={stepOneClass}>
+
+                        <div class="step-circle">
+                            1
+                        </div>
+
+                        <div>
+                            <strong>Confirm Parts</strong>
+                            <span>Review requirements</span>
+                        </div>
+
+                    </div>
+
+
+                    <div class="progress-line"></div>
+
+
+                    <div class={stepTwoClass}>
+
+                        <div class="step-circle">
+                            2
+                        </div>
+
+                        <div>
+                            <strong>Place Orders</strong>
+                            <span>Contact suppliers</span>
+                        </div>
+
+                    </div>
+
+
+                    <div class="progress-line"></div>
+
+
+                    <div class={stepThreeClass}>
+
+                        <div class="step-circle">
+                            3
+                        </div>
+
+                        <div>
+                            <strong>Summary</strong>
+                            <span>Confirm next step</span>
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- =====================================================
+                     STEP 1 — CONFIRM REQUIRED PARTS
+                     ===================================================== -->
+
+                <template if:true={isStepOne}>
+
+                    <main class="wizard-content">
+
+                        <div class="step-heading">
+
+                            <p class="eyebrow">
+                                Step 1 of 3
+                            </p>
+
+                            <h2>
+                                Confirm Required Parts
+                            </h2>
+
+                            <p>
+                                Review the parts approved during Work Order
+                                review. Deselect a part only if it is no longer
+                                required for this repair.
+                            </p>
+
+                        </div>
+
+
+                        <div class="review-notice">
+
+                            <lightning-icon
+                                icon-name="utility:info"
+                                size="xx-small">
+                            </lightning-icon>
+
+                            <span>
+                                Deselected parts are preserved for history and
+                                will be marked Cancelled only when you click
+                                Done on the final confirmation.
+                            </span>
+
+                        </div>
+
+
+                        <section class="content-card parts-review-card">
+
+                            <div class="card-heading-row">
+
+                                <div>
+
+                                    <p class="section-kicker parts-kicker">
+                                        Approved Parts Request
+                                    </p>
+
+                                    <h3>
+                                        Parts Still Required
+                                    </h3>
+
+                                    <p class="field-helper">
+                                        Keep the checkbox selected for every
+                                        part that still needs to be ordered.
+                                    </p>
+
+                                </div>
+
+                                <span class="count-badge">
+                                    {keptPartCountLabel}
+                                </span>
+
+                            </div>
+
+
+                            <div class="part-review-list">
+
+                                <template
+                                    for:each={reviewParts}
+                                    for:item="part">
+
+                                    <div
+                                        key={part.workOrderPartId}
+                                        class={part.rowClass}>
+
+                                        <div class="part-checkbox-wrap">
+
+                                            <input
+                                                type="checkbox"
+                                                class="part-checkbox"
+                                                data-id={part.workOrderPartId}
+                                                checked={part.keepRequired}
+                                                onchange={handleKeepRequiredChange}
+                                                aria-label="Keep part required">
+
+                                        </div>
+
+
+                                        <div class="part-review-main">
+
+                                            <div class="part-icon">
+
+                                                <lightning-icon
+                                                    icon-name="standard:product_item"
+                                                    size="xx-small">
+                                                </lightning-icon>
+
+                                            </div>
+
+                                            <div class="part-review-copy">
+
+                                                <strong>
+                                                    {part.partName}
+                                                </strong>
+
+                                                <div class="part-meta">
+
+                                                    <span>
+                                                        {part.partNumber}
+                                                    </span>
+
+                                                    <span class="meta-dot">
+                                                        •
+                                                    </span>
+
+                                                    <span>
+                                                        {part.category}
+                                                    </span>
+
+                                                </div>
+
+                                            </div>
+
+                                        </div>
+
+
+                                        <div class="quantity-badge">
+
+                                            <span>
+                                                Qty
+                                            </span>
+
+                                            <strong>
+                                                {part.quantity}
+                                            </strong>
+
+                                        </div>
+
+                                    </div>
+
+                                </template>
+
+                            </div>
+
+
+                            <template if:true={hasRemovedParts}>
+
+                                <div class="removed-summary">
+
+                                    <lightning-icon
+                                        icon-name="utility:warning"
+                                        size="xx-small">
+                                    </lightning-icon>
+
+                                    <span>
+                                        {removedPartCountLabel}
+                                    </span>
+
+                                </div>
+
+                            </template>
+
+                        </section>
+
+                    </main>
+
+
+                    <footer class="wizard-footer approval-footer">
+
+                        <button
+                            type="button"
+                            class="secondary-button"
+                            onclick={handleCancel}>
+                            Cancel
+                        </button>
+
+                        <button
+                            type="button"
+                            class="primary-button"
+                            onclick={handleContinueToOrders}>
+
+                            Continue to Place Orders
+
+                            <lightning-icon
+                                icon-name="utility:chevronright"
+                                size="xx-small">
+                            </lightning-icon>
+
+                        </button>
+
+                    </footer>
+
+                </template>
+
+
+                <!-- =====================================================
+                     STEP 2 — PLACE ORDERS
+                     ===================================================== -->
+
+                <template if:true={isStepTwo}>
+
+                    <main class="wizard-content">
+
+                        <div class="step-heading">
+
+                            <p class="eyebrow">
+                                Step 2 of 3
+                            </p>
+
+                            <h2>
+                                Place Supplier Orders
+                            </h2>
+
+                            <p>
+                                Use the supplier contact information below.
+                                Confirm each part only after its supplier order
+                                has actually been placed.
+                            </p>
+
+                        </div>
+
+
+                        <template if:true={hasKeptParts}>
+
+                            <section class="content-card ordering-card">
+
+                                <div class="card-heading-row">
+
+                                    <div>
+
+                                        <p class="section-kicker order-kicker">
+                                            Supplier Ordering
+                                        </p>
+
+                                        <h3>
+                                            Required Parts
+                                        </h3>
+
+                                        <p class="field-helper">
+                                            Calling a supplier or opening an
+                                            order page does not automatically
+                                            confirm the order.
+                                        </p>
+
+                                    </div>
+
+                                    <span class="count-badge order-count-badge">
+                                        {confirmedOrderCountLabel}
+                                    </span>
+
+                                </div>
+
+
+                                <div class="order-list">
+
+                                    <template
+                                        for:each={orderParts}
+                                        for:item="part">
+
+                                        <article
+                                            key={part.workOrderPartId}
+                                            class="order-part-card">
+
+                                            <div class="order-part-header">
+
+                                                <div class="order-part-main">
+
+                                                    <div class="part-icon">
+
+                                                        <lightning-icon
+                                                            icon-name="standard:product_item"
+                                                            size="xx-small">
+                                                        </lightning-icon>
+
+                                                    </div>
+
+                                                    <div>
+
+                                                        <strong>
+                                                            {part.partName}
+                                                        </strong>
+
+                                                        <div class="part-meta">
+
+                                                            <span>
+                                                                {part.partNumber}
+                                                            </span>
+
+                                                            <span class="meta-dot">
+                                                                •
+                                                            </span>
+
+                                                            <span>
+                                                                {part.category}
+                                                            </span>
+
+                                                        </div>
+
+                                                    </div>
+
+                                                </div>
+
+
+                                                <div class="quantity-badge">
+
+                                                    <span>
+                                                        Qty
+                                                    </span>
+
+                                                    <strong>
+                                                        {part.quantity}
+                                                    </strong>
+
+                                                </div>
+
+                                            </div>
+
+
+                                            <div class="supplier-grid">
+
+                                                <div class="supplier-field">
+
+                                                    <span class="supplier-label">
+                                                        Supplier
+                                                    </span>
+
+                                                    <strong>
+                                                        {part.supplierName}
+                                                    </strong>
+
+                                                </div>
+
+
+                                                <div class="supplier-field">
+
+                                                    <span class="supplier-label">
+                                                        Phone
+                                                    </span>
+
+                                                    <template if:true={part.hasSupplierPhone}>
+
+                                                        <a
+                                                            href={part.phoneHref}
+                                                            class="supplier-link">
+
+                                                            <lightning-icon
+                                                                icon-name="utility:call"
+                                                                size="xx-small">
+                                                            </lightning-icon>
+
+                                                            {part.supplierPhone}
+
+                                                        </a>
+
+                                                    </template>
+
+
+                                                    <template if:false={part.hasSupplierPhone}>
+
+                                                        <span class="not-available">
+                                                            Not available
+                                                        </span>
+
+                                                    </template>
+
+                                                </div>
+
+
+                                                <div class="supplier-field supplier-order-field">
+
+                                                    <span class="supplier-label">
+                                                        Order Online
+                                                    </span>
+
+                                                    <template if:true={part.hasOrderUrl}>
+
+                                                        <a
+                                                            href={part.orderUrl}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            class="order-link">
+
+                                                            Open Order Page
+
+                                                            <lightning-icon
+                                                                icon-name="utility:new_window"
+                                                                size="xx-small">
+                                                            </lightning-icon>
+
+                                                        </a>
+
+                                                    </template>
+
+
+                                                    <template if:false={part.hasOrderUrl}>
+
+                                                        <span class="not-available">
+                                                            No order URL available
+                                                        </span>
+
+                                                    </template>
+
+                                                </div>
+
+                                            </div>
+
+
+                                            <label class="order-confirmation">
+
+                                                <input
+                                                    type="checkbox"
+                                                    class="confirmation-checkbox"
+                                                    data-id={part.workOrderPartId}
+                                                    checked={part.orderConfirmed}
+                                                    onchange={handleOrderConfirmedChange}>
+
+                                                <span class="confirmation-copy">
+
+                                                    <strong>
+                                                        I confirm this part was ordered
+                                                    </strong>
+
+                                                    <small>
+                                                        Check this only after the supplier
+                                                        order has been successfully placed.
+                                                    </small>
+
+                                                </span>
+
+                                            </label>
+
+                                        </article>
+
+                                    </template>
+
+                                </div>
+
+                            </section>
+
+                        </template>
+
+
+                        <template if:false={hasKeptParts}>
+
+                            <section class="content-card no-parts-card">
+
+                                <div class="no-parts-layout">
+
+                                    <div class="no-parts-icon">
+
+                                        <lightning-icon
+                                            icon-name="utility:info_alt"
+                                            size="small">
+                                        </lightning-icon>
+
+                                    </div>
+
+                                    <div>
+
+                                        <p class="section-kicker">
+                                            No Orders Required
+                                        </p>
+
+                                        <h3>
+                                            No parts remain required
+                                        </h3>
+
+                                        <p>
+                                            All requested parts were removed in
+                                            Step 1. No supplier orders are needed
+                                            for those parts. Review the final summary
+                                            before saving the resulting Work Order status.
+                                        </p>
+
+                                    </div>
+
+                                </div>
+
+                            </section>
+
+                        </template>
+
+
+                        
+
+                    </main>
+
+
+                    <footer class="wizard-footer approval-footer">
+
+                        <button
+                            type="button"
+                            class="secondary-button"
+                            onclick={handleCancel}>
+                            Cancel
+                        </button>
+
+
+                        <div class="footer-actions">
+
+                            <button
+                                type="button"
+                                class="secondary-button"
+                                onclick={handleBack}>
+
+                                <lightning-icon
+                                    icon-name="utility:chevronleft"
+                                    size="xx-small">
+                                </lightning-icon>
+
+                                Back
+
+                            </button>
+
+
+                            <button
+                                type="button"
+                                class="primary-button"
+                                onclick={handleContinueToSummary}>
+
+                                Continue to Summary
+
+                                <lightning-icon
+                                    icon-name="utility:chevronright"
+                                    size="xx-small">
+                                </lightning-icon>
+
+                            </button>
+
+                        </div>
+
+                    </footer>
+
+                </template>
+
+
+                <!-- =====================================================
+                     STEP 3 — ORDER SUMMARY
+                     ===================================================== -->
+
+                <template if:true={isStepThree}>
+
+                    <main class="wizard-content">
+
+                        <div class="step-heading">
+
+                            <p class="eyebrow">
+                                Step 3 of 3
+                            </p>
+
+                            <h2>
+                                Ordering Summary
+                            </h2>
+
+                            <p>
+                                Review the changes below before committing them.
+                                Nothing will be written to Salesforce until you click Done.
+                            </p>
+
+                        </div>
+
+
+                        <div class="review-notice">
+
+                            <lightning-icon
+                                icon-name="utility:info"
+                                size="xx-small">
+                            </lightning-icon>
+
+                            <span>
+                                Review before saving. No Work Order, Asset, or
+                                Work Order Part records will be updated until
+                                you click Done.
+                            </span>
+
+                        </div>
+
+
+                        <!-- 1. PARTS ORDERED -->
+
+                        <section
+                            class="content-card summary-blue-card summary-flow-card">
+
+                            <div class="summary-title-row">
+
+                                <div class="summary-step-number summary-step-blue">
+                                    1
+                                </div>
+
+                                <div class="summary-card-icon summary-blue-icon">
+
+                                    <lightning-icon
+                                        icon-name="utility:success"
+                                        size="small">
+                                    </lightning-icon>
+
+                                </div>
+
+                                <div class="summary-heading">
+
+                                    <p class="section-kicker summary-blue-kicker">
+                                        Parts Ordered
+                                    </p>
+
+                                    <h3>
+                                        Confirmed Supplier Orders
+                                    </h3>
+
+                                    <p class="field-helper">
+                                        These parts were confirmed with the supplier and
+                                        will be recorded as Ordered when you click Done.
+                                    </p>
+
+                                </div>
+
+
+                                <span class="count-badge summary-blue-count">
+                                    {orderedPartCountLabel}
+                                </span>
+
+                            </div>
+
+
+                            <template if:true={hasOrderedParts}>
+
+                                <div class="summary-part-list">
+
+                                    <template
+                                        for:each={orderedParts}
+                                        for:item="part">
+
+                                        <div
+                                            key={part.workOrderPartId}
+                                            class="summary-part-row summary-part-row-blue">
+
+                                            <div class="summary-part-main">
+
+                                                <div class="part-icon">
+
+                                                    <lightning-icon
+                                                        icon-name="standard:product_item"
+                                                        size="xx-small">
+                                                    </lightning-icon>
+
+                                                </div>
+
+                                                <div>
+
+                                                    <strong>
+                                                        {part.partName}
+                                                    </strong>
+
+                                                    <div class="part-meta">
+
+                                                        <span>
+                                                            {part.partNumber}
+                                                        </span>
+
+                                                        <span class="meta-dot">
+                                                            •
+                                                        </span>
+
+                                                        <span>
+                                                            {part.supplierName}
+                                                        </span>
+
+                                                    </div>
+
+                                                </div>
+
+                                            </div>
+
+
+                                            <div class="quantity-badge">
+
+                                                <span>Qty</span>
+                                                <strong>{part.quantity}</strong>
+
+                                            </div>
+
+                                        </div>
+
+                                    </template>
+
+                                </div>
+
+                            </template>
+
+
+                            <template if:false={hasOrderedParts}>
+
+                                <div class="summary-empty">
+
+                                    <lightning-icon
+                                        icon-name="utility:info_alt"
+                                        size="xx-small">
+                                    </lightning-icon>
+
+                                    <span>
+                                        No supplier orders were confirmed during
+                                        this session.
+                                    </span>
+
+                                </div>
+
+                            </template>
+
+                        </section>
+
+
+                        <!-- REMAINING PARTS -->
+
+                        <template if:true={hasRemainingParts}>
+
+                            <div
+                                class="summary-flow-connector"
+                                aria-hidden="true">
+
+                                <div class="summary-flow-arrow">
+
+                                    <lightning-icon
+                                        icon-name="utility:down"
+                                        size="xx-small">
+                                    </lightning-icon>
+
+                                </div>
+
+                            </div>
+
+
+                            <section
+                                class="content-card summary-tan-card summary-flow-card">
+
+                                <div class="summary-title-row">
+
+                                    <div class="summary-step-number summary-step-tan">
+                                        2
+                                    </div>
+
+                                    <div class="summary-card-icon summary-tan-icon">
+
+                                        <lightning-icon
+                                            icon-name="utility:warning"
+                                            size="small">
+                                        </lightning-icon>
+
+                                    </div>
+
+                                    <div class="summary-heading">
+
+                                        <p class="section-kicker summary-tan-kicker">
+                                            Still To Order
+                                        </p>
+
+                                        <h3>
+                                            Ordering Attention Required
+                                        </h3>
+
+                                        <p class="field-helper">
+                                            These required parts have not yet been confirmed
+                                            as ordered and will remain Requested.
+                                        </p>
+
+                                    </div>
+
+
+                                    <span class="count-badge summary-tan-count">
+                                        {remainingPartCountLabel}
+                                    </span>
+
+                                </div>
+
+
+                                <div class="summary-part-list">
+
+                                    <template
+                                        for:each={remainingParts}
+                                        for:item="part">
+
+                                        <div
+                                            key={part.workOrderPartId}
+                                            class="summary-part-row summary-part-row-tan">
+
+                                            <div class="summary-part-main">
+
+                                                <div class="part-icon">
+
+                                                    <lightning-icon
+                                                        icon-name="standard:product_item"
+                                                        size="xx-small">
+                                                    </lightning-icon>
+
+                                                </div>
+
+                                                <div>
+
+                                                    <strong>
+                                                        {part.partName}
+                                                    </strong>
+
+                                                    <div class="part-meta">
+
+                                                        <span>
+                                                            {part.partNumber}
+                                                        </span>
+
+                                                        <span class="meta-dot">
+                                                            •
+                                                        </span>
+
+                                                        <span>
+                                                            {part.supplierName}
+                                                        </span>
+
+                                                    </div>
+
+                                                </div>
+
+                                            </div>
+
+
+                                            <div class="quantity-badge">
+
+                                                <span>Qty</span>
+                                                <strong>{part.quantity}</strong>
+
+                                            </div>
+
+                                        </div>
+
+                                    </template>
+
+                                </div>
+
+                            </section>
+
+                        </template>
+
+
+                        <!-- NEXT STEP -->
+
+                        <div
+                            class="summary-flow-connector"
+                            aria-hidden="true">
+
+                            <div class="summary-flow-arrow">
+
+                                <lightning-icon
+                                    icon-name="utility:down"
+                                    size="xx-small">
+                                </lightning-icon>
+
+                            </div>
+
+                        </div>
+
+
+                        <section
+                            class="content-card summary-next-card summary-flow-card">
+
+                            <div class="summary-title-row">
+
+                                <div class="summary-step-number summary-step-next">
+                                    {nextSummaryStepNumber}
+                                </div>
+
+                                <div class="summary-card-icon summary-next-icon">
+
+                                    <lightning-icon
+                                        icon-name="utility:forward"
+                                        size="small">
+                                    </lightning-icon>
+
+                                </div>
+
+                                <div class="summary-heading">
+
+                                    <p class="section-kicker summary-next-kicker">
+                                        Next Step
+                                    </p>
+
+                                    <h3>
+                                        {nextStepLabel}
+                                    </h3>
+
+                                    <div class="next-status-badge">
+                                        {nextStepStatusLabel}
+                                    </div>
+
+                                    <p class="next-step-copy">
+                                        {nextStepMessage}
+                                    </p>
+
+                                </div>
+
+                            </div>
+
+                        </section>
+
+
+                        <template if:true={hasCancelledParts}>
+
+                            <div class="cancelled-notice">
+
+                                <lightning-icon
+                                    icon-name="utility:info"
+                                    size="xx-small">
+                                </lightning-icon>
+
+                                <span>
+                                    {cancelledPartCountLabel}
+                                </span>
+
+                            </div>
+
+                        </template>
+
+
+                        <template if:true={saveErrorMessage}>
+
+                            <div class="inline-error" role="alert">
+
+                                <lightning-icon
+                                    icon-name="utility:error"
+                                    size="xx-small">
+                                </lightning-icon>
+
+                                <span>
+                                    {saveErrorMessage}
+                                </span>
+
+                            </div>
+
+                        </template>
+
+                    </main>
+
+
+                    <footer class="wizard-footer approval-footer">
+
+                        <button
+                            type="button"
+                            class="secondary-button"
+                            onclick={handleCancel}
+                            disabled={isSaving}>
+                            Cancel
+                        </button>
+
+
+                        <div class="footer-actions">
+
+                            <button
+                                type="button"
+                                class="secondary-button"
+                                onclick={handleBack}
+                                disabled={isSaving}>
+
+                                <lightning-icon
+                                    icon-name="utility:chevronleft"
+                                    size="xx-small">
+                                </lightning-icon>
+
+                                Back
+
+                            </button>
+
+
+                            <button
+                                type="button"
+                                class="done-button"
+                                onclick={handleDone}
+                                disabled={isDoneDisabled}>
+
+                                <template if:false={isSaving}>
+
+                                    <lightning-icon
+                                        icon-name="utility:check"
+                                        size="xx-small">
+                                    </lightning-icon>
+
+                                    Done
+
+                                </template>
+
+
+                                <template if:true={isSaving}>
+
+                                    <lightning-icon
+                                        icon-name="utility:refresh"
+                                        size="xx-small"
+                                        class="saving-icon">
+                                    </lightning-icon>
+
+                                    Saving...
+
+                                </template>
+
+                            </button>
+
+                        </div>
+
+                    </footer>
+
+                </template>
+
+
+                </template>
+
+                <!-- =====================================================
+                     TECHNICIAN-REQUESTED PART MODE
+                     ===================================================== -->
+
+                <template if:true={isTechnicianRequestMode}>
+
+                    <header class="wizard-header">
+
+                        <div class="header-content">
+
+                            <div class="header-icon">
+                                <lightning-icon icon-name="standard:product_item" size="small"></lightning-icon>
+                            </div>
+
+                            <div>
+
+                                <p class="eyebrow">Manager Parts</p>
+                                <h1>Order Technician-Requested Part</h1>
+
+                                <p class="header-subtitle">
+                                    Review the technician request, place the supplier order,
+                                    and record the order details.
+                                </p>
+
+                                <div class="header-meta">
+
+                                    <span class="work-order-number">{workOrderNumber}</span>
+                                    <span class="header-meta-divider"></span>
+
+                                    <span class="header-machine">
+                                        <lightning-icon icon-name="standard:asset_object" size="xx-small"></lightning-icon>
+                                        <span>{assetName}</span>
+                                    </span>
+
+                                    <span class="header-meta-divider"></span>
+                                    <span class="status-badge parts-status-badge">{dispatchStatus}</span>
+                                    <span class="status-badge requested-count-badge">{requestedCountLabel}</span>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </header>
+
+                    <div class="progress-shell">
+
+                        <div class={technicianStepOneClass}>
+
+                            <div class="step-circle">1</div>
+
+                            <div>
+                                <strong>Place Order</strong>
+                                <span>Review technician request</span>
+                            </div>
+
+                        </div>
+
+                        <div class="progress-line"></div>
+
+                        <div class={technicianStepTwoClass}>
+
+                            <div class="step-circle">2</div>
+
+                            <div>
+                                <strong>Review &amp; Save</strong>
+                                <span>Confirm next step</span>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <!-- =================================================
+                         TECHNICIAN REQUEST — STEP 1
+                         ================================================= -->
+
+                    <template if:true={isStepOne}>
+
+                        <main class="wizard-content">
+
+                            <div class="step-heading">
+
+                                <p class="eyebrow">Step 1 of 2</p>
+                                <h2>Order Technician-Requested Part</h2>
+
+                                <p>
+                                    A technician requested this additional part while servicing
+                                    the machine. Review the request and place the supplier order below.
+                                </p>
+
+                            </div>
+
+                            <div class="review-notice">
+
+                                <lightning-icon icon-name="utility:info" size="xx-small"></lightning-icon>
+
+                                <span>
+                                    This Work Order is already Waiting on Parts. Recording this
+                                    supplier order will keep the Work Order in Waiting on Parts
+                                    until the required part is received.
+                                </span>
+
+                            </div>
+
+                            <section class="content-card ordering-card">
+
+                                <div class="card-heading-row">
+
+                                    <div>
+
+                                        <p class="section-kicker order-kicker">Technician Request</p>
+                                        <h3>Additional Part Required</h3>
+
+                                        <p class="field-helper">
+                                            The technician identified this part during active service.
+                                        </p>
+
+                                    </div>
+
+                                    <span class="count-badge order-count-badge">1 part to order</span>
+
+                                </div>
+
+                                <article class="order-part-card technician-order-card">
+
+                                    <div class="order-part-header">
+
+                                        <div class="order-part-main">
+
+                                            <div class="part-icon">
+                                                <lightning-icon icon-name="standard:product_item" size="xx-small"></lightning-icon>
+                                            </div>
+
+                                            <div>
+
+                                                <strong>{technicianPart.partName}</strong>
+
+                                                <div class="part-meta">
+
+                                                    <span>{technicianPart.partNumber}</span>
+                                                    <span class="meta-dot">•</span>
+                                                    <span>{technicianPart.category}</span>
+
+                                                </div>
+
+                                            </div>
+
+                                        </div>
+
+                                        <div class="quantity-badge">
+                                            <span>Qty</span>
+                                            <strong>{technicianPart.quantity}</strong>
+                                        </div>
+
+                                    </div>
+
+                                    <div class="technician-request-context">
+
+                                        <div class="technician-request-context__icon">
+                                            <lightning-icon icon-name="utility:comments" size="xx-small"></lightning-icon>
+                                        </div>
+
+                                        <div>
+
+                                            <span class="technician-request-context__label">
+                                                Technician Request Notes
+                                            </span>
+
+                                            <template if:true={technicianHasNotes}>
+                                                <p>{technicianPart.notes}</p>
+                                            </template>
+
+                                            <template if:false={technicianHasNotes}>
+                                                <p>No technician request notes were provided.</p>
+                                            </template>
+
+                                        </div>
+
+                                    </div>
+
+                                    <div class="supplier-grid technician-supplier-grid">
+
+                                        <div class="supplier-field">
+
+                                            <span class="supplier-label">Supplier</span>
+
+                                            <lightning-input
+                                                class="technician-order-input"
+                                                type="text"
+                                                variant="label-hidden"
+                                                label="Supplier"
+                                                value={supplierName}
+                                                required
+                                                disabled={isSaving}
+                                                onchange={handleSupplierNameChange}>
+                                            </lightning-input>
+
+                                        </div>
+
+                                        <div class="supplier-field">
+
+                                            <span class="supplier-label">Phone</span>
+
+                                            <lightning-input
+                                                class="technician-order-input"
+                                                type="tel"
+                                                variant="label-hidden"
+                                                label="Supplier Phone"
+                                                value={supplierPhone}
+                                                required
+                                                disabled={isSaving}
+                                                onchange={handleSupplierPhoneChange}>
+                                            </lightning-input>
+
+                                            <template if:true={hasTechnicianPhone}>
+
+                                                <a href={technicianPhoneHref} class="supplier-link technician-supplier-action">
+                                                    <lightning-icon icon-name="utility:call" size="xx-small"></lightning-icon>
+                                                    Call Supplier
+                                                </a>
+
+                                            </template>
+
+                                        </div>
+
+                                        <div class="supplier-field supplier-order-field">
+
+                                            <span class="supplier-label">Order Online</span>
+
+                                            <lightning-input
+                                                class="technician-order-input"
+                                                type="url"
+                                                variant="label-hidden"
+                                                label="Supplier Order URL"
+                                                value={orderUrl}
+                                                required
+                                                disabled={isSaving}
+                                                onchange={handleOrderUrlChange}>
+                                            </lightning-input>
+
+                                            <template if:true={hasTechnicianOrderUrl}>
+
+                                                <a
+                                                    href={orderUrl}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    class="order-link technician-supplier-action">
+
+                                                    Open Order Page
+                                                    <lightning-icon icon-name="utility:new_window" size="xx-small"></lightning-icon>
+
+                                                </a>
+
+                                            </template>
+
+                                        </div>
+
+                                    </div>
+
+                                    <label class="order-confirmation">
+
+                                        <input
+                                            type="checkbox"
+                                            class="confirmation-checkbox"
+                                            checked={technicianOrderConfirmed}
+                                            disabled={isSaving}
+                                            onchange={handleTechnicianOrderConfirmedChange}>
+
+                                        <span class="confirmation-copy">
+
+                                            <strong>I confirm this part was ordered</strong>
+
+                                            <small>
+                                                Check this only after the supplier order
+                                                has been successfully placed.
+                                            </small>
+
+                                        </span>
+
+                                    </label>
+
+                                </article>
+
+                            </section>
+
+                            <template if:true={saveErrorMessage}>
+
+                                <div class="inline-error" role="alert">
+                                    <lightning-icon icon-name="utility:error" size="xx-small"></lightning-icon>
+                                    <span>{saveErrorMessage}</span>
+                                </div>
+
+                            </template>
+
+                        </main>
+
+                        <footer class="wizard-footer approval-footer">
+
+                            <button type="button" class="secondary-button" onclick={handleCancel}>
+                                Cancel
+                            </button>
+
+                            <button
+                                type="button"
+                                class="primary-button"
+                                disabled={isTechnicianContinueDisabled}
+                                onclick={handleTechnicianContinue}>
+
+                                Continue to Review
+                                <lightning-icon icon-name="utility:chevronright" size="xx-small"></lightning-icon>
+
+                            </button>
+
+                        </footer>
+
+                    </template>
+
+                    <!-- =================================================
+                         TECHNICIAN REQUEST — STEP 2
+                         ================================================= -->
+
+                    <template if:true={isStepTwo}>
+
+                        <main class="wizard-content">
+
+                            <div class="step-heading">
+
+                                <p class="eyebrow">Step 2 of 2</p>
+                                <h2>Review Technician Part Order</h2>
+
+                                <p>
+                                    Confirm the supplier order details and resulting
+                                    Work Order stage before saving.
+                                </p>
+
+                            </div>
+
+                            <div class="review-notice">
+
+                                <lightning-icon icon-name="utility:info" size="xx-small"></lightning-icon>
+
+                                <span>
+                                    No Salesforce records will be updated until you click Done.
+                                </span>
+
+                            </div>
+
+                            <section class="content-card summary-blue-card summary-flow-card">
+
+                                <div class="summary-title-row">
+
+                                    <div class="summary-step-number summary-step-blue">1</div>
+
+                                    <div class="summary-card-icon summary-blue-icon">
+                                        <lightning-icon icon-name="utility:success" size="small"></lightning-icon>
+                                    </div>
+
+                                    <div class="summary-heading">
+
+                                        <p class="section-kicker summary-blue-kicker">Supplier Order</p>
+                                        <h3>{technicianPart.partName}</h3>
+
+                                        <p class="field-helper">
+                                            This technician-requested part will be recorded as Ordered.
+                                        </p>
+
+                                    </div>
+
+                                    <div class="quantity-badge">
+                                        <span>Qty</span>
+                                        <strong>{technicianPart.quantity}</strong>
+                                    </div>
+
+                                </div>
+
+                                <div class="technician-summary-grid">
+
+                                    <div class="technician-summary-item">
+                                        <span>Supplier</span>
+                                        <strong>{supplierName}</strong>
+                                    </div>
+
+                                    <div class="technician-summary-item">
+                                        <span>Supplier Phone</span>
+                                        <strong>{supplierPhone}</strong>
+                                    </div>
+
+                                    <div class="technician-summary-item">
+                                        <span>Work Order</span>
+                                        <strong>{workOrderNumber}</strong>
+                                    </div>
+
+                                    <div class="technician-summary-item">
+                                        <span>Customer</span>
+                                        <strong>{accountName}</strong>
+                                    </div>
+
+                                </div>
+
+                            </section>
+
+                            <div class="summary-flow-connector" aria-hidden="true">
+
+                                <div class="summary-flow-arrow">
+                                    <lightning-icon icon-name="utility:down" size="xx-small"></lightning-icon>
+                                </div>
+
+                            </div>
+
+                            <section class="content-card summary-next-card summary-flow-card">
+
+                                <div class="summary-title-row">
+
+                                    <div class="summary-step-number summary-step-next">2</div>
+
+                                    <div class="summary-card-icon summary-next-icon">
+                                        <lightning-icon icon-name="utility:forward" size="small"></lightning-icon>
+                                    </div>
+
+                                    <div class="summary-heading">
+
+                                        <p class="section-kicker summary-next-kicker">Next Step</p>
+                                        <h3>Wait for Part Delivery</h3>
+
+                                        <div class="next-status-badge">Waiting on Parts</div>
+
+                                        <p class="next-step-copy">
+                                            The supplier order will be recorded, and this Work Order
+                                            will remain Waiting on Parts until the technician-requested
+                                            part is received.
+                                        </p>
+
+                                    </div>
+
+                                </div>
+
+                            </section>
+
+                            <template if:true={saveErrorMessage}>
+
+                                <div class="inline-error" role="alert">
+                                    <lightning-icon icon-name="utility:error" size="xx-small"></lightning-icon>
+                                    <span>{saveErrorMessage}</span>
+                                </div>
+
+                            </template>
+
+                        </main>
+
+                        <footer class="wizard-footer approval-footer">
+
+                            <button
+                                type="button"
+                                class="secondary-button"
+                                onclick={handleCancel}
+                                disabled={isSaving}>
+                                Cancel
+                            </button>
+
+                            <div class="footer-actions">
+
+                                <button
+                                    type="button"
+                                    class="secondary-button"
+                                    onclick={handleBack}
+                                    disabled={isSaving}>
+
+                                    <lightning-icon icon-name="utility:chevronleft" size="xx-small"></lightning-icon>
+                                    Back
+
+                                </button>
+
+                                <button
+                                    type="button"
+                                    class="done-button"
+                                    onclick={handleTechnicianDone}
+                                    disabled={isTechnicianDoneDisabled}>
+
+                                    <template if:false={isSaving}>
+                                        <lightning-icon icon-name="utility:check" size="xx-small"></lightning-icon>
+                                        Done
+                                    </template>
+
+                                    <template if:true={isSaving}>
+                                        <lightning-icon icon-name="utility:refresh" size="xx-small" class="saving-icon"></lightning-icon>
+                                        Saving...
+                                    </template>
+
+                                </button>
+
+                            </div>
+
+                        </footer>
+
+                    </template>
+
+                </template>
+            </template>
+
+        </template>
+
+    </div>
+
+</template>

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ValidationRule xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Require_completion_notes_for_Completed</fullName>
+    <active>true</active>
+    <errorConditionFormula>ISPICKVAL(Dispatch_Status__c, &quot;Completed&quot;)
+&amp;&amp;
+ISBLANK(Technician_Notes__c)</errorConditionFormula>
+    <errorDisplayField>Technician_Notes__c</errorDisplayField>
+    <errorMessage>Technician notes are required before completing this work order.</errorMessage>
+</ValidationRule>

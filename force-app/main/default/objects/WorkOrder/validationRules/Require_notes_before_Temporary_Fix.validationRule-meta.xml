@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ValidationRule xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Require_notes_before_Temporary_Fix</fullName>
+    <active>true</active>
+    <errorConditionFormula>ISPICKVAL(Dispatch_Status__c, &quot;Temporary Fix&quot;)
+&amp;&amp;
+ISBLANK(Technician_Notes__c)</errorConditionFormula>
+    <errorDisplayField>Technician_Notes__c</errorDisplayField>
+    <errorMessage>Add Technicians notes before marking this work order as Temporary Fix.</errorMessage>
+</ValidationRule>

@@ -6,21 +6,58 @@ public without sharing class GetRelevantHistoricalRepairsForCase {
     /*
      * Common words that should not make two repair records appear related.
      *
-     * Manager Historical Repair Intelligence V1 intentionally uses
+     * Manager Historical Repair Intelligence V2 intentionally uses
      * lightweight, deterministic lexical matching rather than
      * semantic/vector search.
      */
     private static final Set<String> STOP_WORDS = new Set<String>{
+        // General language / filler.
         'the', 'and', 'for', 'with', 'this', 'that', 'from', 'into',
         'onto', 'when', 'then', 'than', 'have', 'has', 'had', 'was',
         'were', 'are', 'is', 'been', 'being', 'can', 'could', 'should',
         'would', 'will', 'may', 'might', 'not', 'but', 'about', 'after',
-        'before', 'during', 'while',
+        'before', 'during', 'while', 'its', 'their', 'there', 'these',
+        'those', 'they', 'them', 'our', 'your',
 
         // General equipment/service words.
         'machine', 'mill', 'milling', 'issue', 'problem', 'repair',
         'service', 'customer', 'technician', 'work', 'order',
         'model', 'unit', 'equipment',
+
+        // Generic reporting language.
+        'report', 'reports', 'reported', 'reporting',
+        'observe', 'observed', 'observes',
+        'notice', 'noticed',
+        'show', 'shows', 'showing',
+        'state', 'states', 'stated',
+
+        // Generic condition/failure language.
+        // These words do not identify WHAT failed.
+        'fail', 'fails', 'failed', 'failing', 'failure', 'failures',
+        'normal', 'normally',
+        'works', 'worked', 'working',
+        'function', 'functions', 'functional', 'functioning',
+        'operation', 'operating',
+        'condition',
+        'result', 'results',
+        'outcome',
+
+        // Generic movement/process words.
+        'go', 'goes', 'going', 'went',
+        'step', 'steps',
+        'process', 'processes',
+        'attempt', 'attempts', 'attempted',
+        'multiple',
+        'again',
+        'still',
+        'continue', 'continues', 'continued',
+        'persist', 'persists', 'persisted', 'persistent',
+
+        // Generic error language. Actual Error_Code__c values are
+        // evaluated separately as exact matches.
+        'error', 'errors',
+        'message', 'messages',
+        'warning', 'warnings',
 
         // Generic repair verbs that do not establish problem similarity.
         'replace', 'replaced', 'replacing', 'replacement',
@@ -29,6 +66,7 @@ public without sharing class GetRelevantHistoricalRepairsForCase {
         'install', 'installed', 'installing',
         'remove', 'removed',
         'performed', 'completed',
+        'clean', 'cleaned', 'cleaning',
 
         // Common filler / contraction tokens.
         'isnt', 'doesnt', 'didnt', 'wont', 'cant'
@@ -69,6 +107,35 @@ public without sharing class GetRelevantHistoricalRepairsForCase {
 
         @InvocableVariable
         public String historicalRepairContext;
+
+        @AuraEnabled
+        public List<HistoricalPrecedentUi> precedents { get; set; }
+    }
+
+
+    public class HistoricalPrecedentUi {
+        @AuraEnabled public Id maintenanceLogId { get; set; }
+        @AuraEnabled public String maintenanceLogName { get; set; }
+        @AuraEnabled public Date maintenanceDate { get; set; }
+
+        @AuraEnabled public Id assetId { get; set; }
+        @AuraEnabled public String manufacturer { get; set; }
+        @AuraEnabled public String model { get; set; }
+        @AuraEnabled public String serialNumber { get; set; }
+
+        @AuraEnabled public Id workOrderId { get; set; }
+        @AuraEnabled public String workOrderNumber { get; set; }
+
+        @AuraEnabled public Boolean sameAsset { get; set; }
+        @AuraEnabled public Boolean sameModel { get; set; }
+        @AuraEnabled public String whyRelevant { get; set; }
+
+        @AuraEnabled public String successfulRepair { get; set; }
+        @AuraEnabled public String rootCause { get; set; }
+        @AuraEnabled public String partsUsed { get; set; }
+        @AuraEnabled public String technicianNotes { get; set; }
+        @AuraEnabled public Decimal laborHours { get; set; }
+        @AuraEnabled public String outcome { get; set; }
     }
 
 
@@ -77,20 +144,24 @@ public without sharing class GetRelevantHistoricalRepairsForCase {
         public Maintenance_Log__c maintenanceLog;
         public Integer score;
         public Integer overlapCount;
+        public Integer subjectOverlapCount;
         public Boolean exactErrorMatch;
         public Boolean sameAsset;
         public Boolean sameModel;
         public Boolean sameManufacturer;
         public Set<String> matchedTerms;
+        public Set<String> matchedSubjectTerms;
 
         public ScoredRepair() {
             score = 0;
             overlapCount = 0;
+            subjectOverlapCount = 0;
             exactErrorMatch = false;
             sameAsset = false;
             sameModel = false;
             sameManufacturer = false;
             matchedTerms = new Set<String>();
+            matchedSubjectTerms = new Set<String>();
         }
 
         public Integer compareTo(Object otherObject) {
@@ -144,6 +215,27 @@ public without sharing class GetRelevantHistoricalRepairsForCase {
         return results;
     }
 
+    @AuraEnabled(cacheable=true)
+    public static Result getHistoricalRepairsForLwc(Id caseId, Integer maxResults) {
+
+        if (caseId == null) {
+            Result invalidResult = new Result();
+            invalidResult.success = false;
+            invalidResult.statusCode = 'INVALID_REQUEST';
+            invalidResult.statusMessage = 'A current Case ID is required.';
+            invalidResult.matchCount = 0;
+            invalidResult.historicalRepairContext = '';
+            invalidResult.precedents = new List<HistoricalPrecedentUi>();
+            return invalidResult;
+        }
+
+        Request request = new Request();
+        request.caseId = caseId;
+        request.maxResults = maxResults == null ? DEFAULT_MAX_RESULTS : maxResults;
+
+        return processRequest(request);
+    }
+
 
     private static Result processRequest(Request request) {
         Result result = new Result();
@@ -151,6 +243,7 @@ public without sharing class GetRelevantHistoricalRepairsForCase {
         result.success = false;
         result.matchCount = 0;
         result.historicalRepairContext = '';
+        result.precedents = new List<HistoricalPrecedentUi>();
 
         if (request == null || request.caseId == null) {
             result.statusCode = 'INVALID_REQUEST';
@@ -231,8 +324,7 @@ public without sharing class GetRelevantHistoricalRepairsForCase {
             String currentProblemContext = joinText(
                 new List<String>{
                     currentCase.Subject,
-                    currentCase.Description,
-                    currentErrorCode
+                    currentCase.Description
                 }
             );
 
@@ -250,6 +342,14 @@ public without sharing class GetRelevantHistoricalRepairsForCase {
 
             currentTerms.removeAll(equipmentIdentityTerms);
 
+            /*
+             * Subject terms represent the primary reported failure/symptom.
+             * For lexical matching, at least one qualifying overlap must come
+             * from the current Case Subject.
+             */
+            Set<String> currentSubjectTerms = tokenize(currentCase.Subject);
+            currentSubjectTerms.removeAll(equipmentIdentityTerms);
+
             if (currentTerms.isEmpty() && String.isBlank(currentErrorCode)) {
                 result.statusCode = 'MISSING_PROBLEM_CONTEXT';
                 result.statusMessage = 'The current Case does not contain enough problem or symptom information to compare with historical repairs.';
@@ -258,7 +358,7 @@ public without sharing class GetRelevantHistoricalRepairsForCase {
 
 
             /*
-             * V1 candidate retrieval:
+             * V2 candidate retrieval:
              *
              * Only confirmed successful prior repair records qualify:
              *
@@ -270,9 +370,10 @@ public without sharing class GetRelevantHistoricalRepairsForCase {
              * Temporary repairs and unresolved visits are deliberately
              * excluded from successful precedent logic.
              *
-             * Manufacturer/model establishes the machine family.
-             * Exact model, same Asset, error code, symptom overlap,
-             * repair type, and recency are used for ranking.
+             * Manufacturer is used to build a bounded candidate pool when
+             * available. Eligibility is then restricted to the exact current
+             * Asset or the same normalized model before problem similarity
+             * and ranking are evaluated.
              */
             List<Maintenance_Log__c> candidates;
 
@@ -422,26 +523,23 @@ public without sharing class GetRelevantHistoricalRepairsForCase {
                 String candidateErrorCode = historicalCase == null ? null : historicalCase.Error_Code__c;
 
                 /*
-                 * Historical similarity can come from the actual completed
-                 * Maintenance Log, its Work Order, or its related historical
-                 * Case.
+                 * V2 problem-to-problem comparison.
+                 *
+                 * Historical relevance is established ONLY from the original
+                 * historical Case Subject and Description. Completion notes,
+                 * root cause, parts used, technician notes, Maintenance Log
+                 * Summary, and Work Order Subject are deliberately excluded
+                 * from lexical matching. Those fields may still be returned as
+                 * supporting repair evidence after a record qualifies.
                  */
-                String historicalContext = joinText(
+                String historicalProblemContext = joinText(
                     new List<String>{
-                        candidate.Summary__c,
-                        candidate.Root_Cause__c,
-                        candidate.Parts_Used__c,
-                        candidate.Technician_Notes__c,
-                        candidate.Work_Order__r == null ? null : candidate.Work_Order__r.Subject,
                         historicalCase == null ? null : historicalCase.Subject,
-                        historicalCase == null ? null : historicalCase.Description,
-                        candidateErrorCode
+                        historicalCase == null ? null : historicalCase.Description
                     }
                 );
 
-
-                Set<String> historicalTerms = tokenize(historicalContext);
-
+                Set<String> historicalTerms = tokenize(historicalProblemContext);
                 historicalTerms.removeAll(equipmentIdentityTerms);
 
                 ScoredRepair scored = new ScoredRepair();
@@ -453,12 +551,34 @@ public without sharing class GetRelevantHistoricalRepairsForCase {
                 scored.sameManufacturer =
                     equalsIgnoreCase(candidate.Asset__r == null ? null : candidate.Asset__r.Manufacturer__c, currentAsset.Manufacturer__c);
 
-                scored.sameModel = equalsIgnoreCase(candidate.Asset__r == null ? null : candidate.Asset__r.Model__c, currentAsset.Model__c);
+                scored.sameModel =
+                    modelsEquivalent(
+                        candidate.Asset__r == null ? null : candidate.Asset__r.Model__c,
+                        currentAsset.Model__c
+                    );
 
                 scored.exactErrorMatch =
                     !String.isBlank(currentErrorCode) &&
                     !String.isBlank(candidateErrorCode) &&
                     normalize(currentErrorCode) == normalize(candidateErrorCode);
+
+                /*
+                 * Equipment eligibility.
+                 *
+                 * Historical precedent must belong either to:
+                 *
+                 * - the exact current Asset, OR
+                 * - another Asset of the same normalized model.
+                 *
+                 * Manufacturer-only or cross-model similarity is not sufficient
+                 * for V2 Historical Repair Intelligence.
+                 */
+                Boolean hasEligibleEquipmentMatch =
+                    scored.sameAsset || scored.sameModel;
+
+                if (!hasEligibleEquipmentMatch) {
+                    continue;
+                }
 
                 for (String term : currentTerms) {
 
@@ -469,33 +589,59 @@ public without sharing class GetRelevantHistoricalRepairsForCase {
 
                 scored.overlapCount = scored.matchedTerms.size();
 
+                for (String term : currentSubjectTerms) {
+
+                    if (historicalTerms.contains(term)) {
+                        scored.matchedSubjectTerms.add(term);
+                    }
+                }
+
+                scored.subjectOverlapCount = scored.matchedSubjectTerms.size();
+
                 /*
-                 * Equipment relevance.
+                 * Hard diagnostic relevance gate.
                  *
-                 * A repair on the same Asset naturally receives the
-                 * same-Asset, same-model, and same-manufacturer bonuses
-                 * when those identities match.
+                 * Equipment identity does not establish problem relevance.
+                 * A historical repair qualifies only when:
+                 *
+                 * - the exact historical error code matches, OR
+                 * - at least two meaningful problem terms overlap AND at least
+                 *   one of those terms appears in the current Case Subject.
+                 *
+                 * This prevents generic description language or unrelated
+                 * repair-completion wording from qualifying a precedent.
                  */
-                if (scored.sameAsset) {
-                    scored.score += 10;
-                }
+                Boolean hasMeaningfulProblemMatch =
+                    scored.exactErrorMatch ||
+                    (
+                        scored.overlapCount >= 2 &&
+                        scored.subjectOverlapCount >= 1
+                    );
 
-                if (scored.sameModel) {
-                    scored.score += 20;
-                }
-
-                if (scored.sameManufacturer) {
-                    scored.score += 8;
+                if (!hasMeaningfulProblemMatch) {
+                    continue;
                 }
 
                 /*
-                 * Problem relevance.
+                 * Problem relevance dominates ranking.
                  */
                 if (scored.exactErrorMatch) {
-                    scored.score += 40;
+                    scored.score += 60;
                 }
 
-                scored.score += Math.min(scored.overlapCount * 8, 48);
+                scored.score += Math.min(scored.overlapCount * 15, 75);
+                scored.score += Math.min(scored.subjectOverlapCount * 10, 30);
+
+                /*
+                 * Equipment relevance is a ranking signal only.
+                 * A same-Asset match does not stack additional same-model and
+                 * same-manufacturer bonuses.
+                 */
+                if (scored.sameAsset) {
+                    scored.score += 12;
+                } else if (scored.sameModel) {
+                    scored.score += 6;
+                }
 
                 /*
                  * Successful repair quality.
@@ -527,19 +673,7 @@ public without sharing class GetRelevantHistoricalRepairsForCase {
                     }
                 }
 
-                /*
-                 * A machine identity match by itself is not enough.
-                 *
-                 * A candidate becomes eligible only when there is:
-                 *
-                 * - an exact matching error code, OR
-                 * - at least two meaningful overlapping problem terms.
-                 */
-                Boolean hasMeaningfulProblemMatch = scored.exactErrorMatch || scored.overlapCount >= 2;
-
-                if (hasMeaningfulProblemMatch) {
-                    scoredRepairs.add(scored);
-                }
+                scoredRepairs.add(scored);
             }
 
             if (scoredRepairs.isEmpty()) {
@@ -570,6 +704,7 @@ public without sharing class GetRelevantHistoricalRepairsForCase {
             result.matchCount = resultCount;
             result.statusMessage = 'Relevant successful historical repairs were found.';
             result.historicalRepairContext = context;
+            result.precedents = buildHistoricalPrecedentUi(scoredRepairs, resultCount);
 
             return result;
 
@@ -654,41 +789,10 @@ public without sharing class GetRelevantHistoricalRepairsForCase {
              */
             lines.add('Same current Asset: ' + (scored.sameAsset ? 'Yes' : 'No'));
 
-            List<String> basis = new List<String>();
+            String relevanceBasis = buildRelevanceBasis(scored);
 
-            if (scored.exactErrorMatch) {
-                basis.add('same error code');
-            }
-
-            if (scored.sameAsset) {
-                basis.add('same Asset');
-            }
-
-            if (scored.sameModel) {
-                basis.add('same model');
-            } else if (scored.sameManufacturer) {
-                basis.add('same manufacturer');
-            }
-
-            if (!scored.matchedTerms.isEmpty()) {
-
-                List<String> matchedTerms = new List<String>(scored.matchedTerms);
-
-                matchedTerms.sort();
-
-                Integer termsToShow = Math.min(5,  matchedTerms.size());
-
-                List<String> displayedTerms = new List<String>();
-
-                for (Integer j = 0; j < termsToShow; j++) {
-                    displayedTerms.add(matchedTerms[j]);
-                }
-
-                basis.add('matching problem terms: ' + String.join(displayedTerms, ', '));
-            }
-
-            if (!basis.isEmpty()) {
-                lines.add('Why relevant: ' + String.join(basis, '; '));
+            if (!String.isBlank(relevanceBasis)) {
+                lines.add('Why relevant: ' + relevanceBasis);
             }
 
             if (!String.isBlank(logRecord.Summary__c)) {
@@ -728,6 +832,77 @@ public without sharing class GetRelevantHistoricalRepairsForCase {
     }
 
 
+    private static List<HistoricalPrecedentUi> buildHistoricalPrecedentUi(List<ScoredRepair> scoredRepairs, Integer resultCount) {
+        List<HistoricalPrecedentUi> precedents = new List<HistoricalPrecedentUi>();
+
+        for (Integer i = 0; i < resultCount; i++) {
+            ScoredRepair scored = scoredRepairs[i];
+            Maintenance_Log__c logRecord = scored.maintenanceLog;
+
+            HistoricalPrecedentUi precedent = new HistoricalPrecedentUi();
+            precedent.maintenanceLogId = logRecord.Id;
+            precedent.maintenanceLogName = logRecord.Name;
+            precedent.maintenanceDate = logRecord.Maintenance_Date__c;
+
+            precedent.assetId = logRecord.Asset__c;
+            precedent.manufacturer = logRecord.Asset__r == null ? null : logRecord.Asset__r.Manufacturer__c;
+            precedent.model = logRecord.Asset__r == null ? null : logRecord.Asset__r.Model__c;
+            precedent.serialNumber = logRecord.Asset__r == null ? null : logRecord.Asset__r.Serial_Number__c;
+
+            precedent.workOrderId = logRecord.Work_Order__c;
+            precedent.workOrderNumber =
+                logRecord.Work_Order__r == null ? null : logRecord.Work_Order__r.WorkOrderNumber;
+
+            precedent.sameAsset = scored.sameAsset;
+            precedent.sameModel = scored.sameModel;
+            precedent.whyRelevant = buildRelevanceBasis(scored);
+
+            precedent.successfulRepair = String.isBlank(logRecord.Summary__c) ? null : clip(logRecord.Summary__c, 600);
+            precedent.rootCause = String.isBlank(logRecord.Root_Cause__c) ? null : clip(logRecord.Root_Cause__c, 500);
+            precedent.partsUsed = String.isBlank(logRecord.Parts_Used__c) ? null : clip(logRecord.Parts_Used__c, 400);
+            precedent.technicianNotes =
+                String.isBlank(logRecord.Technician_Notes__c) ? null : clip(logRecord.Technician_Notes__c, 800);
+            precedent.laborHours = logRecord.Labor_Hours__c;
+            precedent.outcome = 'Issue resolved; no follow-up required.';
+
+            precedents.add(precedent);
+        }
+
+        return precedents;
+    }
+
+
+    private static String buildRelevanceBasis(ScoredRepair scored) {
+        List<String> basis = new List<String>();
+
+        if (scored.exactErrorMatch) {
+            basis.add('same error code');
+        }
+
+        if (scored.sameAsset) {
+            basis.add('same Asset');
+        } else if (scored.sameModel) {
+            basis.add('same model');
+        }
+
+        if (!scored.matchedTerms.isEmpty()) {
+            List<String> matchedTerms = new List<String>(scored.matchedTerms);
+            matchedTerms.sort();
+
+            Integer termsToShow = Math.min(5, matchedTerms.size());
+            List<String> displayedTerms = new List<String>();
+
+            for (Integer i = 0; i < termsToShow; i++) {
+                displayedTerms.add(matchedTerms[i]);
+            }
+
+            basis.add('matching problem terms: ' + String.join(displayedTerms, ', '));
+        }
+
+        return String.join(basis, '; ');
+    }
+
+
     private static Set<String> tokenize(String value) {
         Set<String> terms = new Set<String>();
 
@@ -756,6 +931,40 @@ public without sharing class GetRelevantHistoricalRepairsForCase {
 
 
         return value.toLowerCase().replaceAll('[^a-z0-9]+', ' ').trim();
+    }
+
+
+    private static Boolean modelsEquivalent(String leftValue, String rightValue) {
+        if (String.isBlank(leftValue) || String.isBlank(rightValue)) {
+            return false;
+        }
+
+        return canonicalModel(leftValue) == canonicalModel(rightValue);
+    }
+
+
+    private static String canonicalModel(String value) {
+        if (String.isBlank(value)) {
+            return '';
+        }
+
+        String normalizedModel = normalize(value).replace(' ', '');
+
+        /*
+         * Roland Asset data may use either the full DWX model label or
+         * the shorter model label for the same physical machine:
+         *
+         * DWX-53DC / 53DC
+         * DWX-52D  / 52D
+         *
+         * Remove only the leading DWX family prefix so these aliases
+         * compare as the same model while 53DC and 52D remain distinct.
+         */
+        if (normalizedModel.startsWith('dwx')) {
+            normalizedModel = normalizedModel.substring(3);
+        }
+
+        return normalizedModel;
     }
 
 

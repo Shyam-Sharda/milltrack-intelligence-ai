@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Queue xmlns="http://soap.sforce.com/2006/04/metadata">
+    <doesIncludeBosses>false</doesIncludeBosses>
+    <doesSendEmailToMembers>false</doesSendEmailToMembers>
+    <name>MillTrack Messaging Queue</name>
+    <queueMembers>
+        <users>
+            <user>shyam.sharda1604.7b63e6dba7e0@agentforce.com</user>
+        </users>
+    </queueMembers>
+    <queueRoutingConfig>MillTrack_Messaging_Routing</queueRoutingConfig>
+    <queueSobject>
+        <sobjectType>MessagingSession</sobjectType>
+    </queueSobject>
+</Queue>

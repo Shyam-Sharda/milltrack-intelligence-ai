@@ -1,0 +1,603 @@
+/* =========================================
+   MillTrack Header
+   ========================================= */
+
+:host {
+    display: block;
+
+    width: 100vw;
+    max-width: 100vw;
+
+    margin-left: calc(50% - 50vw);
+}
+
+.milltrack-header {
+    position: relative;
+
+    display: flex;
+    align-items: stretch;
+
+    width: 100%;
+    min-height: 76px;
+
+    padding: 0 2rem;
+
+    background: #061d3d;
+    color: #ffffff;
+
+    box-sizing: border-box;
+}
+
+
+/* =========================================
+   Brand / Logo
+   ========================================= */
+
+.brand-section {
+    position: relative;
+
+    display: flex;
+    align-items: center;
+
+    flex: 0 0 auto;
+
+    padding-right: 2rem;
+    margin-right: 0.75rem;
+}
+
+/* Vertical divider between logo and navigation */
+
+.brand-section::after {
+    content: '';
+
+    position: absolute;
+
+    top: 50%;
+    right: 0;
+
+    width: 1px;
+    height: 40px;
+
+    background: rgba(255, 255, 255, 0.35);
+
+    transform: translateY(-50%);
+}
+
+.brand-button {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+
+    margin: 0;
+    padding: 0;
+
+    background: transparent;
+    border: 0;
+
+    cursor: pointer;
+}
+
+.brand-button:focus-visible {
+    outline: 2px solid #ffffff;
+    outline-offset: 4px;
+    border-radius: 0.25rem;
+}
+
+.brand-logo {
+    display: block;
+
+    width: 195px;
+    max-width: 100%;
+    height: auto;
+
+    object-fit: contain;
+}
+
+
+/* =========================================
+   Main Navigation
+   ========================================= */
+
+.main-navigation {
+    display: flex;
+    align-items: stretch;
+
+    height: 76px;
+}
+
+.nav-item {
+    position: relative;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    gap: 0.55rem;
+
+    min-width: max-content;
+
+    margin: 0;
+    padding: 0 1.4rem;
+
+    background: transparent;
+    border: 0;
+
+    color: rgba(255, 255, 255, 0.86);
+
+    font-family: inherit;
+    font-size: 1rem;
+    font-weight: 600;
+    line-height: 1;
+
+    cursor: pointer;
+
+    transition:
+        color 0.15s ease,
+        background-color 0.15s ease;
+}
+
+.nav-item:hover {
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.nav-item:focus-visible {
+    outline: 2px solid #ffffff;
+    outline-offset: -4px;
+}
+
+.nav-item-active {
+    color: #ffffff;
+}
+
+
+/* Bright blue active-page underline */
+
+.nav-item-active::after {
+    content: '';
+
+    position: absolute;
+
+    left: 1rem;
+    right: 1rem;
+    bottom: 0;
+
+    height: 4px;
+
+    background: #1683ff;
+    border-radius: 4px 4px 0 0;
+}
+
+
+/* Navigation icons */
+
+.nav-icon {
+    --slds-c-icon-color-foreground-default: #ffffff;
+    --slds-c-icon-color-foreground: #ffffff;
+}
+
+
+/* =========================================
+   Right-side Header Actions
+   ========================================= */
+
+.header-actions {
+    display: flex;
+    align-items: center;
+
+    gap: 0.9rem;
+
+    margin-left: auto;
+}
+
+
+/* =========================================
+   Help Button
+   ========================================= */
+
+.icon-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    margin: 0;
+    padding: 0;
+
+    background: transparent;
+    border: 0;
+
+    color: #ffffff;
+
+    cursor: pointer;
+}
+
+.help-button {
+    width: 42px;
+    height: 42px;
+
+    border: 2px solid rgba(255, 255, 255, 0.92);
+    border-radius: 50%;
+
+    transition:
+        background-color 0.15s ease,
+        border-color 0.15s ease,
+        transform 0.15s ease;
+}
+
+.help-button:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: #ffffff;
+}
+
+.help-button:active {
+    transform: scale(0.96);
+}
+
+.help-button:focus-visible {
+    outline: 2px solid #1683ff;
+    outline-offset: 3px;
+}
+
+.help-symbol {
+    display: block;
+
+    font-size: 1.45rem;
+    font-weight: 700;
+    line-height: 1;
+}
+
+
+/* =========================================
+   Profile
+   ========================================= */
+
+.profile-container {
+    position: relative;
+
+    display: flex;
+    align-items: center;
+}
+
+.profile-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    gap: 0.55rem;
+
+    min-width: 64px;
+    height: 46px;
+
+    margin: 0;
+    padding: 0 0.65rem;
+
+    background: transparent;
+    border: 0;
+    border-radius: 0.5rem;
+
+    cursor: pointer;
+
+    transition: background-color 0.15s ease;
+}
+
+.profile-button:hover {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.profile-button:focus-visible {
+    outline: 2px solid #ffffff;
+    outline-offset: 2px;
+}
+
+
+/* Circular user icon */
+
+.profile-icon-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 38px;
+    height: 38px;
+
+    border: 2px solid rgba(255, 255, 255, 0.92);
+    border-radius: 50%;
+}
+
+.profile-icon {
+    --slds-c-icon-color-foreground-default: #ffffff;
+    --slds-c-icon-color-foreground: #ffffff;
+}
+
+.profile-chevron {
+    --slds-c-icon-color-foreground-default: #ffffff;
+    --slds-c-icon-color-foreground: #ffffff;
+}
+
+
+/* =========================================
+   Profile Dropdown
+   ========================================= */
+
+.profile-menu {
+    position: absolute;
+
+    top: calc(100% + 0.7rem);
+    right: 0;
+
+    z-index: 1000;
+
+    width: 230px;
+
+    overflow: hidden;
+
+    background: #ffffff;
+
+    border: 1px solid #dbe4ef;
+    border-radius: 0.65rem;
+
+    box-shadow:
+        0 4px 10px rgba(7, 29, 63, 0.08),
+        0 12px 28px rgba(7, 29, 63, 0.16);
+}
+
+
+/* Small arrow above dropdown */
+
+.profile-menu::before {
+    content: '';
+
+    position: absolute;
+
+    top: -7px;
+    right: 22px;
+
+    width: 12px;
+    height: 12px;
+
+    background: #ffffff;
+
+    border-top: 1px solid #dbe4ef;
+    border-left: 1px solid #dbe4ef;
+
+    transform: rotate(45deg);
+}
+
+
+/* =========================================
+   Profile Dropdown Header
+   ========================================= */
+
+.profile-menu-header {
+    position: relative;
+
+    display: flex;
+    flex-direction: column;
+
+    padding: 1rem 1.1rem 0.9rem;
+
+    background: #ffffff;
+}
+
+.profile-menu-name {
+    color: #071d3f;
+
+    font-size: 1rem;
+    font-weight: 700;
+    line-height: 1.3;
+}
+
+.profile-menu-subtitle {
+    margin-top: 0.15rem;
+
+    color: #64748b;
+
+    font-size: 0.78rem;
+    font-weight: 500;
+}
+
+
+/* =========================================
+   Dropdown Divider
+   ========================================= */
+
+.profile-menu-divider {
+    height: 1px;
+
+    background: #e4eaf1;
+}
+
+
+/* =========================================
+   Dropdown Menu Items
+   ========================================= */
+
+.profile-menu-item {
+    display: flex;
+    align-items: center;
+
+    gap: 0.75rem;
+
+    width: 100%;
+
+    margin: 0;
+    padding: 0.85rem 1.1rem;
+
+    background: #ffffff;
+    border: 0;
+
+    color: #24364f;
+
+    font-family: inherit;
+    font-size: 0.92rem;
+    font-weight: 500;
+    text-align: left;
+
+    cursor: pointer;
+
+    transition:
+        background-color 0.15s ease,
+        color 0.15s ease;
+}
+
+.profile-menu-item:hover {
+    background: #f3f7fc;
+    color: #071d3f;
+}
+
+.profile-menu-item:focus-visible {
+    outline: 2px solid #1683ff;
+    outline-offset: -3px;
+}
+
+.menu-item-icon {
+    --slds-c-icon-color-foreground-default: #43617f;
+    --slds-c-icon-color-foreground: #43617f;
+}
+
+
+/* Logout gets a subtle distinction */
+
+.logout-item {
+    color: #364a63;
+}
+
+
+/* =========================================
+   Tablet
+   ========================================= */
+
+@media only screen and (max-width: 900px) {
+
+    .milltrack-header {
+        padding: 0 1.25rem;
+    }
+
+    .brand-section {
+        padding-right: 1rem;
+        margin-right: 0.5rem;
+    }
+
+    .brand-logo {
+        width: 165px;
+    }
+
+    .nav-item {
+        padding: 0 1rem;
+
+        font-size: 0.9rem;
+    }
+
+    .header-actions {
+        gap: 0.5rem;
+    }
+}
+
+
+/* =========================================
+   Mobile
+   ========================================= */
+
+@media only screen and (max-width: 700px) {
+
+    .milltrack-header {
+        flex-wrap: wrap;
+
+        min-height: auto;
+
+        padding: 0 1rem;
+    }
+
+    .brand-section {
+        height: 64px;
+
+        padding-right: 0;
+        margin-right: 0;
+    }
+
+    .brand-section::after {
+        display: none;
+    }
+
+    .brand-logo {
+        width: 145px;
+    }
+
+    .header-actions {
+        height: 64px;
+    }
+
+    .help-button {
+        width: 36px;
+        height: 36px;
+    }
+
+    .help-symbol {
+        font-size: 1.2rem;
+    }
+
+    .profile-button {
+        min-width: 54px;
+        height: 42px;
+
+        padding: 0 0.35rem;
+    }
+
+    .profile-icon-wrapper {
+        width: 34px;
+        height: 34px;
+    }
+
+    .main-navigation {
+        order: 3;
+
+        width: calc(100% + 2rem);
+        height: 54px;
+
+        margin-left: -1rem;
+        margin-right: -1rem;
+
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .nav-item {
+        flex: 1;
+
+        padding: 0 0.75rem;
+
+        font-size: 0.88rem;
+    }
+
+    .nav-item-active::after {
+        left: 0.75rem;
+        right: 0.75rem;
+    }
+
+    .profile-menu {
+        top: calc(100% + 0.45rem);
+
+        width: 215px;
+    }
+}
+
+
+/* =========================================
+   Small Mobile
+   ========================================= */
+
+@media only screen and (max-width: 430px) {
+
+    .brand-logo {
+        width: 130px;
+    }
+
+    .help-button {
+        display: none;
+    }
+
+    .nav-item {
+        gap: 0.4rem;
+
+        font-size: 0.82rem;
+    }
+}

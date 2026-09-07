@@ -1,0 +1,258 @@
+/* ================================
+   Welcome Hero
+   ================================ */
+
+.welcome-section {
+    position: relative;
+    overflow: hidden;
+
+    width: 100vw;
+    max-width: 100vw;
+
+    margin-left: calc(50% - 50vw);
+
+    padding: 3.25rem 2rem 2.75rem;
+
+    text-align: center;
+
+    background: #f8fbff;
+
+    border-radius: 0;
+
+    isolation: isolate;
+}
+
+
+/* ================================
+   Decorative Background Waves
+   ================================ */
+
+.wave {
+    position: absolute;
+    z-index: -1;
+
+    border-radius: 50%;
+
+    pointer-events: none;
+}
+
+.wave-one {
+    width: 85rem;
+    height: 22rem;
+
+    left: 18%;
+    top: -12rem;
+
+    background: rgba(219, 228, 239, 0.38);
+
+    transform: rotate(-4deg);
+}
+
+.wave-two {
+    width: 70rem;
+    height: 18rem;
+
+    right: 15%;
+    bottom: -13rem;
+
+    background: rgba(230, 237, 246, 0.5);
+
+    transform: rotate(4deg);
+}
+
+
+/* ================================
+   Welcome Content
+   ================================ */
+
+.welcome-content {
+    position: relative;
+    z-index: 1;
+
+    max-width: 70rem;
+    margin: 0 auto;
+}
+
+.welcome-content h1 {
+    margin: 0;
+
+    color: #071d3f;
+
+    font-size: 2.35rem;
+    font-weight: 700;
+    line-height: 1.2;
+
+    letter-spacing: -0.035rem;
+}
+
+.welcome-subtitle {
+    margin: 0.8rem 0 0;
+
+    color: #45566f;
+
+    font-size: 1.05rem;
+    font-weight: 400;
+    line-height: 1.5;
+}
+
+
+/* ================================
+   MillTrack AI Banner
+   ================================ */
+
+.ai-help-banner {
+    margin: 1.25rem 0 0;
+
+    background: #f5f9fe;
+
+    border: 1px solid #ccdced;
+    border-radius: 0.75rem;
+
+    box-shadow:
+        0 1px 2px rgba(7, 29, 63, 0.02),
+        0 4px 12px rgba(7, 29, 63, 0.03);
+}
+
+.ai-help-content {
+    display: flex;
+    align-items: center;
+
+    min-height: 5.25rem;
+
+    padding: 1rem 1.25rem;
+
+    text-align: left;
+}
+
+
+/* ================================
+   Information Icon
+   ================================ */
+
+.info-icon-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    flex: 0 0 auto;
+
+    width: 2.5rem;
+    height: 2.5rem;
+
+    margin-right: 1rem;
+}
+
+.info-icon {
+    --slds-c-icon-color-foreground-default: #1268b3;
+}
+
+
+/* ================================
+   AI Banner Text
+   ================================ */
+
+.ai-help-text {
+    flex: 1;
+}
+
+.ai-help-text p {
+    margin: 0;
+
+    color: #293b55;
+
+    font-size: 0.98rem;
+    line-height: 1.5;
+}
+
+.ai-help-text strong {
+    color: #071d3f;
+    font-weight: 700;
+}
+
+.ai-help-instruction {
+    margin-top: 0.15rem !important;
+}
+
+
+
+/* ================================
+   Chat Icon
+   ================================ */
+
+.chat-icon-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    flex: 0 0 auto;
+
+    width: 3rem;
+    height: 3rem;
+
+    margin-left: 1.25rem;
+}
+
+.chat-icon {
+    --slds-c-icon-color-foreground-default: #1268b3;
+}
+
+
+/* ================================
+   Tablet / Mobile
+   ================================ */
+
+@media only screen and (max-width: 768px) {
+
+    .welcome-section {
+        padding: 2.25rem 1.25rem 2rem;
+        border-radius: 0.5rem;
+    }
+
+    .welcome-content h1 {
+        font-size: 1.8rem;
+    }
+
+    .welcome-subtitle {
+        margin-top: 0.65rem;
+
+        font-size: 0.95rem;
+        line-height: 1.45;
+    }
+
+    .wave-one {
+        width: 45rem;
+        height: 14rem;
+
+        left: -5rem;
+        top: -8rem;
+    }
+
+    .wave-two {
+        width: 40rem;
+        height: 12rem;
+
+        right: -8rem;
+        bottom: -9rem;
+    }
+
+    .ai-help-content {
+        align-items: flex-start;
+
+        padding: 1rem;
+    }
+
+    .info-icon-wrapper {
+        width: 2rem;
+        height: 2rem;
+
+        margin-right: 0.75rem;
+    }
+
+    .ai-help-text p {
+        font-size: 0.9rem;
+    }
+
+    .chat-icon-wrapper {
+        display: none;
+    }
+}

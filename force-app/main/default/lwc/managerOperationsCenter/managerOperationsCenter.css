@@ -2,6 +2,44 @@
     display: block;
 }
 
+/* =========================================================
+   Manager Operations Center Header
+   ========================================================= */
+
+.manager-card-title {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+}
+
+.manager-title-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 2rem;
+    height: 2rem;
+
+    flex-shrink: 0;
+
+    background: #0b5cab;
+    border-radius: 50%;
+
+    box-shadow: 0 1px 3px rgba(6, 37, 74, 0.18);
+}
+
+.manager-title-text {
+    color: #06254a;
+
+    font-size: 1rem;
+    font-weight: 700;
+    line-height: 1.3;
+}
+
+/* =========================================================
+   Operations Center
+   ========================================================= */
+
 .operations-center {
     position: relative;
     min-height: 12rem;
@@ -12,12 +50,16 @@
     position: absolute;
     inset: 0;
     z-index: 5;
+
     display: flex;
     align-items: center;
     justify-content: center;
+
     min-height: 12rem;
+
     background: rgba(255, 255, 255, 0.78);
     border-radius: 0.25rem;
+
     backdrop-filter: blur(1px);
 }
 
@@ -35,6 +77,7 @@
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
+
     gap: 1rem;
     margin-bottom: 0.875rem;
 }
@@ -45,7 +88,9 @@
 
 .section-title {
     margin: 0;
+
     color: var(--lwc-colorTextDefault, #181818);
+
     font-size: 1rem;
     font-weight: 700;
     line-height: 1.4;
@@ -53,7 +98,9 @@
 
 .section-subtitle {
     margin: 0.2rem 0 0;
+
     color: var(--lwc-colorTextWeak, #706e6b);
+
     font-size: 0.8125rem;
     line-height: 1.4;
 }
@@ -61,18 +108,251 @@
 .table-instructions {
     max-width: 60rem;
     margin: 0.35rem 0 0;
+
     color: var(--lwc-colorTextWeak, #706e6b);
+
     font-size: 0.75rem;
     line-height: 1.45;
 }
 
-/* Queue cards */
+/* =========================================================
+   Service Case Overview
+   ========================================================= */
+
+.case-summary-section {
+    padding-top: 0.25rem;
+    margin-bottom: 1.5rem;
+}
+
+.open-cases-summary {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto auto;
+    align-items: center;
+
+    gap: 1rem;
+
+    padding: 1rem 1.1rem;
+
+    background:
+        linear-gradient(135deg, #f8fbff 0%, #f2f7fc 100%);
+
+    border: 1px solid #b9cfe4;
+    border-radius: 0.65rem;
+
+    box-shadow:
+        0 1px 3px rgba(7, 29, 63, 0.04);
+
+    transition:
+        background-color 140ms ease,
+        border-color 140ms ease,
+        box-shadow 140ms ease;
+}
+
+.open-cases-summary:hover {
+    border-color: #8fb2d2;
+
+    box-shadow:
+        0 3px 9px rgba(11, 92, 171, 0.09);
+}
+
+.open-cases-summary_selected {
+    background:
+        linear-gradient(135deg, #edf5fc 0%, #e7f1fa 100%);
+
+    border-color: #0b5cab;
+
+    box-shadow:
+        inset 0 0 0 1px #0b5cab,
+        0 4px 12px rgba(11, 92, 171, 0.12);
+}
+
+.open-cases-summary__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 3rem;
+    height: 3rem;
+
+    flex-shrink: 0;
+
+    background: #e9f3fc;
+
+    border: 1px solid #c8dced;
+    border-radius: 50%;
+}
+
+.open-cases-summary__content {
+    min-width: 0;
+}
+
+.open-cases-summary__eyebrow {
+    display: block;
+
+    margin-bottom: 0.35rem;
+
+    color: #5f6f82;
+
+    font-size: 0.7rem;
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: 0.055em;
+
+    text-transform: uppercase;
+}
+
+.open-cases-summary__title-row {
+    display: flex;
+    align-items: center;
+
+    gap: 0.85rem;
+}
+
+.open-cases-summary__count {
+    display: block;
+
+    min-width: 2.4rem;
+
+    color: #0b5cab;
+
+    font-size: 2.2rem;
+    font-weight: 700;
+    line-height: 1;
+
+    text-align: center;
+}
+
+.open-cases-summary__title {
+    margin: 0;
+
+    color: #06254a;
+
+    font-size: 1rem;
+    font-weight: 700;
+    line-height: 1.3;
+}
+
+.open-cases-summary__description {
+    margin: 0.18rem 0 0;
+
+    color: #5f6b76;
+
+    font-size: 0.78rem;
+    line-height: 1.4;
+}
+
+.open-cases-summary__new {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    min-width: 6.5rem;
+
+    padding-left: 1rem;
+
+    border-left: 1px solid #d6e2ed;
+}
+
+.open-cases-summary__new-count {
+    color: #c96f1a;
+
+    font-size: 1.45rem;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.open-cases-summary__new-label {
+    margin-top: 0.25rem;
+
+    color: #5f6b76;
+
+    font-size: 0.72rem;
+    font-weight: 600;
+    line-height: 1.2;
+
+    white-space: nowrap;
+}
+
+.open-cases-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    gap: 0.4rem;
+
+    min-height: 2.25rem;
+    padding: 0.35rem 0.8rem;
+
+    color: #1268b3;
+    background: #ffffff;
+
+    border: 1px solid #1268b3;
+    border-radius: 0.45rem;
+
+    font: inherit;
+    font-size: 0.75rem;
+    font-weight: 700;
+    line-height: 1.2;
+
+    white-space: nowrap;
+
+    cursor: pointer;
+
+    transition:
+        color 120ms ease,
+        background-color 120ms ease,
+        border-color 120ms ease,
+        box-shadow 120ms ease;
+}
+
+.open-cases-action:hover {
+    color: #ffffff;
+    background: #1268b3;
+
+    border-color: #1268b3;
+
+    box-shadow:
+        0 2px 6px rgba(18, 104, 179, 0.16);
+}
+
+.open-cases-action:focus-visible {
+    outline: 2px solid #1683ff;
+    outline-offset: 2px;
+}
+
+.open-cases-action__icon {
+    --slds-c-icon-color-foreground-default: currentColor;
+}
+
+.open-cases-summary_selected .open-cases-action {
+    color: #ffffff;
+    background: #0b5cab;
+
+    border-color: #0b5cab;
+}
+
+.open-cases-summary_selected .open-cases-action:hover {
+    background: #094f93;
+    border-color: #094f93;
+}
+
+.work-order-overview {
+    padding-top: 0;
+}
+
+/* =========================================================
+   Queue Cards
+   ========================================================= */
+
 .queue-grid {
     display: grid;
+
     grid-template-columns: repeat(
         auto-fit,
         minmax(10.5rem, 1fr)
     );
+
     gap: 0.75rem;
 }
 
@@ -80,55 +360,181 @@
     display: flex;
     flex-direction: column;
     align-items: flex-start;
+
     width: 100%;
     min-height: 8.5rem;
+
     padding: 1rem;
     overflow: hidden;
+
     font: inherit;
     text-align: left;
+
     color: var(--lwc-colorTextDefault, #181818);
-    background: var(--lwc-colorBackgroundAlt, #ffffff);
-    border: 1px solid var(--lwc-colorBorder, #c9c9c9);
-    border-radius: 0.5rem;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+
+    border: 1px solid transparent;
+    border-radius: 0.55rem;
+
+    box-shadow:
+        0 1px 2px rgba(0, 0, 0, 0.05);
+
     cursor: pointer;
+
     transition:
-        border-color 120ms ease,
-        background-color 120ms ease,
-        box-shadow 120ms ease,
-        transform 120ms ease;
+        border-color 140ms ease,
+        background-color 140ms ease,
+        box-shadow 140ms ease,
+        transform 140ms ease;
 }
 
-.queue-card:hover {
-    border-color: var(--lwc-brandAccessible, #0176d3);
-    background: #f8fbff;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+/* =========================================================
+   Attention Group
+   Requires Review
+   Follow-Up Required
+   ========================================================= */
+
+.queue-card_attention {
+    background: #fff9f3;
+    border-color: #e3a15f;
+}
+
+.queue-card_attention .queue-count {
+    color: #c96f1a;
+}
+
+.queue-card_attention:hover {
+    background: #fff4e8;
+    border-color: #cf7928;
+
+    box-shadow:
+        0 3px 8px rgba(201, 111, 26, 0.14);
+
     transform: translateY(-1px);
 }
 
+/* =========================================================
+   Workflow Group
+   Parts to Order
+   Waiting on Parts
+   Ready to Assign
+   ========================================================= */
+
+.queue-card_workflow {
+    background: #f4f7fb;
+    border-color: #54799e;
+}
+
+.queue-card_workflow .queue-count {
+    color: #174d7c;
+}
+
+.queue-card_workflow:hover {
+    background: #edf3f9;
+    border-color: #315f8d;
+
+    box-shadow:
+        0 3px 8px rgba(23, 77, 124, 0.14);
+
+    transform: translateY(-1px);
+}
+
+/* =========================================================
+   Service Execution Group
+   Assigned Visits
+   Active Repairs
+   ========================================================= */
+
+.queue-card_active {
+    background: #f6fcfd;
+    border-color: #96d5dc;
+}
+
+.queue-card_active .queue-count {
+    color: #278f9b;
+}
+
+.queue-card_active:hover {
+    background: #edf9fb;
+    border-color: #68bdc7;
+
+    box-shadow:
+        0 3px 8px rgba(39, 143, 155, 0.12);
+
+    transform: translateY(-1px);
+}
+
+/* =========================================================
+   Focus State
+   ========================================================= */
+
 .queue-card:focus-visible {
-    outline: 2px solid var(--lwc-brandAccessible, #0176d3);
+    outline: 2px solid #06254a;
     outline-offset: 2px;
 }
 
+/* =========================================================
+   Selected States
+   ========================================================= */
+
 .queue-card_selected {
-    color: #032d60;
-    background: #eef4ff;
-    border-color: var(--lwc-brandAccessible, #0176d3);
-    box-shadow:
-        inset 0 0 0 1px
-            var(--lwc-brandAccessible, #0176d3),
-        0 2px 6px rgba(1, 118, 211, 0.15);
+    color: #181818;
+    transform: translateY(-1px);
 }
 
-.queue-card_selected:hover {
-    background: #e8f1ff;
+/* Attention selected */
+
+.queue-card_attention.queue-card_selected {
+    background: #fff0df;
+    border-color: #c96f1a;
+
+    box-shadow:
+        inset 0 0 0 1px #c96f1a,
+        0 4px 10px rgba(201, 111, 26, 0.16);
 }
+
+.queue-card_attention.queue-card_selected:hover {
+    background: #ffead4;
+}
+
+/* Workflow selected */
+
+.queue-card_workflow.queue-card_selected {
+    background: #e8f0f8;
+    border-color: #174d7c;
+
+    box-shadow:
+        inset 0 0 0 1px #174d7c,
+        0 4px 10px rgba(23, 77, 124, 0.16);
+}
+
+.queue-card_workflow.queue-card_selected:hover {
+    background: #e1ebf5;
+}
+
+/* Service execution selected */
+
+.queue-card_active.queue-card_selected {
+    background: #eaf8fa;
+    border-color: #4caab5;
+
+    box-shadow:
+        inset 0 0 0 1px #4caab5,
+        0 4px 10px rgba(39, 143, 155, 0.14);
+}
+
+.queue-card_active.queue-card_selected:hover {
+    background: #e2f5f7;
+}
+
+/* =========================================================
+   Queue Card Content
+   ========================================================= */
 
 .queue-count {
     display: block;
+
     margin-bottom: 0.35rem;
-    color: var(--lwc-brandAccessible, #0176d3);
+
     font-size: 2rem;
     font-weight: 700;
     line-height: 1;
@@ -136,7 +542,11 @@
 
 .queue-label {
     display: block;
+
     margin-bottom: 0.35rem;
+
+    color: #181818;
+
     font-size: 0.9375rem;
     font-weight: 700;
     line-height: 1.3;
@@ -144,7 +554,9 @@
 
 .queue-description {
     display: block;
-    color: var(--lwc-colorTextWeak, #706e6b);
+
+    color: #5f6b76;
+
     font-size: 0.75rem;
     line-height: 1.4;
 }
@@ -153,42 +565,360 @@
     color: #444444;
 }
 
-/* Queue table */
+/* =========================================================
+   Queue Table
+   Portal Record List Styling
+   ========================================================= */
+
 .queue-table-section {
     margin-top: 1.25rem;
     padding-top: 1.25rem;
-    border-top: 1px solid var(--lwc-colorBorder, #c9c9c9);
+    border-top: 1px solid #d7e1ec;
 }
 
-.datatable-container {
-    position: relative;
+/* =========================================================
+   Shared Portal-Style Operations Table
+   ========================================================= */
+
+.portal-table-container {
+    width: 100%;
+    max-width: 100%;
+    overflow: hidden;
+    background: #ffffff;
+    border: 1px solid #dce5ef;
+    border-radius: 0.65rem;
+    box-shadow: 0 1px 3px rgba(7, 29, 63, 0.03);
+}
+
+.portal-table-container:hover {
+    border-color: #cbd8e6;
+    box-shadow: 0 2px 5px rgba(7, 29, 63, 0.05);
+}
+
+.portal-table-scroll {
     width: 100%;
     max-width: 100%;
     overflow-x: auto;
     overflow-y: hidden;
-    background: var(--lwc-colorBackgroundAlt, #ffffff);
-    border: 1px solid var(--lwc-colorBorder, #c9c9c9);
-    border-radius: 0.375rem;
     -webkit-overflow-scrolling: touch;
 }
 
-.datatable-container lightning-datatable {
-    display: block;
+.portal-record-table {
+    width: 100%;
     min-width: 64rem;
+    border-collapse: collapse;
+    table-layout: auto;
+    color: #31445d;
+    background: #ffffff;
+    border: 0;
 }
 
-/* Empty state */
+/* =========================================================
+   Table Column Headings
+   ========================================================= */
+
+.portal-record-table thead th {
+    padding: 0.75rem 0.85rem;
+    color: #061d3d;
+    background: #f5f7fa;
+    border-bottom: 1px solid #dce5ef;
+    font-size: 0.72rem;
+    font-weight: 600;
+    line-height: 1.35;
+    text-align: left;
+    vertical-align: middle;
+    white-space: nowrap;
+}
+
+.portal-record-table thead th + th {
+    border-left: 1px solid #edf1f5;
+}
+
+.portal-column-label {
+    color: #061d3d;
+    font-weight: 600;
+}
+
+/* =========================================================
+   Sortable Column Headings
+   ========================================================= */
+
+.portal-sort-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 0.35rem;
+    width: 100%;
+    padding: 0;
+    color: #061d3d;
+    background: transparent;
+    border: 0;
+    font: inherit;
+    font-weight: 600;
+    text-align: left;
+    cursor: pointer;
+}
+
+.portal-sort-button:hover {
+    color: #1268b3;
+}
+
+.portal-sort-button:focus-visible {
+    outline: 2px solid #1683ff;
+    outline-offset: 3px;
+    border-radius: 0.15rem;
+}
+
+.portal-sort-icon {
+    --slds-c-icon-color-foreground-default: #1268b3;
+}
+
+/* =========================================================
+   Table Rows / Cells
+   ========================================================= */
+
+.portal-table-row td {
+    padding: 0.78rem 0.85rem;
+    color: #31445d;
+    background: #ffffff;
+    border-bottom: 1px solid #e3eaf2;
+    font-size: 0.78rem;
+    font-weight: 400;
+    line-height: 1.45;
+    vertical-align: middle;
+}
+
+.portal-table-row td + td {
+    border-left: 1px solid #f0f3f7;
+}
+
+.portal-table-row:hover td {
+    background: #edf4fb;
+}
+
+.portal-table-row:last-child td {
+    border-bottom: 0;
+}
+
+.portal-table-cell_text {
+    min-width: 8rem;
+    white-space: normal;
+    overflow-wrap: anywhere;
+}
+
+.portal-table-cell_number {
+    width: 5rem;
+    text-align: center;
+    white-space: nowrap;
+}
+
+.portal-table-cell_partSource {
+    min-width: 8.75rem;
+    white-space: nowrap;
+}
+
+.portal-table-cell_date {
+    min-width: 10rem;
+    white-space: nowrap;
+}
+
+.portal-table-cell_record,
+.portal-table-cell_workOrder,
+.portal-table-cell_workOrderGroup {
+    min-width: 8rem;
+    white-space: nowrap;
+}
+
+.portal-table-cell_action {
+    min-width: 11rem;
+    white-space: nowrap;
+}
+
+/* =========================================================
+   Part Source / Record Type Badge
+   ========================================================= */
+
+.part-source-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.28rem;
+    min-height: 1.45rem;
+    padding: 0.16rem 0.42rem;
+    border: 1px solid;
+    border-radius: 999px;
+    font-size: 0.68rem;
+    font-weight: 700;
+    line-height: 1.15;
+    white-space: nowrap;
+}
+
+.part-source-badge__marker {
+    width: 0.38rem;
+    height: 0.38rem;
+    flex-shrink: 0;
+    background: currentColor;
+    border-radius: 50%;
+}
+
+.part-source-badge_technician {
+    color: #1268b3;
+    background: #edf5fc;
+    border-color: #a9c8e5;
+}
+
+.part-source-badge_required {
+    color: #526579;
+    background: #f5f7fa;
+    border-color: #d6dee7;
+}
+
+.part-source-badge_workorder {
+    color: #174d7c;
+    background: #f1f5f9;
+    border-color: #b9c9d8;
+}
+
+/* =========================================================
+   Waiting on Parts - Grouped Work Order Column
+   ========================================================= */
+
+.portal-table-cell_workOrderGroup {
+    vertical-align: middle;
+    background: #fbfdff;
+    border-right: 1px solid #dce5ef;
+}
+
+.portal-table-row:hover .portal-table-cell_workOrderGroup {
+    background: #edf4fb;
+}
+
+.portal-table-cell_group-hovered {
+    background: #edf4fb !important;
+}
+
+.portal-work-order-group-link {
+    color: #1268b3;
+    font-weight: 600;
+}
+
+/* =========================================================
+   Record / Work Order Links
+   ========================================================= */
+
+.portal-record-link {
+    padding: 0;
+    color: #1268b3;
+    background: transparent;
+    border: 0;
+    font: inherit;
+    font-weight: 500;
+    text-align: left;
+    cursor: pointer;
+}
+
+.portal-record-link:hover {
+    color: #0d5796;
+    text-decoration: underline;
+}
+
+.portal-record-link:focus-visible {
+    outline: 2px solid #1683ff;
+    outline-offset: 2px;
+    border-radius: 0.15rem;
+}
+
+.portal-record-link:disabled {
+    color: #7f8d9d;
+    cursor: default;
+    text-decoration: none;
+}
+
+/* =========================================================
+   Workflow Action Buttons
+   ========================================================= */
+
+.portal-action-button {
+    min-height: 2rem;
+    padding: 0.25rem 0.7rem;
+    color: #1268b3;
+    background: #ffffff;
+    border: 1px solid #1268b3;
+    border-radius: 0.4rem;
+    font-size: 0.74rem;
+    font-weight: 600;
+    line-height: 1.2;
+    white-space: nowrap;
+    cursor: pointer;
+    transition:
+        color 120ms ease,
+        background-color 120ms ease,
+        border-color 120ms ease,
+        box-shadow 120ms ease;
+}
+
+.portal-action-button:hover {
+    color: #ffffff;
+    background: #1268b3;
+    border-color: #1268b3;
+}
+
+.portal-action-button:focus-visible {
+    outline: 2px solid #1683ff;
+    outline-offset: 2px;
+}
+
+.portal-action-button:disabled {
+    color: #8998a8;
+    background: #f7f9fb;
+    border-color: #cbd8e6;
+    cursor: default;
+}
+
+/* =========================================================
+   Column Sizing
+   ========================================================= */
+
+.portal-table-header_record,
+.portal-table-header_workOrder,
+.portal-table-header_workOrderGroup {
+    min-width: 8rem;
+}
+
+.portal-table-header_number {
+    width: 5rem;
+    text-align: center;
+}
+
+.portal-table-header_date {
+    min-width: 10rem;
+}
+
+.portal-table-header_action {
+    min-width: 11rem;
+}
+
+/* =========================================================
+   Empty State
+   ========================================================= */
+
 .empty-state {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
+
     min-height: 13rem;
     padding: 2rem 1rem;
+
     text-align: center;
-    color: var(--lwc-colorTextWeak, #706e6b);
-    background: #fafaf9;
-    border: 1px dashed var(--lwc-colorBorder, #c9c9c9);
+
+    color:
+        var(--lwc-colorTextWeak, #706e6b);
+
+    background: #f8fafc;
+
+    border: 1px dashed #cbd8e6;
+
     border-radius: 0.5rem;
 }
 
@@ -198,7 +928,10 @@
 
 .empty-state-title {
     margin: 0;
-    color: var(--lwc-colorTextDefault, #181818);
+
+    color:
+        var(--lwc-colorTextDefault, #181818);
+
     font-size: 1rem;
     font-weight: 700;
 }
@@ -206,11 +939,15 @@
 .empty-state-message {
     max-width: 30rem;
     margin: 0.35rem 0 0;
+
     font-size: 0.8125rem;
     line-height: 1.5;
 }
 
-/* Flow modal */
+/* =========================================================
+   Flow Modal
+   ========================================================= */
+
 .manager-flow-modal .slds-modal__container {
     width: 90%;
     max-width: 70rem;
@@ -224,19 +961,144 @@
 .flow-modal-content {
     min-height: 20rem;
     max-height: 75vh;
+
     overflow-x: hidden;
     overflow-y: auto;
-    background: var(--lwc-colorBackgroundAlt, #ffffff);
+
+    background:
+        var(--lwc-colorBackgroundAlt, #ffffff);
+
     overscroll-behavior: contain;
 }
 
-/* Medium screens */
+
+/* =========================================================
+   Review Work Order Wizard Modal
+   ========================================================= */
+
+.manager-review-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 9000;
+
+    background: rgba(8, 28, 52, 0.42);
+
+    -webkit-backdrop-filter: blur(4px);
+    backdrop-filter: blur(4px);
+}
+
+.manager-review-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 9001;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 1.25rem;
+
+    pointer-events: none;
+}
+
+.manager-review-modal__container {
+    position: relative;
+
+    width: min(96vw, 78rem);
+    max-height: 94vh;
+
+    pointer-events: auto;
+}
+
+.manager-review-modal__content {
+    max-height: 94vh;
+
+    overflow-x: hidden;
+    overflow-y: auto;
+
+    border-radius: 1rem;
+
+    box-shadow:
+        0 22px 60px rgba(6, 37, 74, 0.28),
+        0 6px 18px rgba(6, 37, 74, 0.16);
+
+    overscroll-behavior: contain;
+}
+
+.manager-review-close {
+    position: absolute;
+    top: -0.8rem;
+    right: -0.8rem;
+    z-index: 3;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 2.35rem;
+    height: 2.35rem;
+    padding: 0;
+
+    color: #ffffff;
+    background: #06254a;
+
+    border: 2px solid #ffffff;
+    border-radius: 50%;
+
+    box-shadow: 0 4px 12px rgba(6, 37, 74, 0.24);
+
+    cursor: pointer;
+}
+
+.manager-review-close:hover {
+    background: #0b5cab;
+}
+
+.manager-review-close:focus-visible {
+    outline: 3px solid #8fc7f2;
+    outline-offset: 2px;
+}
+
+@media screen and (max-width: 48rem) {
+    .manager-review-modal {
+        padding: 0.75rem;
+        align-items: flex-start;
+    }
+
+    .manager-review-modal__container {
+        width: 100%;
+        max-height: calc(100vh - 1.5rem);
+    }
+
+    .manager-review-modal__content {
+        max-height: calc(100vh - 1.5rem);
+    }
+
+    .manager-review-close {
+        top: 0.4rem;
+        right: 0.4rem;
+    }
+}
+
+/* =========================================================
+   Medium Screens
+   ========================================================= */
+
 @media screen and (max-width: 64rem) {
     .queue-grid {
         grid-template-columns: repeat(
             auto-fit,
             minmax(9.5rem, 1fr)
         );
+    }
+
+    .open-cases-summary {
+        grid-template-columns: auto minmax(0, 1fr) auto;
+    }
+
+    .open-cases-action {
+        grid-column: 2 / -1;
+        justify-self: end;
     }
 
     .queue-card {
@@ -248,19 +1110,69 @@
         font-size: 1.75rem;
     }
 
-    .datatable-container lightning-datatable {
+    .portal-record-table {
         min-width: 60rem;
     }
 }
 
-/* Tablets */
+/* =========================================================
+   Tablets
+   ========================================================= */
+
 @media screen and (max-width: 48rem) {
     .operations-center {
         padding: 0 0.75rem 0.75rem;
     }
 
+    .open-cases-summary {
+        grid-template-columns: auto minmax(0, 1fr);
+        align-items: start;
+    }
+
+    .open-cases-summary__icon {
+        grid-column: 1;
+        grid-row: 1;
+    }
+
+    .open-cases-summary__content {
+        grid-column: 2;
+        grid-row: 1;
+    }
+
+    .open-cases-summary__new {
+        grid-column: 2;
+        grid-row: 2;
+
+        flex-direction: row;
+        justify-content: flex-start;
+
+        gap: 0.35rem;
+
+        min-width: 0;
+        padding-left: 0;
+
+        border-left: 0;
+    }
+
+    .open-cases-summary__new-count {
+        font-size: 1rem;
+    }
+
+    .open-cases-summary__new-label {
+        margin-top: 0;
+    }
+
+    .open-cases-action {
+        grid-column: 2;
+        grid-row: 3;
+
+        justify-self: start;
+    }
+
     .queue-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+
         gap: 0.625rem;
     }
 
@@ -278,7 +1190,7 @@
         margin-top: 0.45rem;
     }
 
-    .datatable-container lightning-datatable {
+    .portal-record-table {
         min-width: 58rem;
     }
 
@@ -295,10 +1207,73 @@
     }
 }
 
-/* Phones */
+/* =========================================================
+   Phones
+   ========================================================= */
+
 @media screen and (max-width: 30rem) {
+    .manager-card-title {
+        gap: 0.45rem;
+    }
+
+    .manager-title-icon {
+        width: 1.8rem;
+        height: 1.8rem;
+    }
+
+    .manager-title-text {
+        font-size: 0.9375rem;
+    }
+
     .operations-center {
         padding: 0 0.5rem 0.5rem;
+    }
+
+    .case-summary-section {
+        margin-bottom: 1.25rem;
+    }
+
+    .open-cases-summary {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+
+        gap: 0.75rem;
+
+        padding: 0.9rem;
+    }
+
+    .open-cases-summary__icon {
+        width: 2.6rem;
+        height: 2.6rem;
+    }
+
+    .open-cases-summary__title-row {
+        align-items: flex-start;
+    }
+
+    .open-cases-summary__count {
+        min-width: 2rem;
+
+        font-size: 1.9rem;
+    }
+
+    .open-cases-summary__new {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: flex-start;
+
+        gap: 0.35rem;
+
+        padding: 0.65rem 0 0;
+
+        border-top: 1px solid #d6e2ed;
+        border-left: 0;
+    }
+
+    .open-cases-action {
+        align-self: flex-start;
     }
 
     .queue-grid {
@@ -323,7 +1298,11 @@
         padding-top: 1rem;
     }
 
-    .datatable-container lightning-datatable {
+    .portal-table-container {
+        border-radius: 0.4rem;
+    }
+
+    .portal-record-table {
         min-width: 56rem;
     }
 
@@ -344,7 +1323,10 @@
     }
 }
 
-/* Short screens */
+/* =========================================================
+   Short Screens
+   ========================================================= */
+
 @media screen and (max-height: 42rem) {
     .manager-flow-modal .slds-modal__container {
         max-height: calc(100vh - 1rem);
@@ -358,13 +1340,19 @@
     }
 }
 
-/* Accessibility */
+/* =========================================================
+   Accessibility
+   ========================================================= */
+
 @media (prefers-reduced-motion: reduce) {
-    .queue-card {
+    .queue-card,
+    .open-cases-summary,
+    .open-cases-action {
         transition: none;
     }
 
-    .queue-card:hover {
+    .queue-card:hover,
+    .queue-card_selected {
         transform: none;
     }
 }

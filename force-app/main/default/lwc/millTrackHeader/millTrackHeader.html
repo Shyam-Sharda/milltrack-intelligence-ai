@@ -1,0 +1,174 @@
+<template>
+    <header class="milltrack-header">
+
+        <!-- =========================
+             MillTrack Logo
+             ========================= -->
+        <div class="brand-section">
+            <button
+                class="brand-button"
+                type="button"
+                onclick={handleHomeClick}
+                title="MillTrack Home"
+            >
+                <img
+                    src={logoUrl}
+                    alt="MillTrack"
+                    class="brand-logo"
+                />
+            </button>
+        </div>
+
+
+        <!-- =========================
+             Main Navigation
+             ========================= -->
+        <nav class="main-navigation" aria-label="Main navigation">
+
+            <button
+                class={homeNavClass}
+                type="button"
+                onclick={handleHomeClick}
+            >
+                <lightning-icon
+                    icon-name="utility:home"
+                    size="x-small"
+                    alternative-text=""
+                    class="nav-icon"
+                >
+                </lightning-icon>
+
+                <span>Home</span>
+            </button>
+
+
+            <button
+                class={reportIssueNavClass}
+                type="button"
+                onclick={handleReportIssueClick}
+            >
+                <lightning-icon
+                    icon-name="utility:note"
+                    size="x-small"
+                    alternative-text=""
+                    class="nav-icon"
+                >
+                </lightning-icon>
+
+                <span>Report an Issue</span>
+            </button>
+
+        </nav>
+
+
+        <!-- =========================
+             Header Actions
+             ========================= -->
+        <div class="header-actions">
+
+            <!-- Help -->
+            <button
+                class="icon-button help-button"
+                type="button"
+                onclick={handleHelpClick}
+                title="Help"
+                aria-label="Help"
+            >
+                <span class="help-symbol">?</span>
+            </button>
+
+
+            <!-- Profile -->
+            <div class="profile-container">
+
+                <button
+                    class="profile-button"
+                    type="button"
+                    onclick={toggleProfileMenu}
+                    aria-label="Open profile menu"
+                    aria-expanded={isProfileMenuOpen}
+                >
+                    <span class="profile-icon-wrapper">
+                        <lightning-icon
+                            icon-name="utility:user"
+                            size="small"
+                            alternative-text=""
+                            class="profile-icon"
+                        >
+                        </lightning-icon>
+                    </span>
+
+                    <lightning-icon
+                        icon-name="utility:chevrondown"
+                        size="xx-small"
+                        alternative-text=""
+                        class="profile-chevron"
+                    >
+                    </lightning-icon>
+                </button>
+
+
+                <!-- Profile Dropdown -->
+                <template lwc:if={isProfileMenuOpen}>
+                    <div class="profile-menu">
+
+                        <div class="profile-menu-header">
+                            <span class="profile-menu-name">
+                                {customerName}
+                            </span>
+
+                            <span class="profile-menu-subtitle">
+                                Customer Portal
+                            </span>
+                        </div>
+
+
+                        <div class="profile-menu-divider"></div>
+
+
+                        <!-- Decorative for now -->
+                        <button
+                            class="profile-menu-item"
+                            type="button"
+                            onclick={handleProfileClick}
+                        >
+                            <lightning-icon
+                                icon-name="utility:user"
+                                size="x-small"
+                                alternative-text=""
+                                class="menu-item-icon"
+                            >
+                            </lightning-icon>
+
+                            <span>My Profile</span>
+                        </button>
+
+
+                        <div class="profile-menu-divider"></div>
+
+
+                        <button
+                            class="profile-menu-item logout-item"
+                            type="button"
+                            onclick={handleLogout}
+                        >
+                            <lightning-icon
+                                icon-name="utility:logout"
+                                size="x-small"
+                                alternative-text=""
+                                class="menu-item-icon"
+                            >
+                            </lightning-icon>
+
+                            <span>Log Out</span>
+                        </button>
+
+                    </div>
+                </template>
+
+            </div>
+
+        </div>
+
+    </header>
+</template>

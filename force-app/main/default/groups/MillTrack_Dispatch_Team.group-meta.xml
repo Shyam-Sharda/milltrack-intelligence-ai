@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Group xmlns="http://soap.sforce.com/2006/04/metadata">
+    <description>-Dispatch Queue ownership
+-Work Order queue ownership</description>
+    <doesIncludeBosses>true</doesIncludeBosses>
+    <name>MillTrack Dispatch Team</name>
+</Group>

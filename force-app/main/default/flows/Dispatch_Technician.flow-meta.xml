@@ -43,19 +43,19 @@
         </defaultConnector>
         <defaultConnectorLabel>Visit Date not Valid</defaultConnectorLabel>
         <rules>
-            <name>Visit_is_Valid</name>
+            <name>Visit_Date_Time_is_Valid</name>
             <conditionLogic>and</conditionLogic>
             <conditions>
                 <leftValueReference>Scheduled_Visit</leftValueReference>
                 <operator>GreaterThanOrEqualTo</operator>
                 <rightValue>
-                    <elementReference>$Flow.CurrentDate</elementReference>
+                    <elementReference>$Flow.CurrentDateTime</elementReference>
                 </rightValue>
             </conditions>
             <connector>
                 <targetReference>Update_Work_Order</targetReference>
             </connector>
-            <label>Visit Date is Valid</label>
+            <label>Visit Date/Time is Valid</label>
         </rules>
     </decisions>
     <decisions>
@@ -181,12 +181,36 @@
         <storeOutputAutomatically>true</storeOutputAutomatically>
     </recordLookups>
     <recordUpdates>
+        <name>Update_Machine_to_Needs_Service</name>
+        <label>Update Machine to Needs Service</label>
+        <locationX>407</locationX>
+        <locationY>643</locationY>
+        <connector>
+            <targetReference>Confirmation_Screen</targetReference>
+        </connector>
+        <filterLogic>and</filterLogic>
+        <filters>
+            <field>Id</field>
+            <operator>EqualTo</operator>
+            <value>
+                <elementReference>Get_Work_Order.AssetId</elementReference>
+            </value>
+        </filters>
+        <inputAssignments>
+            <field>Machine_Status__c</field>
+            <value>
+                <stringValue>Needs Service</stringValue>
+            </value>
+        </inputAssignments>
+        <object>Asset</object>
+    </recordUpdates>
+    <recordUpdates>
         <name>Update_Related_Case_to_Scheduled</name>
         <label>Update Related Case to Scheduled</label>
         <locationX>572</locationX>
         <locationY>643</locationY>
         <connector>
-            <targetReference>Confirmation_Screen</targetReference>
+            <targetReference>Update_Machine_to_Needs_Service</targetReference>
         </connector>
         <filterLogic>and</filterLogic>
         <filters>
@@ -249,7 +273,7 @@
     <screens>
         <name>Confirmation_Screen</name>
         <label>Confirmation Screen</label>
-        <locationX>407</locationX>
+        <locationX>249</locationX>
         <locationY>643</locationY>
         <allowBack>true</allowBack>
         <allowFinish>true</allowFinish>
@@ -469,10 +493,9 @@
         </fields>
         <fields>
             <name>Scheduled_Visit</name>
-            <dataType>Date</dataType>
+            <dataType>DateTime</dataType>
             <fieldText>Scheduled Visit</fieldText>
             <fieldType>InputField</fieldType>
-            <helpText>&lt;p&gt;Choose a date when the required parts are expected to be available.&lt;/p&gt;</helpText>
             <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
             <isRequired>true</isRequired>
             <styleProperties>
@@ -564,8 +587,8 @@
         <showHeader>false</showHeader>
     </screens>
     <start>
-        <locationX>50</locationX>
-        <locationY>249</locationY>
+        <locationX>48</locationX>
+        <locationY>248</locationY>
         <connector>
             <targetReference>Get_Work_Order</targetReference>
         </connector>

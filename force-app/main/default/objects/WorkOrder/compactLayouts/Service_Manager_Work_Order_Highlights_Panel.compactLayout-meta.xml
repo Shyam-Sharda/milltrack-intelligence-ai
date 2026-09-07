@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CompactLayout xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Service_Manager_Work_Order_Highlights_Panel</fullName>
+    <fields>WorkOrderNumber</fields>
+    <fields>AssetId</fields>
+    <fields>AccountId</fields>
+    <fields>Dispatch_Status__c</fields>
+    <fields>Scheduled_Visit__c</fields>
+    <fields>Suggested_Technician__c</fields>
+    <label>Service Manager - Work Order Highlights Panel</label>
+</CompactLayout>

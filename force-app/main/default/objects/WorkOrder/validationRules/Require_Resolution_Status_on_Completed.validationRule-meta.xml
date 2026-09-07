@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ValidationRule xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Require_Resolution_Status_on_Completed</fullName>
+    <active>false</active>
+    <errorConditionFormula>ISPICKVAL(Dispatch_Status__c, &quot;Completed&quot;)
+&amp;&amp;
+ISBLANK(TEXT(Resolution_Status__c))</errorConditionFormula>
+    <errorMessage>Resolution Status is required when completing a work order.</errorMessage>
+</ValidationRule>

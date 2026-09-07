@@ -1,0 +1,159 @@
+:host {
+    display: block;
+    width: 100%;
+}
+
+.hero {
+    position: relative;
+    width: 100%;
+    min-height: 7.75rem;
+    overflow: hidden;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background:
+        linear-gradient(
+            135deg,
+            #f8fbff 0%,
+            #eef5fc 45%,
+            #f8fbff 100%
+        );
+
+    border-radius: 1rem;
+}
+
+/* =========================================================
+   Decorative Portal-Style Waves
+   ========================================================= */
+
+.wave {
+    position: absolute;
+    pointer-events: none;
+    border-radius: 50%;
+}
+
+.wave-one {
+    width: 80%;
+    height: 13rem;
+
+    top: -9rem;
+    left: 18%;
+
+    background: rgba(207, 224, 240, 0.38);
+
+    transform: rotate(-3deg);
+}
+
+.wave-two {
+    width: 65%;
+    height: 10rem;
+
+    bottom: -7.5rem;
+    left: 6%;
+
+    background: rgba(221, 235, 248, 0.48);
+
+    transform: rotate(5deg);
+}
+
+.wave-three {
+    width: 62%;
+    height: 9rem;
+
+    bottom: -6.5rem;
+    right: -4%;
+
+    background: rgba(228, 239, 249, 0.6);
+
+    transform: rotate(-4deg);
+}
+
+/* =========================================================
+   Content
+   ========================================================= */
+
+.hero-content {
+    position: relative;
+    z-index: 2;
+
+    width: 100%;
+    padding: 1.4rem 2rem;
+
+    text-align: center;
+}
+
+/* =========================================================
+   Primary — Workspace / App Identity
+   ========================================================= */
+
+.workspace-title {
+    margin: 0;
+
+    color: #06254a;
+
+    font-size: 1.7rem;
+    font-weight: 700;
+    line-height: 1.25;
+
+    letter-spacing: -0.02rem;
+}
+
+/* =========================================================
+   Secondary — Personalized Greeting
+   ========================================================= */
+
+.hero-content h1 {
+    margin: 0.4rem 0 0;
+
+    color: #294969;
+
+    font-size: 1.08rem;
+    font-weight: 500;
+    line-height: 1.35;
+
+    letter-spacing: 0;
+}
+
+/* =========================================================
+   Tertiary — Supporting Subtitle
+   ========================================================= */
+
+.subtitle {
+    margin: 0.3rem 0 0;
+
+    color: #66798c;
+
+    font-size: 0.92rem;
+    font-weight: 400;
+    line-height: 1.45;
+}
+
+/* =========================================================
+   Responsive
+   ========================================================= */
+
+@media screen and (max-width: 768px) {
+    .hero {
+        min-height: 7rem;
+    }
+
+    .hero-content {
+        padding: 1.25rem 1rem;
+    }
+
+    .workspace-title {
+        font-size: 1.4rem;
+    }
+
+    .hero-content h1 {
+        margin-top: 0.35rem;
+        font-size: 1rem;
+    }
+
+    .subtitle {
+        margin-top: 0.25rem;
+        font-size: 0.86rem;
+    }
+}

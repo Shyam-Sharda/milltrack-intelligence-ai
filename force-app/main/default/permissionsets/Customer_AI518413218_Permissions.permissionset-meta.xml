@@ -145,10 +145,6 @@
     </flowAccesses>
     <flowAccesses>
         <enabled>true</enabled>
-        <flow>CUST_05_Add_Authorized_Case_Comment_V2</flow>
-    </flowAccesses>
-    <flowAccesses>
-        <enabled>true</enabled>
         <flow>CUST_06_Resolve_Authorized_Customer_Case</flow>
     </flowAccesses>
     <hasActivationRequired>false</hasActivationRequired>

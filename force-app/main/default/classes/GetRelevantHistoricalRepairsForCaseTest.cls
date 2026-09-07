@@ -528,6 +528,195 @@ private class GetRelevantHistoricalRepairsForCaseTest {
      * ============================================================
      * TEST 7
      *
+     * Equivalent Roland model aliases must be treated as the same
+     * physical model for cross-Asset precedent retrieval.
+     *
+     * Example:
+     *   DWX-53DC <-> 53DC
+     * ============================================================
+     */
+    @IsTest
+    static void testEquivalentRolandModelAliasAccepted() {
+
+        Account accountRecord =
+            createAccount('Roland Model Alias Test');
+
+        Asset historicalAsset = createAsset(
+            accountRecord,
+            'Historical Roland 53DC',
+            'Roland',
+            'DWX-53DC',
+            'ROL-53DC-HIST'
+        );
+
+        Asset currentAsset = createAsset(
+            accountRecord,
+            'Current Roland 53DC',
+            'Roland',
+            '53DC',
+            'ROL-53DC-CURRENT'
+        );
+
+        Case historicalCase = createCase(
+            accountRecord,
+            historicalAsset,
+            'Disc changer binding during Run-in',
+            'Disc changer binds near the bottom of travel and reports a collision.',
+            null
+        );
+
+        WorkOrder historicalWorkOrder =
+            createWorkOrder(
+                accountRecord,
+                historicalAsset,
+                historicalCase,
+                'Repair disc changer binding'
+            );
+
+        createMaintenanceLog(
+            historicalAsset,
+            historicalWorkOrder,
+            Date.today().addDays(-30),
+            'Repair',
+            'Corrected disc changer alignment and restored normal travel.',
+            'Disc changer mechanism was misaligned.',
+            null,
+            'Verified smooth changer movement after alignment.',
+            true,
+            false
+        );
+
+        Case currentCase = createCase(
+            accountRecord,
+            currentAsset,
+            'Disc changer binding during Run-in',
+            'Disc changer binds near the bottom of travel and reports a collision.',
+            null
+        );
+
+        GetRelevantHistoricalRepairsForCase.Result result =
+            runAction(currentCase.Id, 3);
+
+        System.assertEquals(
+            true,
+            result.success,
+            'Equivalent Roland model aliases should allow a relevant cross-Asset precedent.'
+        );
+        System.assertEquals('SUCCESS', result.statusCode);
+        System.assertEquals(1, result.matchCount);
+
+        System.assert(
+            result.historicalRepairContext.contains('Same current Asset: No'),
+            'The repair is from a different Asset and must not be represented as a previous failure of the current Asset.'
+        );
+
+        System.assert(
+            result.historicalRepairContext.contains('same model'),
+            'DWX-53DC and 53DC should be treated as the same normalized model.'
+        );
+
+        System.assert(
+            result.historicalRepairContext.contains('Disc changer mechanism was misaligned'),
+            'The matching historical repair evidence should be returned.'
+        );
+    }
+
+
+    /*
+     * ============================================================
+     * TEST 8
+     *
+     * Same manufacturer plus strong keyword overlap is NOT enough
+     * when the historical repair belongs to a different model.
+     *
+     * This prevents a DWX-52D correction-jig repair from becoming
+     * precedent for a DWX-53DC disc-changer problem solely because
+     * words such as binding, chamber, cleaning, and collision overlap.
+     * ============================================================
+     */
+    @IsTest
+    static void testDifferentModelSameManufacturerExcluded() {
+
+        Account accountRecord =
+            createAccount('Cross Model Exclusion Test');
+
+        Asset historicalAsset = createAsset(
+            accountRecord,
+            'Historical Roland 52D',
+            'Roland',
+            'DWX-52D',
+            'ROL-52D-HIST'
+        );
+
+        Asset currentAsset = createAsset(
+            accountRecord,
+            'Current Roland 53DC',
+            'Roland',
+            'DWX-53DC',
+            'ROL-53DC-CURRENT'
+        );
+
+        Case historicalCase = createCase(
+            accountRecord,
+            historicalAsset,
+            'Collision and binding during correction',
+            'Machine binds in the chamber and reports a collision after cleaning.',
+            null
+        );
+
+        WorkOrder historicalWorkOrder =
+            createWorkOrder(
+                accountRecord,
+                historicalAsset,
+                historicalCase,
+                'Repair correction collision'
+            );
+
+        createMaintenanceLog(
+            historicalAsset,
+            historicalWorkOrder,
+            Date.today().addDays(-20),
+            'Repair',
+            'Corrected binding and collision condition in the chamber.',
+            'Correction jig was worn and misaligned.',
+            'Correction Jig',
+            'Cleaned chamber and corrected binding during machine movement.',
+            true,
+            false
+        );
+
+        Case currentCase = createCase(
+            accountRecord,
+            currentAsset,
+            'Disc changer binding and collision',
+            'Disc changer binds in the chamber and reports a collision after cleaning.',
+            null
+        );
+
+        GetRelevantHistoricalRepairsForCase.Result result =
+            runAction(currentCase.Id, 3);
+
+        System.assertEquals(
+            false,
+            result.success,
+            'A different model must not qualify solely from manufacturer and overlapping problem terms.'
+        );
+
+        System.assertEquals(
+            'NO_RELEVANT_HISTORY',
+            result.statusCode,
+            'Cross-model Roland history should be excluded before lexical similarity can qualify it.'
+        );
+
+        System.assertEquals(0, result.matchCount);
+        System.assertEquals('', result.historicalRepairContext);
+    }
+
+
+    /*
+     * ============================================================
+     * TEST 9
+     *
      * Maximum result limit.
      *
      * The production class permits no more than 5 records even
@@ -592,7 +781,7 @@ private class GetRelevantHistoricalRepairsForCaseTest {
 
     /*
      * ============================================================
-     * TEST 8
+     * TEST 10
      *
      * Invalid request.
      * ============================================================
@@ -616,5 +805,195 @@ private class GetRelevantHistoricalRepairsForCaseTest {
         System.assertEquals(false, results[0].success);
         System.assertEquals('INVALID_REQUEST', results[0].statusCode);
         System.assertEquals(0,  results[0].matchCount);
+    }
+
+        /*
+     * ============================================================
+     * LWC ENDPOINT TESTS
+     * ============================================================
+     */
+
+    @IsTest
+    static void testLwcEndpointReturnsRelevantHistory() {
+
+        Account accountRecord = createAccount('HRI LWC Endpoint Test');
+
+        Asset assetRecord = createAsset(
+            accountRecord,
+            'LWC Historical Test Mill',
+            'Roland',
+            'DWX-53DC',
+            'LWC-HRI-001'
+        );
+
+        Case historicalCase = createCase(
+            accountRecord,
+            assetRecord,
+            'Disc changer binding during Run-in',
+            'Disc changer binds near the bottom of travel during Run-in.',
+            'COLLISION-200'
+        );
+
+        WorkOrder historicalWorkOrder =
+            createWorkOrder(accountRecord, assetRecord, historicalCase, 'Repair disc changer binding');
+
+        createMaintenanceLog(
+            assetRecord,
+            historicalWorkOrder,
+            Date.today().addDays(-45),
+            'Repair',
+            'Corrected disc changer alignment and restored normal travel.',
+            'Disc changer mechanism was misaligned.',
+            'Disc Changer Alignment Component',
+            'Verified smooth movement and completed Run-in successfully.',
+            true,
+            false
+        );
+
+        Case currentCase = createCase(
+            accountRecord,
+            assetRecord,
+            'Disc changer binding during Run-in',
+            'Disc changer binds near the bottom of travel during Run-in.',
+            'COLLISION-200'
+        );
+
+        Test.startTest();
+        GetRelevantHistoricalRepairsForCase.Result result =
+            GetRelevantHistoricalRepairsForCase.getHistoricalRepairsForLwc(currentCase.Id, 3);
+        Test.stopTest();
+
+        System.assertEquals(true, result.success);
+        System.assertEquals('SUCCESS', result.statusCode);
+        System.assertEquals(1, result.matchCount);
+        System.assertNotEquals('', result.historicalRepairContext);
+
+        System.assert(
+            result.historicalRepairContext.contains('Same current Asset: Yes'),
+            'The LWC endpoint should preserve the same historical context returned to Prompt Builder.'
+        );
+
+        System.assert(
+            result.historicalRepairContext.contains('Disc changer mechanism was misaligned'),
+            'The Prompt Builder context should continue exposing the recorded root cause.'
+        );
+
+        System.assertNotEquals(null, result.precedents, 'The LWC endpoint should return a structured precedent collection.');
+        System.assertEquals(1, result.precedents.size(), 'One relevant historical precedent should be returned.');
+
+        GetRelevantHistoricalRepairsForCase.HistoricalPrecedentUi precedent = result.precedents[0];
+
+        System.assertNotEquals(null, precedent.maintenanceLogId);
+        System.assertNotEquals(null, precedent.maintenanceLogName);
+        System.assertEquals(Date.today().addDays(-45), precedent.maintenanceDate);
+
+        System.assertEquals(assetRecord.Id, precedent.assetId);
+        System.assertEquals('Roland', precedent.manufacturer);
+        System.assertEquals('DWX-53DC', precedent.model);
+        System.assertEquals('LWC-HRI-001', precedent.serialNumber);
+
+        System.assertEquals(historicalWorkOrder.Id, precedent.workOrderId);
+        System.assertNotEquals(null, precedent.workOrderNumber);
+
+        System.assertEquals(true, precedent.sameAsset);
+        System.assertEquals(true, precedent.sameModel);
+        System.assert(
+            precedent.whyRelevant.contains('same error code'),
+            'Structured relevance should identify the exact matching historical error code.'
+        );
+        System.assert(
+            precedent.whyRelevant.contains('same Asset'),
+            'Structured relevance should identify that the precedent belongs to the current Asset.'
+        );
+
+        System.assertEquals(
+            'Corrected disc changer alignment and restored normal travel.',
+            precedent.successfulRepair
+        );
+        System.assertEquals('Disc changer mechanism was misaligned.', precedent.rootCause);
+        System.assertEquals('Disc Changer Alignment Component', precedent.partsUsed);
+        System.assertEquals(
+            'Verified smooth movement and completed Run-in successfully.',
+            precedent.technicianNotes
+        );
+        System.assertEquals(Decimal.valueOf('2'), precedent.laborHours);
+        System.assertEquals('Issue resolved; no follow-up required.', precedent.outcome);
+    }
+
+
+    @IsTest
+    static void testLwcEndpointUsesDefaultMaximum() {
+
+        Account accountRecord = createAccount('HRI LWC Default Maximum Test');
+
+        Asset assetRecord = createAsset(
+            accountRecord,
+            'LWC Default Maximum Mill',
+            'Straumann',
+            'M Series',
+            'LWC-HRI-002'
+        );
+
+        Case historicalCase = createCase(
+            accountRecord,
+            assetRecord,
+            'Coolant flow failure',
+            'Coolant is not reaching the milling chamber.',
+            'COOL-LWC-100'
+        );
+
+        WorkOrder historicalWorkOrder =
+            createWorkOrder(accountRecord, assetRecord, historicalCase, 'Repair coolant flow');
+
+        createMaintenanceLog(
+            assetRecord,
+            historicalWorkOrder,
+            Date.today().addDays(-30),
+            'Repair',
+            'Restored coolant flow.',
+            'Coolant line restriction.',
+            'Coolant Hose',
+            'Coolant flow verified after repair.',
+            true,
+            false
+        );
+
+        Case currentCase = createCase(
+            accountRecord,
+            assetRecord,
+            'Coolant flow failure',
+            'Coolant is not reaching the milling chamber.',
+            'COOL-LWC-100'
+        );
+
+        Test.startTest();
+        GetRelevantHistoricalRepairsForCase.Result result =
+            GetRelevantHistoricalRepairsForCase.getHistoricalRepairsForLwc(currentCase.Id, null);
+        Test.stopTest();
+
+        System.assertEquals(true, result.success);
+        System.assertEquals('SUCCESS', result.statusCode);
+        System.assertEquals(1, result.matchCount);
+        System.assertNotEquals(null, result.precedents);
+        System.assertEquals(1, result.precedents.size());
+        System.assertEquals('Coolant line restriction.', result.precedents[0].rootCause);
+        System.assertEquals('Coolant Hose', result.precedents[0].partsUsed);
+    }
+
+
+    @IsTest
+    static void testLwcEndpointRejectsMissingCaseId() {
+
+        Test.startTest();
+        GetRelevantHistoricalRepairsForCase.Result result =
+            GetRelevantHistoricalRepairsForCase.getHistoricalRepairsForLwc(null, 3);
+        Test.stopTest();
+
+        System.assertEquals(false, result.success);
+        System.assertEquals('INVALID_REQUEST', result.statusCode);
+        System.assertEquals(0, result.matchCount);
+        System.assertEquals('', result.historicalRepairContext);
+        System.assertNotEquals(null, result.precedents);
+        System.assertEquals(0, result.precedents.size(), 'Invalid LWC requests should return an empty structured precedent list.');
     }
 }

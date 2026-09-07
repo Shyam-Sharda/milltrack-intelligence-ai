@@ -42,6 +42,62 @@ private class TechnicianCopilotControllerTest {
 
         insert machine;
 
+        /*
+         * Cross-customer same-model machine:
+         * Used to prove that Similar Repair Precedents are sourced from
+         * another customer's Asset, not from the current Asset's own history.
+         */
+        Account precedentAccount = new Account(
+            Name = 'Other Customer Dental Lab',
+            Phone = '555-0200'
+        );
+        insert precedentAccount;
+
+        Asset precedentMachine = new Asset(
+            Name = 'Other Customer Similar Milling Machine',
+            AccountId = precedentAccount.Id
+        );
+
+        setFieldIfCreateable(precedentMachine, 'Serial_Number__c', 'PRIVATE-OTHER-2001');
+        setFieldIfCreateable(
+            precedentMachine,
+            'Manufacturer__c',
+            getUsableFieldValue(Asset.SObjectType, 'Manufacturer__c', 'Roland')
+        );
+        setFieldIfCreateable(precedentMachine, 'Model__c', 'DWX Test Model');
+        setFieldIfCreateable(
+            precedentMachine,
+            'Machine_Status__c',
+            getUsableFieldValue(Asset.SObjectType, 'Machine_Status__c', 'Operational')
+        );
+        insert precedentMachine;
+
+        /*
+         * Same-customer sibling machine:
+         * This repair is intentionally very similar, but it must NOT be
+         * returned as a cross-customer precedent because the Account matches
+         * the current Work Order's customer.
+         */
+        Asset sameCustomerSiblingMachine = new Asset(
+            Name = 'Same Customer Similar Milling Machine',
+            AccountId = customerAccount.Id,
+            ContactId = customerContact.Id
+        );
+
+        setFieldIfCreateable(sameCustomerSiblingMachine, 'Serial_Number__c', 'PRIVATE-SAME-1002');
+        setFieldIfCreateable(
+            sameCustomerSiblingMachine,
+            'Manufacturer__c',
+            getUsableFieldValue(Asset.SObjectType, 'Manufacturer__c', 'Roland')
+        );
+        setFieldIfCreateable(sameCustomerSiblingMachine, 'Model__c', 'DWX Test Model');
+        setFieldIfCreateable(
+            sameCustomerSiblingMachine,
+            'Machine_Status__c',
+            getUsableFieldValue(Asset.SObjectType, 'Machine_Status__c', 'Operational')
+        );
+        insert sameCustomerSiblingMachine;
+
         Case serviceCase = new Case(
             Subject = 'Spindle vibration during milling',
             Description ='The customer reports vibration and reduced milling accuracy.',
@@ -66,6 +122,58 @@ private class TechnicianCopilotControllerTest {
             'Previous spindle service'
         );
         insert previousWorkOrder;
+
+        /*
+         * Cross-customer historical repair candidate.
+         * This is the only record that SHOULD be returned as a Similar Repair
+         * Precedent for the current Work Order.
+         */
+        WorkOrder precedentWorkOrder = buildWorkOrder(
+            precedentAccount.Id,
+            null,
+            null,
+            precedentMachine.Id,
+            'Historical spindle vibration repair'
+        );
+        precedentWorkOrder.Description =
+            'A similar milling machine developed spindle vibration and reduced milling accuracy.';
+        setFieldIfCreateable(
+            precedentWorkOrder,
+            'Problem_Summary__c',
+            'Spindle vibration during milling caused reduced milling accuracy.'
+        );
+        setFieldIfCreateable(
+            precedentWorkOrder,
+            'Recommended_Fix_Summary__c',
+            'Inspect spindle bearings and belt tension, replace worn components, and verify smooth operation.'
+        );
+        insert precedentWorkOrder;
+
+        /*
+         * Same-customer historical repair candidate.
+         * It intentionally resembles the current issue but should be filtered
+         * out because it belongs to the current customer's Account.
+         */
+        WorkOrder sameCustomerSiblingWorkOrder = buildWorkOrder(
+            customerAccount.Id,
+            customerContact.Id,
+            null,
+            sameCustomerSiblingMachine.Id,
+            'Same customer spindle vibration repair'
+        );
+        sameCustomerSiblingWorkOrder.Description =
+            'Another machine for this customer developed spindle vibration during milling.';
+        setFieldIfCreateable(
+            sameCustomerSiblingWorkOrder,
+            'Problem_Summary__c',
+            'Spindle vibration during milling caused reduced milling accuracy.'
+        );
+        setFieldIfCreateable(
+            sameCustomerSiblingWorkOrder,
+            'Recommended_Fix_Summary__c',
+            'Inspect spindle bearings and replace worn components.'
+        );
+        insert sameCustomerSiblingWorkOrder;
 
         /*
          * Current Work Order:
@@ -133,6 +241,56 @@ private class TechnicianCopilotControllerTest {
         );
         insert previousRepair;
 
+        String repairEvidenceType = getRepairEvidenceMaintenanceType();
+
+        System.assertNotEquals(
+            null,
+            repairEvidenceType,
+            'Maintenance_Type__c must provide an active Repair or Emergency value for precedent testing.'
+        );
+
+        /*
+         * Successful repair on another customer's same-model Asset.
+         */
+        SObject precedentRepair = buildMaintenanceLog(
+            precedentWorkOrder.Id,
+            precedentMachine.Id,
+            'Cross Customer Similar Spindle Repair',
+            repairEvidenceType,
+            Date.today().addDays(-45),
+            'Spindle vibration was confirmed during milling.'
+        );
+        setFieldIfCreateable(
+            precedentRepair,
+            'Root_Cause__c',
+            'Worn spindle bearing created vibration under milling load.'
+        );
+        setFieldIfCreateable(
+            precedentRepair,
+            'Technician_Notes__c',
+            'Confirmed bearing wear, replaced the spindle bearing, aligned the spindle, and completed a successful test mill.'
+        );
+        insert precedentRepair;
+
+        /*
+         * Similar repair for another Asset owned by the CURRENT customer.
+         * The controller must exclude this from cross-customer precedents.
+         */
+        SObject sameCustomerSiblingRepair = buildMaintenanceLog(
+            sameCustomerSiblingWorkOrder.Id,
+            sameCustomerSiblingMachine.Id,
+            'Same Customer Similar Spindle Repair',
+            repairEvidenceType,
+            Date.today().addDays(-30),
+            'Spindle vibration was confirmed during milling.'
+        );
+        setFieldIfCreateable(
+            sameCustomerSiblingRepair,
+            'Technician_Notes__c',
+            'Replaced worn spindle components and verified normal milling.'
+        );
+        insert sameCustomerSiblingRepair;
+
         createPartData(currentWorkOrder.Id, machine.Id);
     }
 
@@ -195,6 +353,8 @@ private class TechnicianCopilotControllerTest {
         System.assertEquals(UserInfo.getUserId(), response.assignedTechnician.id);
         System.assertNotEquals(null, response.serviceManager, 'Service manager information should be returned.');
         System.assertEquals(UserInfo.getUserId(), response.serviceManager.id);
+        System.assertNotEquals(null, response.similarRepairPrecedents, 'Similar repair precedents should be returned as a collection.');
+        System.assertEquals(1, response.similarRepairPrecedents.size(), 'Only the other-customer same-model repair should qualify as precedent.');
         System.assertNotEquals(null, response.summary, 'Summary flags should be returned.');
     }
 
@@ -256,6 +416,137 @@ private class TechnicianCopilotControllerTest {
 
         System.assertEquals(true, response.summary.hasAssetMaintenanceHistory);
         System.assertEquals(1, response.summary.assetMaintenanceHistoryCount);
+    }
+
+
+    /*
+     * ============================================================
+     * SIMILAR REPAIR PRECEDENTS
+     * ============================================================
+     */
+
+    @IsTest
+    static void returnsSanitizedCrossCustomerSameModelPrecedent() {
+        WorkOrder currentWorkOrder = [
+            SELECT Id, AssetId, AccountId
+            FROM WorkOrder
+            WHERE Subject = 'Diagnose spindle vibration'
+            LIMIT 1
+        ];
+
+        WorkOrder precedentWorkOrder = [
+            SELECT Id, WorkOrderNumber, AssetId, AccountId
+            FROM WorkOrder
+            WHERE Subject = 'Historical spindle vibration repair'
+            LIMIT 1
+        ];
+
+        Asset precedentAsset = [
+            SELECT Id, Name, AccountId, Serial_Number__c
+            FROM Asset
+            WHERE Name = 'Other Customer Similar Milling Machine'
+            LIMIT 1
+        ];
+
+        Account precedentAccount = [
+            SELECT Id, Name
+            FROM Account
+            WHERE Name = 'Other Customer Dental Lab'
+            LIMIT 1
+        ];
+
+        Test.startTest();
+        TechnicianCopilotController.CopilotResponse response =
+            TechnicianCopilotController.getCopilotContext(currentWorkOrder.Id);
+        Test.stopTest();
+
+        System.assertNotEquals(null, response.similarRepairPrecedents);
+        System.assertEquals(
+            1,
+            response.similarRepairPrecedents.size(),
+            'Only a different-customer, same-model, successful and relevant repair should be returned.'
+        );
+
+        TechnicianCopilotController.SimilarRepairPrecedentInfo precedent =
+            response.similarRepairPrecedents[0];
+
+        System.assertEquals('DWX Test Model', precedent.model);
+        System.assertEquals(
+            'Spindle vibration during milling caused reduced milling accuracy.',
+            precedent.problemSummary
+        );
+        System.assertEquals(
+            'Inspect spindle bearings and belt tension, replace worn components, and verify smooth operation.',
+            precedent.recommendedFixSummary
+        );
+        System.assertEquals(
+            'Confirmed bearing wear, replaced the spindle bearing, aligned the spindle, and completed a successful test mill.',
+            precedent.technicianRepairNotes
+        );
+        System.assertEquals(true, precedent.issueResolved);
+        System.assertNotEquals(null, precedent.maintenanceDate);
+
+        /*
+         * The precedent DTO must not leak the other customer's identity,
+         * Asset identity, serial number, Work Order number, or raw record IDs.
+         */
+        String serializedPrecedent = JSON.serialize(precedent);
+
+        System.assertEquals(
+            false,
+            serializedPrecedent.contains(precedentAccount.Name),
+            'Customer/Account identity must not be exposed in precedent output.'
+        );
+        System.assertEquals(
+            false,
+            serializedPrecedent.contains(precedentAsset.Name),
+            'Historical Asset name must not be exposed in precedent output.'
+        );
+        System.assertEquals(
+            false,
+            serializedPrecedent.contains(String.valueOf(precedentAsset.Serial_Number__c)),
+            'Historical serial number must not be exposed in precedent output.'
+        );
+        System.assertEquals(
+            false,
+            serializedPrecedent.contains(precedentWorkOrder.WorkOrderNumber),
+            'Historical Work Order number must not be exposed in precedent output.'
+        );
+        System.assertEquals(
+            false,
+            serializedPrecedent.contains(String.valueOf(precedentWorkOrder.Id)),
+            'Historical Work Order ID must not be exposed in precedent output.'
+        );
+        System.assertEquals(
+            false,
+            serializedPrecedent.contains(String.valueOf(precedentAsset.Id)),
+            'Historical Asset ID must not be exposed in precedent output.'
+        );
+
+        System.assertEquals(true, response.summary.hasSimilarRepairPrecedents);
+        System.assertEquals(1, response.summary.similarRepairPrecedentCount);
+
+        /*
+         * Service History remains scoped only to the exact current Asset.
+         */
+        for (TechnicianCopilotController.MaintenanceLogInfo historyItem : response.assetMaintenanceHistory) {
+            System.assertEquals(
+                currentWorkOrder.AssetId,
+                historyItem.assetId,
+                'Service History must remain scoped to the current Asset.'
+            );
+        }
+
+        System.assertNotEquals(
+            currentWorkOrder.AccountId,
+            precedentWorkOrder.AccountId,
+            'The qualifying precedent test data must belong to another customer.'
+        );
+        System.assertNotEquals(
+            currentWorkOrder.AssetId,
+            precedentWorkOrder.AssetId,
+            'The qualifying precedent test data must belong to another Asset.'
+        );
     }
 
 
@@ -323,6 +614,8 @@ private class TechnicianCopilotControllerTest {
         System.assertEquals(true, summary.hasRecommendedTools);
         System.assertEquals(true, summary.hasCurrentWorkOrderActivity);
         System.assertEquals(true, summary.hasAssetMaintenanceHistory);
+        System.assertEquals(true, summary.hasSimilarRepairPrecedents);
+        System.assertEquals(1, summary.similarRepairPrecedentCount);
         System.assertEquals(true, summary.hasParts);
     }
 
@@ -364,6 +657,9 @@ private class TechnicianCopilotControllerTest {
         System.assertEquals(false, response.summary.hasCase);
         System.assertEquals(false, response.summary.hasRecommendedFixSummary);
         System.assertEquals(0, response.assetMaintenanceHistory.size());
+        System.assertEquals(0, response.similarRepairPrecedents.size());
+        System.assertEquals(false, response.summary.hasSimilarRepairPrecedents);
+        System.assertEquals(0, response.summary.similarRepairPrecedentCount);
         System.assertEquals(0, response.maintenanceLogs.size());
         System.assertEquals(0, response.workOrderParts.size());
     }
@@ -591,6 +887,46 @@ private class TechnicianCopilotControllerTest {
         if (fieldDescribe.isCreateable() && !fieldDescribe.isCalculated() && !fieldDescribe.isAutoNumber()) {
             record.put(fieldApiName, value);
         }
+    }
+
+
+    private static String getRepairEvidenceMaintenanceType() {
+        Schema.SObjectType objectType = Schema.getGlobalDescribe().get('Maintenance_Log__c');
+
+        if (objectType == null) {
+            return null;
+        }
+
+        Map<String, Schema.SObjectField> fieldMap =
+            objectType.getDescribe().fields.getMap();
+
+        if (!fieldMap.containsKey('Maintenance_Type__c')) {
+            return null;
+        }
+
+        Schema.DescribeFieldResult fieldDescribe =
+            fieldMap.get('Maintenance_Type__c').getDescribe();
+
+        if (fieldDescribe.getType() != Schema.DisplayType.Picklist) {
+            return 'Repair';
+        }
+
+        for (Schema.PicklistEntry entry : fieldDescribe.getPicklistValues()) {
+            if (!entry.isActive()) {
+                continue;
+            }
+
+            String normalizedValue = entry.getValue().toLowerCase();
+
+            if (
+                normalizedValue.contains('repair') ||
+                normalizedValue.contains('emergency')
+            ) {
+                return entry.getValue();
+            }
+        }
+
+        return null;
     }
 
 

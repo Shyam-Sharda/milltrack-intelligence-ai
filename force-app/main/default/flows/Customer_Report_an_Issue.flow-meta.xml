@@ -1,5 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Flow xmlns="http://soap.sforce.com/2006/04/metadata" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <actionCalls>
+        <name>Navigate_to_Portal_Home</name>
+        <label>Navigate to Portal Home</label>
+        <locationX>638</locationX>
+        <locationY>432</locationY>
+        <actionName>c:flowNavigateToHome</actionName>
+        <actionType>lwcComponent</actionType>
+        <flowTransactionModel>CurrentTransaction</flowTransactionModel>
+        <nameSegment>c:flowNavigateToHome</nameSegment>
+        <offset>0</offset>
+    </actionCalls>
     <apiVersion>67.0</apiVersion>
     <areMetricsLoggedToDataCloud>false</areMetricsLoggedToDataCloud>
     <customProperties>
@@ -180,6 +191,9 @@
         <allowBack>false</allowBack>
         <allowFinish>true</allowFinish>
         <allowPause>false</allowPause>
+        <connector>
+            <targetReference>Navigate_to_Portal_Home</targetReference>
+        </connector>
         <fields>
             <name>CreationSuccessfulText</name>
             <fieldText>&lt;p&gt;&lt;strong&gt;Your service request was submitted successfully.&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;br&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;Reference number: &lt;/strong&gt;{!Create_Service_Request.outCaseNumber}&lt;/p&gt;&lt;p&gt;&lt;br&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;You can monitor its progress from My Service Requests.&lt;/strong&gt;&lt;/p&gt;</fieldText>
@@ -350,7 +364,7 @@
         <fields>
             <name>txtSubject</name>
             <dataType>String</dataType>
-            <fieldText>Issue title</fieldText>
+            <fieldText>Subject</fieldText>
             <fieldType>InputField</fieldType>
             <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
             <isRequired>false</isRequired>

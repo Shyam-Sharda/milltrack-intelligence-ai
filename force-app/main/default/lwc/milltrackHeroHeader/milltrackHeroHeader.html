@@ -1,0 +1,19 @@
+<template>
+    <section class="hero">
+        <div class="wave wave-one"></div>
+        <div class="wave wave-two"></div>
+        <div class="wave wave-three"></div>
+
+        <div class="hero-content">
+            <template if:true={title}>
+                <p class="workspace-title">{title}</p>
+            </template>
+
+            <h1>{greeting}</h1>
+
+            <template if:true={subtitle}>
+                <p class="subtitle">{subtitle}</p>
+            </template>
+        </div>
+    </section>
+</template>

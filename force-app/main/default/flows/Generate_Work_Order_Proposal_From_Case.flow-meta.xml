@@ -3,8 +3,8 @@
     <actionCalls>
         <name>Generate_Service_Plan</name>
         <label>Generate Service Plan</label>
-        <locationX>568</locationX>
-        <locationY>587</locationY>
+        <locationX>571</locationX>
+        <locationY>410</locationY>
         <actionName>Generate_Dispatch_Briefing</actionName>
         <actionType>generatePromptResponse</actionType>
         <connector>
@@ -25,8 +25,8 @@
     <actionCalls>
         <name>Generate_Work_Order_Proposal_Fields</name>
         <label>Generate Work Order Proposal Fields</label>
-        <locationX>569</locationX>
-        <locationY>434</locationY>
+        <locationX>729</locationX>
+        <locationY>410</locationY>
         <actionName>Generate_Work_Order_Proposal_Fields</actionName>
         <actionType>generatePromptResponse</actionType>
         <connector>
@@ -40,15 +40,51 @@
                 <inputConfiguratorMode>Resource</inputConfiguratorMode>
             </value>
         </inputParameters>
+        <inputParameters>
+            <name>Input:historicalRepairContext</name>
+            <value>
+                <elementReference>Get_Relevant_Historical_Repairs_for_Case.historicalRepairContext</elementReference>
+                <inputConfiguratorMode>Resource</inputConfiguratorMode>
+            </value>
+        </inputParameters>
         <nameSegment>Generate_Work_Order_Proposal_Fields</nameSegment>
+        <offset>0</offset>
+        <storeOutputAutomatically>true</storeOutputAutomatically>
+    </actionCalls>
+    <actionCalls>
+        <name>Get_Relevant_Historical_Repairs_for_Case</name>
+        <label>Get Relevant Historical Repairs for Case</label>
+        <locationX>570</locationX>
+        <locationY>575</locationY>
+        <actionName>GetRelevantHistoricalRepairsForCase</actionName>
+        <actionType>apex</actionType>
+        <connector>
+            <targetReference>Generate_Service_Plan</targetReference>
+        </connector>
+        <flowTransactionModel>Automatic</flowTransactionModel>
+        <inputParameters>
+            <name>caseId</name>
+            <value>
+                <elementReference>Get_the_Case.Id</elementReference>
+                <inputConfiguratorMode>Resource</inputConfiguratorMode>
+            </value>
+        </inputParameters>
+        <inputParameters>
+            <name>maxResults</name>
+            <value>
+                <inputConfiguratorMode>Resource</inputConfiguratorMode>
+                <numberValue>3.0</numberValue>
+            </value>
+        </inputParameters>
+        <nameSegment>GetRelevantHistoricalRepairsForCase</nameSegment>
         <offset>0</offset>
         <storeOutputAutomatically>true</storeOutputAutomatically>
     </actionCalls>
     <actionCalls>
         <name>Parse_Work_Order_Proposal_Fields</name>
         <label>Parse Work Order Proposal Fields</label>
-        <locationX>714</locationX>
-        <locationY>434</locationY>
+        <locationX>891</locationX>
+        <locationY>411</locationY>
         <actionName>ParseWorkOrderProposalFields</actionName>
         <actionType>apex</actionType>
         <connector>
@@ -995,7 +1031,7 @@
         <locationX>570</locationX>
         <locationY>724</locationY>
         <connector>
-            <targetReference>Generate_Service_Plan</targetReference>
+            <targetReference>Get_Relevant_Historical_Repairs_for_Case</targetReference>
         </connector>
         <flowName>Get_Machine_History</flowName>
         <inputAssignments>

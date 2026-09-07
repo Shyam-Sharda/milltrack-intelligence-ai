@@ -1,12 +1,34 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Flow xmlns="http://soap.sforce.com/2006/04/metadata">
+    <actionCalls>
+        <name>Get_Service_Manager_Queue</name>
+        <label>Get Service Manager Queue</label>
+        <locationX>1094</locationX>
+        <locationY>226</locationY>
+        <actionName>GetServiceManagerQueue</actionName>
+        <actionType>apex</actionType>
+        <connector>
+            <targetReference>Was_Service_Manager_Queue_Resolved</targetReference>
+        </connector>
+        <flowTransactionModel>Automatic</flowTransactionModel>
+        <inputParameters>
+            <name>queueDeveloperName</name>
+            <value>
+                <inputConfiguratorMode>Resource</inputConfiguratorMode>
+                <stringValue>Service_Manager_Queue</stringValue>
+            </value>
+        </inputParameters>
+        <nameSegment>GetServiceManagerQueue</nameSegment>
+        <offset>0</offset>
+        <storeOutputAutomatically>true</storeOutputAutomatically>
+    </actionCalls>
     <apiVersion>67.0</apiVersion>
     <areMetricsLoggedToDataCloud>false</areMetricsLoggedToDataCloud>
     <assignments>
         <name>Set_Creation_Failure</name>
         <label>Set Creation Failure</label>
-        <locationX>1074</locationX>
-        <locationY>43</locationY>
+        <locationX>956</locationX>
+        <locationY>642</locationY>
         <assignmentItems>
             <assignToReference>outSuccess</assignToReference>
             <operator>Assign</operator>
@@ -33,8 +55,8 @@
     <assignments>
         <name>Set_Creation_Success</name>
         <label>Set Creation Success</label>
-        <locationX>1375</locationX>
-        <locationY>228</locationY>
+        <locationX>529</locationX>
+        <locationY>414</locationY>
         <assignmentItems>
             <assignToReference>outSuccess</assignToReference>
             <operator>Assign</operator>
@@ -119,9 +141,34 @@
                 </rightValue>
             </conditions>
             <connector>
-                <targetReference>Create_Customer_Service_Case</targetReference>
+                <targetReference>Get_Service_Manager_Queue</targetReference>
             </connector>
             <label>Valid Customer Records</label>
+        </rules>
+    </decisions>
+    <decisions>
+        <name>Was_Service_Manager_Queue_Resolved</name>
+        <label>Was Service Manager Queue Resolved?</label>
+        <locationX>1087</locationX>
+        <locationY>417</locationY>
+        <defaultConnector>
+            <targetReference>Set_Creation_Failure</targetReference>
+        </defaultConnector>
+        <defaultConnectorLabel>Not Found</defaultConnectorLabel>
+        <rules>
+            <name>Service_Manager_Queue_Found</name>
+            <conditionLogic>and</conditionLogic>
+            <conditions>
+                <leftValueReference>Get_Service_Manager_Queue.success</leftValueReference>
+                <operator>EqualTo</operator>
+                <rightValue>
+                    <booleanValue>true</booleanValue>
+                </rightValue>
+            </conditions>
+            <connector>
+                <targetReference>Create_Customer_Service_Case</targetReference>
+            </connector>
+            <label>Service Manager Queue Found</label>
         </rules>
     </decisions>
     <environments>Default</environments>
@@ -162,8 +209,8 @@
     <recordCreates>
         <name>Create_Customer_Service_Case</name>
         <label>Create Customer Service Case</label>
-        <locationX>1073</locationX>
-        <locationY>228</locationY>
+        <locationX>834</locationX>
+        <locationY>415</locationY>
         <assignRecordIdToReference>outCaseId</assignRecordIdToReference>
         <connector>
             <targetReference>Get_Created_Case</targetReference>
@@ -208,6 +255,12 @@
             </value>
         </inputAssignments>
         <inputAssignments>
+            <field>OwnerId</field>
+            <value>
+                <elementReference>Get_Service_Manager_Queue.queueId</elementReference>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
             <field>Priority</field>
             <value>
                 <elementReference>frmNormalizePriority</elementReference>
@@ -236,8 +289,8 @@
     <recordLookups>
         <name>Get_Account</name>
         <label>Get Account</label>
-        <locationX>417</locationX>
-        <locationY>229</locationY>
+        <locationX>387</locationX>
+        <locationY>228</locationY>
         <assignNullValuesIfNoRecordsFound>false</assignNullValuesIfNoRecordsFound>
         <connector>
             <targetReference>Get_Contact_for_Account</targetReference>
@@ -285,7 +338,7 @@
     <recordLookups>
         <name>Get_Contact_for_Account</name>
         <label>Get Contact for Account</label>
-        <locationX>545</locationX>
+        <locationX>526</locationX>
         <locationY>228</locationY>
         <assignNullValuesIfNoRecordsFound>false</assignNullValuesIfNoRecordsFound>
         <connector>
@@ -313,8 +366,8 @@
     <recordLookups>
         <name>Get_Created_Case</name>
         <label>Get Created Case</label>
-        <locationX>1212</locationX>
-        <locationY>228</locationY>
+        <locationX>686</locationX>
+        <locationY>414</locationY>
         <assignNullValuesIfNoRecordsFound>false</assignNullValuesIfNoRecordsFound>
         <connector>
             <targetReference>Set_Creation_Success</targetReference>
@@ -332,8 +385,8 @@
         <storeOutputAutomatically>true</storeOutputAutomatically>
     </recordLookups>
     <start>
-        <locationX>41</locationX>
-        <locationY>211</locationY>
+        <locationX>5</locationX>
+        <locationY>209</locationY>
         <connector>
             <targetReference>Get_Account</targetReference>
         </connector>

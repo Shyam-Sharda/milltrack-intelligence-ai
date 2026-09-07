@@ -43,3 +43,17 @@ $RECYCLE.BIN/
 **/__pycache__/
 **/.venv/
 **/venv/
+
+# MillTrack local demo data / temporary exports
+.demo-data-backup/
+.demo-data-delete/
+
+# Generated local demo output
+scripts/demo/milltrack-case-history.txt
+
+# Local org-specific debug/test harnesses
+scripts/demo/debugHriCurrentCase.apex
+scripts/demo/testManagerOrderPartsAllCancelled.apex
+scripts/demo/testManagerOrderPartsAllOrdered.apex
+scripts/demo/testManagerOrderPartsController.apex
+scripts/demo/testManagerOrderPartsPartial.apex

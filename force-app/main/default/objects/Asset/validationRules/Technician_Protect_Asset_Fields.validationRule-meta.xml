@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ValidationRule xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Technician_Protect_Asset_Fields</fullName>
+    <active>true</active>
+    <description>Prevents MillTrack technicians from directly changing the Asset Name, Manufacturer, or Model on an existing Asset.</description>
+    <errorConditionFormula>AND(
+    $Permission.MillTrack_Technician_Restricted_Editing,
+    NOT(ISNEW()),
+    OR(
+        ISCHANGED(Name),
+        ISCHANGED(Manufacturer__c),
+        ISCHANGED(Model__c)
+    )
+)</errorConditionFormula>
+    <errorMessage>Technicians cannot change the Asset Name, Manufacturer, or Model. These machine-identification fields are maintained by authorized service management or administration.</errorMessage>
+</ValidationRule>

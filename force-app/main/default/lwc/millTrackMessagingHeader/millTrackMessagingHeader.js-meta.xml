@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>65.0</apiVersion>
+    <isExposed>true</isExposed>
+    <masterLabel>MillTrack Messaging Header</masterLabel>
+    <description>Custom MillTrack header for Enhanced Web Chat.</description>
+    <targets>
+        <target>lightningSnapin__MessagingHeader</target>
+    </targets>
+</LightningComponentBundle>

@@ -4,8 +4,9 @@
     <columns>NAME</columns>
     <columns>Work_Order__c</columns>
     <columns>Part_Catalog__c</columns>
-    <columns>Quantity_Needed__c</columns>
+    <columns>Quantity__c</columns>
     <columns>Order_Status__c</columns>
+    <columns>CREATED_DATE</columns>
     <columns>Notes__c</columns>
     <filterScope>Everything</filterScope>
     <label>All</label>

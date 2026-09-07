@@ -7,11 +7,15 @@
  * - Retrieve the primary Work Order.
  * - Retrieve the related Asset, Account, Contact, and Case.
  * - Retrieve recent Maintenance Logs.
+ * - Retrieve sanitized similar-repair precedents from other customer assets.
  * - Retrieve related Work Order Parts.
  * - Return all information through LWC-friendly wrapper classes.
  *
  * Security:
- * - "with sharing" enforces record-level sharing.
+ * - "with sharing" enforces record-level sharing for the primary Work Order context.
+ * - Historical precedent retrieval intentionally uses SYSTEM_MODE for cross-customer
+ *   service evidence, but only returns a sanitized technical DTO with no customer,
+ *   account, contact, serial-number, Case-number, Asset-name, or record-ID details.
  * - Security.stripInaccessible removes fields the running user cannot read.
  * - Object accessibility is checked before querying an object.
  *
@@ -24,6 +28,17 @@ public with sharing class TechnicianCopilotController {
 
     private static final Integer DEFAULT_MAINTENANCE_LOG_LIMIT = 10;
     private static final Integer DEFAULT_PART_LIMIT = 50;
+    private static final Integer DEFAULT_PRECEDENT_LIMIT = 3;
+    private static final Integer PRECEDENT_CANDIDATE_LIMIT = 40;
+
+    private static final Set<String> PRECEDENT_STOP_WORDS = new Set<String>{
+        'a', 'an', 'and', 'are', 'as', 'at', 'be', 'been', 'being', 'by',
+        'for', 'from', 'had', 'has', 'have', 'in', 'into', 'is', 'it', 'its',
+        'of', 'on', 'or', 'that', 'the', 'then', 'this', 'to', 'was', 'were',
+        'with', 'work', 'order', 'service', 'machine', 'asset', 'unit',
+        'issue', 'problem', 'current', 'customer', 'technician', 'recommended',
+        'recommendation', 'repair', 'inspect', 'verify', 'document'
+    };
 
     /**
      * Main method called by the Technician Copilot LWC.
@@ -60,6 +75,20 @@ public with sharing class TechnicianCopilotController {
         response.account = mapAccount(querySingleRecord('Account', accountId, getAccountFields()));
         response.contact = mapContact(querySingleRecord('Contact', contactId, getContactFields()));
         response.caseRecord = mapCase(querySingleRecord('Case', caseId, getCaseFields()));
+
+        // Sanitized cross-customer repair evidence for other assets of the same model.
+        // The current Asset's own history remains in assetMaintenanceHistory.
+        Id currentCustomerAccountId = response.asset != null && response.asset.accountId != null
+            ? response.asset.accountId
+            : accountId;
+
+        response.similarRepairPrecedents = getSimilarRepairPrecedents(
+            assetId,
+            currentCustomerAccountId,
+            response.asset,
+            buildCurrentIssueText(response.workOrder, response.caseRecord),
+            DEFAULT_PRECEDENT_LIMIT
+        );
 
         //User display information
         Map<Id, UserInfo> userInfoById = queryUsers(new Set<Id>{ownerId, assignedTechnicianId, serviceManagerId});
@@ -350,6 +379,401 @@ public with sharing class TechnicianCopilotController {
         }
 
         return results;
+    }
+
+
+    /*
+     * ============================================================
+     * SIMILAR REPAIR PRECEDENTS
+     * ============================================================
+     *
+     * Purpose:
+     * - Service History remains exact-Asset history only.
+     * - Similar Repair Precedents are successful repairs from DIFFERENT
+     *   Assets owned by DIFFERENT customer Accounts.
+     * - Candidates must use the same machine model (and manufacturer when
+     *   available) and must share meaningful issue terms with the current
+     *   Work Order / Case.
+     *
+     * Privacy:
+     * - Historical records are queried in SYSTEM_MODE so the technician can
+     *   benefit from enterprise repair knowledge even when record sharing
+     *   would hide another customer's completed Work Order.
+     * - The returned wrapper intentionally contains ONLY technical evidence:
+     *   manufacturer/model, problem summary, manager recommended fix,
+     *   technician repair notes, maintenance date, and resolved outcome.
+     * - No Account, Contact, customer name, serial number, Case number,
+     *   Asset name, Salesforce record ID, or historical Work Order number is
+     *   exposed to the LWC.
+     */
+    private static List<SimilarRepairPrecedentInfo> getSimilarRepairPrecedents(
+        Id currentAssetId,
+        Id currentAccountId,
+        AssetInfo currentAsset,
+        String currentIssueText,
+        Integer recordLimit
+    ) {
+        List<SimilarRepairPrecedentInfo> results = new List<SimilarRepairPrecedentInfo>();
+
+        if (
+            currentAssetId == null ||
+            currentAccountId == null ||
+            currentAsset == null ||
+            String.isBlank(currentAsset.model) ||
+            String.isBlank(currentIssueText) ||
+            recordLimit == null ||
+            recordLimit <= 0
+        ) {
+            return results;
+        }
+
+        String maintenanceObject = 'Maintenance_Log__c';
+
+        if (
+            !isObjectAccessible(maintenanceObject) ||
+            !isObjectAccessible('Asset') ||
+            !isObjectAccessible('WorkOrder') ||
+            !fieldExists(maintenanceObject, 'Asset__c') ||
+            !fieldExists(maintenanceObject, 'Work_Order__c') ||
+            !fieldExists(maintenanceObject, 'Issue_Resolved__c') ||
+            !fieldExists(maintenanceObject, 'Follow_Up_Required__c') ||
+            !fieldExists(maintenanceObject, 'Maintenance_Type__c') ||
+            !fieldExists('Asset', 'AccountId') ||
+            !fieldExists('Asset', 'Model__c')
+        ) {
+            return results;
+        }
+
+        List<String> selectFields = getExistingFields(
+            maintenanceObject,
+            new List<String>{
+                'Id',
+                'Asset__c',
+                'Work_Order__c',
+                'Maintenance_Date__c',
+                'Maintenance_Type__c',
+                'Summary__c',
+                'Root_Cause__c',
+                'Technician_Notes__c',
+                'Issue_Resolved__c',
+                'Follow_Up_Required__c',
+                'CreatedDate'
+            }
+        );
+
+        // Historical Work Order fields used for relevance scoring and sanitized display.
+        // Asset relationship fields are used only in WHERE filters below; they are
+        // deliberately not selected or returned.
+        if (fieldExists('WorkOrder', 'Subject')) {
+            selectFields.add('Work_Order__r.Subject');
+        }
+        if (fieldExists('WorkOrder', 'Description')) {
+            selectFields.add('Work_Order__r.Description');
+        }
+        if (fieldExists('WorkOrder', 'Problem_Summary__c')) {
+            selectFields.add('Work_Order__r.Problem_Summary__c');
+        }
+        if (fieldExists('WorkOrder', 'Recommended_Fix_Summary__c')) {
+            selectFields.add('Work_Order__r.Recommended_Fix_Summary__c');
+        }
+        if (selectFields.isEmpty()) {
+            return results;
+        }
+
+        Map<String, Object> bindValues = new Map<String, Object>{
+            'currentAssetId' => currentAssetId,
+            'currentAccountId' => currentAccountId,
+            'currentModel' => currentAsset.model
+        };
+
+        String queryString =
+            'SELECT ' + String.join(selectFields, ', ') +
+            ' FROM ' + maintenanceObject +
+            ' WHERE Asset__c != :currentAssetId' +
+            ' AND Asset__r.AccountId != null' +
+            ' AND Asset__r.AccountId != :currentAccountId' +
+            ' AND Asset__r.Model__c = :currentModel' +
+            ' AND Work_Order__c != null' +
+            ' AND Issue_Resolved__c = true' +
+            ' AND Follow_Up_Required__c = false';
+
+        if (
+            !String.isBlank(currentAsset.manufacturer) &&
+            fieldExists('Asset', 'Manufacturer__c')
+        ) {
+            queryString += ' AND Asset__r.Manufacturer__c = :currentManufacturer';
+            bindValues.put('currentManufacturer', currentAsset.manufacturer);
+        }
+
+        if (fieldExists(maintenanceObject, 'Maintenance_Date__c')) {
+            queryString += ' ORDER BY Maintenance_Date__c DESC, CreatedDate DESC';
+        } else {
+            queryString += ' ORDER BY CreatedDate DESC';
+        }
+
+        queryString += ' LIMIT ' + String.valueOf(PRECEDENT_CANDIDATE_LIMIT);
+
+        List<SObject> records = Database.queryWithBinds(
+            queryString,
+            bindValues,
+            AccessLevel.SYSTEM_MODE
+        );
+
+        records = stripUnreadableFields(records);
+
+        List<PrecedentCandidate> rankedCandidates = new List<PrecedentCandidate>();
+
+        for (SObject record : records) {
+            SObject historicalWorkOrder = getRelatedRecord(record, 'Work_Order__r');
+
+            if (historicalWorkOrder == null) {
+                continue;
+            }
+
+            String maintenanceType = getString(record, 'Maintenance_Type__c');
+
+            // Mirror MillTrack's Historical Repair Intelligence success rule:
+            // use completed repair/emergency evidence and exclude temporary fixes.
+            if (String.isBlank(maintenanceType)) {
+                continue;
+            }
+
+            String normalizedMaintenanceType = maintenanceType.toLowerCase();
+            Boolean isRepairEvidence =
+                normalizedMaintenanceType.contains('repair') ||
+                normalizedMaintenanceType.contains('emergency');
+            Boolean isTemporary =
+                normalizedMaintenanceType.contains('temporary') ||
+                normalizedMaintenanceType.contains('temp fix');
+
+            if (!isRepairEvidence || isTemporary) {
+                continue;
+            }
+
+            String problemSummary = firstNonBlankString(
+                getString(historicalWorkOrder, 'Problem_Summary__c'),
+                getString(historicalWorkOrder, 'Description'),
+                getString(record, 'Summary__c')
+            );
+
+            if (String.isBlank(problemSummary)) {
+                continue;
+            }
+
+            String historicalIssueText = joinNonBlankStrings(
+                new List<String>{
+                    problemSummary,
+                    getString(historicalWorkOrder, 'Subject'),
+                    getString(historicalWorkOrder, 'Description'),
+                    getString(record, 'Summary__c'),
+                    getString(record, 'Root_Cause__c')
+                }
+            );
+
+            Integer similarityScore = calculateSimilarityScore(
+                currentIssueText,
+                historicalIssueText
+            );
+
+            // Same model alone is not enough; require at least one meaningful
+            // shared issue term so unrelated repairs are not shown as precedent.
+            if (similarityScore <= 0) {
+                continue;
+            }
+
+            String managerRecommendedFix = getString(
+                historicalWorkOrder,
+                'Recommended_Fix_Summary__c'
+            );
+            String technicianRepairNotes = getString(
+                record,
+                'Technician_Notes__c'
+            );
+
+            // A precedent card should contain the three pieces of evidence the
+            // technician actually needs. Skip incomplete historical records.
+            if (
+                String.isBlank(managerRecommendedFix) ||
+                String.isBlank(technicianRepairNotes)
+            ) {
+                continue;
+            }
+
+            SimilarRepairPrecedentInfo info = new SimilarRepairPrecedentInfo();
+            info.manufacturer = currentAsset.manufacturer;
+            info.model = currentAsset.model;
+            info.problemSummary = problemSummary;
+            info.recommendedFixSummary = managerRecommendedFix;
+            info.technicianRepairNotes = technicianRepairNotes;
+            info.maintenanceDate = getDate(record, 'Maintenance_Date__c');
+            info.issueResolved = getBoolean(record, 'Issue_Resolved__c');
+
+            PrecedentCandidate candidate = new PrecedentCandidate();
+            candidate.score = similarityScore;
+            candidate.sortDate = getDateTime(record, 'CreatedDate');
+            candidate.info = info;
+
+            rankedCandidates.add(candidate);
+        }
+
+        rankedCandidates.sort();
+
+        Integer finalLimit = recordLimit < rankedCandidates.size()
+            ? recordLimit
+            : rankedCandidates.size();
+
+        for (Integer i = 0; i < finalLimit; i++) {
+            results.add(rankedCandidates[i].info);
+        }
+
+        return results;
+    }
+
+    private static String buildCurrentIssueText(
+        WorkOrderInfo workOrder,
+        CaseInfo caseRecord
+    ) {
+        List<String> parts = new List<String>();
+
+        if (workOrder != null) {
+            parts.add(workOrder.subject);
+            parts.add(workOrder.problemSummary);
+            parts.add(workOrder.description);
+        }
+
+        if (caseRecord != null) {
+            parts.add(caseRecord.subject);
+            parts.add(caseRecord.description);
+        }
+
+        return joinNonBlankStrings(parts);
+    }
+
+    private static Integer calculateSimilarityScore(
+        String currentIssueText,
+        String historicalIssueText
+    ) {
+        Set<String> currentTokens = toMeaningfulTokens(currentIssueText);
+        Set<String> historicalTokens = toMeaningfulTokens(historicalIssueText);
+
+        if (currentTokens.isEmpty() || historicalTokens.isEmpty()) {
+            return 0;
+        }
+
+        Integer sharedTokenCount = 0;
+
+        for (String token : currentTokens) {
+            if (historicalTokens.contains(token)) {
+                sharedTokenCount++;
+            }
+        }
+
+        if (sharedTokenCount == 0) {
+            return 0;
+        }
+
+        // Shared technical terms are the primary relevance signal.
+        // Give stronger matches a modest bonus without pretending this is a
+        // diagnostic confidence score.
+        Integer score = sharedTokenCount * 10;
+
+        if (sharedTokenCount >= 2) {
+            score += 5;
+        }
+        if (sharedTokenCount >= 3) {
+            score += 5;
+        }
+
+        return score;
+    }
+
+    private static Set<String> toMeaningfulTokens(String text) {
+        Set<String> results = new Set<String>();
+
+        if (String.isBlank(text)) {
+            return results;
+        }
+
+        String normalized = text
+            .toLowerCase()
+            .replaceAll('[^a-z0-9]+', ' ')
+            .trim();
+
+        if (String.isBlank(normalized)) {
+            return results;
+        }
+
+        for (String token : normalized.split('\\s+')) {
+            if (String.isBlank(token)) {
+                continue;
+            }
+
+            Boolean containsDigit = token.replaceAll('[^0-9]', '').length() > 0;
+
+            if (token.length() < 3 && !containsDigit) {
+                continue;
+            }
+
+            if (PRECEDENT_STOP_WORDS.contains(token)) {
+                continue;
+            }
+
+            results.add(token);
+        }
+
+        return results;
+    }
+
+    private static String joinNonBlankStrings(List<String> values) {
+        List<String> cleanedValues = new List<String>();
+
+        if (values == null) {
+            return '';
+        }
+
+        for (String value : values) {
+            if (!String.isBlank(value)) {
+                cleanedValues.add(value.trim());
+            }
+        }
+
+        return String.join(cleanedValues, ' ');
+    }
+
+    private static String firstNonBlankString(
+        String firstValue,
+        String secondValue,
+        String thirdValue
+    ) {
+        if (!String.isBlank(firstValue)) {
+            return firstValue;
+        }
+        if (!String.isBlank(secondValue)) {
+            return secondValue;
+        }
+        return thirdValue;
+    }
+
+    private static String firstNonBlankString(
+        String firstValue,
+        String secondValue
+    ) {
+        return firstNonBlankString(firstValue, secondValue, null);
+    }
+
+    private static SObject getRelatedRecord(
+        SObject record,
+        String relationshipName
+    ) {
+        if (record == null || String.isBlank(relationshipName)) {
+            return null;
+        }
+
+        try {
+            return record.getSObject(relationshipName);
+        } catch (Exception ex) {
+            return null;
+        }
     }
 
 
@@ -743,6 +1167,10 @@ public with sharing class TechnicianCopilotController {
         summary.hasRecommendedTools = response.workOrder != null && !String.isBlank(response.workOrder.recommendedTools);
         summary.assetMaintenanceHistoryCount = response.assetMaintenanceHistory == null ? 0 : response.assetMaintenanceHistory.size();
         summary.hasAssetMaintenanceHistory = summary.assetMaintenanceHistoryCount > 0;
+        summary.similarRepairPrecedentCount = response.similarRepairPrecedents == null
+            ? 0
+            : response.similarRepairPrecedents.size();
+        summary.hasSimilarRepairPrecedents = summary.similarRepairPrecedentCount > 0;
         summary.hasRecommendedFixSummary = response.workOrder != null &&
             String.isNotBlank(response.workOrder.recommendedFixSummary);
 
@@ -929,6 +1357,7 @@ public with sharing class TechnicianCopilotController {
         @AuraEnabled public UserInfo serviceManager {get; set;}
         @AuraEnabled public List<MaintenanceLogInfo> maintenanceLogs {get; set;}
         @AuraEnabled public List<MaintenanceLogInfo> assetMaintenanceHistory { get; set; }
+        @AuraEnabled public List<SimilarRepairPrecedentInfo> similarRepairPrecedents { get; set; }
         @AuraEnabled public List<WorkOrderPartInfo> workOrderParts {get; set;}
 
         @AuraEnabled public CopilotSummary summary {get; set;}
@@ -1068,6 +1497,51 @@ public with sharing class TechnicianCopilotController {
         @AuraEnabled public Datetime lastModifiedDate { get; set; }
     }
 
+
+    public class SimilarRepairPrecedentInfo {
+        @AuraEnabled public String manufacturer { get; set; }
+        @AuraEnabled public String model { get; set; }
+        @AuraEnabled public String problemSummary { get; set; }
+        @AuraEnabled public String recommendedFixSummary { get; set; }
+        @AuraEnabled public String technicianRepairNotes { get; set; }
+        @AuraEnabled public Date maintenanceDate { get; set; }
+        @AuraEnabled public Boolean issueResolved { get; set; }
+    }
+
+    private class PrecedentCandidate implements Comparable {
+        public Integer score { get; set; }
+        public Datetime sortDate { get; set; }
+        public SimilarRepairPrecedentInfo info { get; set; }
+
+        public Integer compareTo(Object otherObject) {
+            PrecedentCandidate other = (PrecedentCandidate) otherObject;
+
+            Integer thisScore = score == null ? 0 : score;
+            Integer otherScore = other == null || other.score == null ? 0 : other.score;
+
+            if (thisScore != otherScore) {
+                return thisScore > otherScore ? -1 : 1;
+            }
+
+            Long thisTime = 0;
+            Long otherTime = 0;
+
+            if (sortDate != null) {
+                thisTime = sortDate.getTime();
+            }
+
+            if (other != null && other.sortDate != null) {
+                otherTime = other.sortDate.getTime();
+            }
+
+            if (thisTime == otherTime) {
+                return 0;
+            }
+
+            return thisTime > otherTime ? -1 : 1;
+        }
+    }
+
     public class WorkOrderPartInfo {
         @AuraEnabled public Id id { get; set; }
         @AuraEnabled public String name { get; set; }
@@ -1106,6 +1580,8 @@ public with sharing class TechnicianCopilotController {
         @AuraEnabled public Boolean hasRecommendedTools { get; set; }
         @AuraEnabled public Boolean hasAssetMaintenanceHistory { get; set; }
         @AuraEnabled public Integer assetMaintenanceHistoryCount { get; set; }
+        @AuraEnabled public Boolean hasSimilarRepairPrecedents { get; set; }
+        @AuraEnabled public Integer similarRepairPrecedentCount { get; set; }
         @AuraEnabled public Boolean hasRecommendedFixSummary { get; set; }
     }
 }

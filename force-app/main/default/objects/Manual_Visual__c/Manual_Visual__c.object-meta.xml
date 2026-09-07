@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomObject xmlns="http://soap.sforce.com/2006/04/metadata">
+    <deploymentStatus>Deployed</deploymentStatus>
+    <description>Curated approved diagrams and images sourced from MillTrack technical documentation for controlled AI display.</description>
+    <enableActivities>false</enableActivities>
+    <enableBulkApi>true</enableBulkApi>
+    <enableFeeds>false</enableFeeds>
+    <enableHistory>false</enableHistory>
+    <enableReports>true</enableReports>
+    <externalSharingModel>Private</externalSharingModel>
+    <label>Manual Visual</label>
+    <nameField>
+        <displayFormat>MV-{0000}</displayFormat>
+        <label>Manual Visual Number</label>
+        <type>AutoNumber</type>
+    </nameField>
+    <pluralLabel>Manual Visuals</pluralLabel>
+    <sharingModel>Private</sharingModel>
+</CustomObject>

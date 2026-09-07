@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ListView xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Machines_Requiring_Service</fullName>
+    <columns>ASSET.NAME</columns>
+    <columns>Manufacturer__c</columns>
+    <columns>Model__c</columns>
+    <columns>Last_Service_Date__c</columns>
+    <filterScope>Everything</filterScope>
+    <filters>
+        <field>Machine_Status__c</field>
+        <operation>equals</operation>
+        <value>Needs Service</value>
+    </filters>
+    <label>Machines Requiring Service</label>
+</ListView>

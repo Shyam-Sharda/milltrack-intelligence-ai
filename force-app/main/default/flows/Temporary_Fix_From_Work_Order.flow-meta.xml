@@ -607,7 +607,7 @@ BLANKVALUE({!Labor_Hours}, 0)</expression>
         </fields>
         <fields>
             <name>Reason_Temporary_Fix</name>
-            <fieldText>Reason Temporary Fix Was Required</fieldText>
+            <fieldText>Reason for a Temporary Fix or  Follow Up</fieldText>
             <fieldType>LargeTextArea</fieldType>
             <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
             <isRequired>true</isRequired>
@@ -655,6 +655,9 @@ BLANKVALUE({!Labor_Hours}, 0)</expression>
         <fields>
             <name>Customer_Informed</name>
             <dataType>Boolean</dataType>
+            <defaultValue>
+                <booleanValue>true</booleanValue>
+            </defaultValue>
             <fieldText>Customer Informed</fieldText>
             <fieldType>InputField</fieldType>
             <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>

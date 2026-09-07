@@ -356,14 +356,20 @@ BLANKVALUE({!Visit_Labor_Hours}, 0)</expression>
                 <elementReference>Request_Notes</elementReference>
             </value>
         </inputAssignments>
-        <inputAssignments>
-            <field>Order_Status__c</field>
-            <value>
-                <stringValue>Requested</stringValue>
-            </value>
-        </inputAssignments>
-        <inputAssignments>
-            <field>Part_Catalog__c</field>
+            <inputAssignments>
+                <field>Order_Status__c</field>
+                <value>
+                    <stringValue>Requested</stringValue>
+                </value>
+            </inputAssignments>
+            <inputAssignments>
+                <field>Technician_Requested__c</field>
+                <value>
+                    <booleanValue>true</booleanValue>
+                </value>
+            </inputAssignments>
+            <inputAssignments>
+                <field>Part_Catalog__c</field>
             <value>
                 <elementReference>Get_Selected_Parts_Catalog.Id</elementReference>
             </value>
@@ -528,37 +534,14 @@ BLANKVALUE({!Visit_Labor_Hours}, 0)</expression>
         </inputAssignments>
         <object>WorkOrder</object>
     </recordUpdates>
-    <recordUpdates>
-        <name>Update_Machine</name>
-        <label>Update Machine</label>
-        <locationX>1007</locationX>
-        <locationY>598</locationY>
-        <connector>
-            <targetReference>Service_Manager_Available</targetReference>
-        </connector>
-        <filterLogic>and</filterLogic>
-        <filters>
-            <field>Id</field>
-            <operator>EqualTo</operator>
-            <value>
-                <elementReference>Get_Work_Order.AssetId</elementReference>
-            </value>
-        </filters>
-        <inputAssignments>
-            <field>Machine_Status__c</field>
-            <value>
-                <stringValue>Waiting on Parts</stringValue>
-            </value>
-        </inputAssignments>
-        <object>Asset</object>
-    </recordUpdates>
+    
     <recordUpdates>
         <name>Update_Related_Case_to_Waiting_on_Parts</name>
         <label>Update Related Case to Waiting on Parts</label>
         <locationX>1153</locationX>
         <locationY>598</locationY>
         <connector>
-            <targetReference>Update_Machine</targetReference>
+            <targetReference>Service_Manager_Available</targetReference>
         </connector>
         <filterLogic>and</filterLogic>
         <filters>

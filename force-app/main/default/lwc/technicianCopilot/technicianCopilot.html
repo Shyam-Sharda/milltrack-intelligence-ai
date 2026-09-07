@@ -1,15 +1,33 @@
 <template>
-    <lightning-card
-        title="Technician Copilot"
-        icon-name="standard:service_appointment"
-    >
+    <lightning-card>
+
+        <!-- =====================================================
+             Technician Copilot Header
+             ===================================================== -->
+        <div slot="title" class="copilot-card-title">
+            <span class="copilot-title-icon">
+                <lightning-icon
+                    icon-name="utility:knowledge_base"
+                    alternative-text="Technician Copilot"
+                    size="x-small"
+                    variant="inverse"
+                >
+                </lightning-icon>
+            </span>
+
+            <span class="copilot-title-text">
+                Technician Copilot
+            </span>
+        </div>
+
         <!-- Loading state -->
         <template lwc:if={isLoading}>
             <div class="loading-container">
                 <lightning-spinner
                     alternative-text="Loading Technician Copilot"
                     size="medium"
-                ></lightning-spinner>
+                >
+                </lightning-spinner>
             </div>
         </template>
 
@@ -20,12 +38,14 @@
                     icon-name="utility:error"
                     alternative-text="Error"
                     size="small"
-                ></lightning-icon>
+                >
+                </lightning-icon>
 
                 <div>
                     <p class="error-title">
                         Unable to load Technician Copilot
                     </p>
+
                     <p>{error}</p>
                 </div>
             </div>
@@ -35,16 +55,23 @@
         <template lwc:elseif={hasContext}>
             <div class="copilot-container">
 
-                <!-- Quick technician summary -->
+                <!-- =================================================
+                     Quick Technician Summary
+                     ================================================= -->
                 <div class="summary-grid">
+
+                    <!-- Issue Summary -->
                     <template lwc:if={showIssueSummary}>
                         <section class="summary-card issue-card">
                             <div class="summary-heading">
-                                <lightning-icon
-                                    icon-name="utility:warning"
-                                    alternative-text="Issue"
-                                    size="small"
-                                ></lightning-icon>
+                                <span class="summary-icon">
+                                    <lightning-icon
+                                        icon-name="utility:warning"
+                                        alternative-text="Issue"
+                                        size="x-small"
+                                    >
+                                    </lightning-icon>
+                                </span>
 
                                 <h2>Issue Summary</h2>
                             </div>
@@ -53,14 +80,18 @@
                         </section>
                     </template>
 
+                    <!-- Recommended Fix -->
                     <template lwc:if={showRecommendedFixSummary}>
                         <section class="summary-card solution-card">
                             <div class="summary-heading">
-                                <lightning-icon
-                                    icon-name="utility:knowledge_base"
-                                    alternative-text="Recommended Fix"
-                                    size="small"
-                                ></lightning-icon>
+                                <span class="summary-icon">
+                                    <lightning-icon
+                                        icon-name="utility:knowledge_base"
+                                        alternative-text="Recommended Fix"
+                                        size="x-small"
+                                    >
+                                    </lightning-icon>
+                                </span>
 
                                 <h2>Recommended Fix</h2>
                             </div>
@@ -69,14 +100,18 @@
                         </section>
                     </template>
 
+                    <!-- Recommended Tools -->
                     <template lwc:if={showRecommendedTools}>
                         <section class="summary-card tools-card">
                             <div class="summary-heading">
-                                <lightning-icon
-                                    icon-name="utility:settings"
-                                    alternative-text="Recommended Tools"
-                                    size="small"
-                                ></lightning-icon>
+                                <span class="summary-icon">
+                                    <lightning-icon
+                                        icon-name="utility:settings"
+                                        alternative-text="Recommended Tools"
+                                        size="x-small"
+                                    >
+                                    </lightning-icon>
+                                </span>
 
                                 <h2>Recommended Tools</h2>
                             </div>
@@ -86,22 +121,30 @@
                     </template>
                 </div>
 
-                <!-- Supporting detail -->
+                <!-- =================================================
+                     Supporting Detail
+                     ================================================= -->
                 <lightning-accordion
+                    class="copilot-accordion"
                     allow-multiple-sections-open
                     active-section-name="machine"
                 >
-                    <!-- Machine Details -->
+
+                    <!-- =================================================
+                         Machine Details
+                         ================================================= -->
                     <template lwc:if={asset}>
                         <lightning-accordion-section
                             name="machine"
                             label="Machine Details"
                         >
                             <div class="detail-grid">
+
                                 <div class="detail-item">
                                     <span class="detail-label">
                                         Machine
                                     </span>
+
                                     <span>{asset.name}</span>
                                 </div>
 
@@ -109,6 +152,7 @@
                                     <span class="detail-label">
                                         Serial Number
                                     </span>
+
                                     <span>{asset.serialNumber}</span>
                                 </div>
 
@@ -116,6 +160,7 @@
                                     <span class="detail-label">
                                         Manufacturer
                                     </span>
+
                                     <span>{asset.manufacturer}</span>
                                 </div>
 
@@ -123,6 +168,7 @@
                                     <span class="detail-label">
                                         Model
                                     </span>
+
                                     <span>{asset.model}</span>
                                 </div>
 
@@ -130,6 +176,7 @@
                                     <span class="detail-label">
                                         Machine Status
                                     </span>
+
                                     <span>{asset.machineStatus}</span>
                                 </div>
 
@@ -137,6 +184,7 @@
                                     <span class="detail-label">
                                         Previous Failure
                                     </span>
+
                                     <span>{previousFailureLabel}</span>
                                 </div>
 
@@ -145,6 +193,7 @@
                                         <span class="detail-label">
                                             Machine Description
                                         </span>
+
                                         <span>{asset.description}</span>
                                     </div>
                                 </template>
@@ -152,19 +201,25 @@
                         </lightning-accordion-section>
                     </template>
 
-                    <!-- AI Diagnosis -->
+                    <!-- =================================================
+                         AI Diagnosis
+                         ================================================= -->
                     <template lwc:if={showAiDiagnosis}>
                         <lightning-accordion-section
                             name="aiDiagnosis"
                             label="AI Diagnosis"
                         >
                             <div class="detail-grid diagnosis-grid">
+
                                 <template lwc:if={workOrder.problemSummary}>
                                     <div class="detail-item full-width">
                                         <span class="detail-label">
                                             Full Problem Summary
                                         </span>
-                                        <span>{workOrder.problemSummary}</span>
+
+                                        <span>
+                                            {workOrder.problemSummary}
+                                        </span>
                                     </div>
                                 </template>
 
@@ -173,16 +228,24 @@
                                         <span class="detail-label">
                                             Work Order Description
                                         </span>
-                                        <span>{workOrder.description}</span>
+
+                                        <span>
+                                            {workOrder.description}
+                                        </span>
                                     </div>
                                 </template>
 
-                                <template lwc:if={workOrder.recommendedSolution}>
-                                    <div class="detail-item full-width">
+                                <template lwc:if={showRecommendedSolution}>
+                                    <div
+                                        class="detail-item full-width diagnosis-highlight"
+                                    >
                                         <span class="detail-label">
-                                            Full Recommended Repair
+                                            Detailed Recommended Repair
                                         </span>
-                                        <span>{workOrder.recommendedSolution}</span>
+
+                                        <span class="diagnosis-value">
+                                            {detailedRecommendedRepair}
+                                        </span>
                                     </div>
                                 </template>
 
@@ -191,6 +254,7 @@
                                         <span class="detail-label">
                                             AI Dispatch Summary
                                         </span>
+
                                         <span>
                                             {workOrder.aiDispatchSummary}
                                         </span>
@@ -202,6 +266,7 @@
                                         <span class="detail-label">
                                             Detailed Diagnosis
                                         </span>
+
                                         <span>
                                             {workOrder.dispatchResponse}
                                         </span>
@@ -213,6 +278,7 @@
                                         <span class="detail-label">
                                             Technician Notes
                                         </span>
+
                                         <span>
                                             {workOrder.technicianNotes}
                                         </span>
@@ -222,7 +288,112 @@
                         </lightning-accordion-section>
                     </template>
 
-                    <!-- Parts -->
+                    <!-- =================================================
+                         Similar Repair Precedents
+                         ================================================= -->
+                    <template lwc:if={showSimilarRepairPrecedents}>
+                        <lightning-accordion-section
+                            name="similarRepairPrecedents"
+                            label="Similar Repair Precedents"
+                        >
+                            <p
+                                class="
+                                    slds-text-body_small
+                                    slds-text-color_weak
+                                    slds-m-bottom_small
+                                "
+                            >
+                                Successful repairs from other customer assets
+                                of the same machine model.
+                                Customer-identifying information is not shown.
+                            </p>
+
+                            <template
+                                for:each={similarRepairPrecedents}
+                                for:item="precedent"
+                            >
+                                <article
+                                    key={precedent.uiKey}
+                                    class="related-record"
+                                >
+                                    <div class="related-record-heading">
+                                        <strong>
+                                            {precedent.machineLabel}
+                                        </strong>
+
+                                        <template
+                                            lwc:if={precedent.maintenanceDate}
+                                        >
+                                            <lightning-formatted-date-time
+                                                value={precedent.maintenanceDate}
+                                                year="numeric"
+                                                month="short"
+                                                day="2-digit"
+                                                time-zone="UTC"
+                                            >
+                                            </lightning-formatted-date-time>
+                                        </template>
+                                    </div>
+
+                                    <template
+                                        lwc:if={precedent.problemSummary}
+                                    >
+                                        <p>
+                                            <strong>
+                                                Problem Summary:
+                                            </strong>
+
+                                            <span class="inline-value">
+                                                {precedent.problemSummary}
+                                            </span>
+                                        </p>
+                                    </template>
+
+                                    <template
+                                        lwc:if={precedent.recommendedFixSummary}
+                                    >
+                                        <p>
+                                            <strong>
+                                                Manager Recommended Fix:
+                                            </strong>
+
+                                            <span class="inline-value">
+                                                {precedent.recommendedFixSummary}
+                                            </span>
+                                        </p>
+                                    </template>
+
+                                    <template
+                                        lwc:if={precedent.technicianRepairNotes}
+                                    >
+                                        <p>
+                                            <strong>
+                                                Technician Repair Notes:
+                                            </strong>
+
+                                            <span class="inline-value">
+                                                {precedent.technicianRepairNotes}
+                                            </span>
+                                        </p>
+                                    </template>
+
+                                    <template
+                                        lwc:if={precedent.issueResolved}
+                                    >
+                                        <div class="record-metadata">
+                                            <span>
+                                                Outcome: Resolved
+                                            </span>
+                                        </div>
+                                    </template>
+                                </article>
+                            </template>
+                        </lightning-accordion-section>
+                    </template>
+
+                    <!-- =================================================
+                         Parts & Materials
+                         ================================================= -->
                     <template lwc:if={showParts}>
                         <lightning-accordion-section
                             name="parts"
@@ -238,14 +409,17 @@
                                 >
                                     <div class="related-record-heading">
                                         <strong>{part.partName}</strong>
+
                                         <span>{part.orderStatus}</span>
                                     </div>
 
                                     <div class="detail-grid compact-grid">
+
                                         <div class="detail-item">
                                             <span class="detail-label">
                                                 Quantity Needed
                                             </span>
+
                                             <span>{part.quantity}</span>
                                         </div>
 
@@ -253,6 +427,7 @@
                                             <span class="detail-label">
                                                 Quantity Used
                                             </span>
+
                                             <span>{part.quantityUsed}</span>
                                         </div>
 
@@ -260,6 +435,7 @@
                                             <span class="detail-label">
                                                 Supplier
                                             </span>
+
                                             <span>{part.supplierName}</span>
                                         </div>
 
@@ -268,7 +444,10 @@
                                                 <span class="detail-label">
                                                     Ordered By
                                                 </span>
-                                                <span>{part.orderedBy.name}</span>
+
+                                                <span>
+                                                    {part.orderedBy.name}
+                                                </span>
                                             </div>
                                         </template>
                                     </div>
@@ -277,7 +456,9 @@
                         </lightning-accordion-section>
                     </template>
 
-                    <!-- Current service visit -->
+                    <!-- =================================================
+                         Repair Progress
+                         ================================================= -->
                     <template lwc:if={showRepairProgress}>
                         <lightning-accordion-section
                             name="repairProgress"
@@ -293,7 +474,10 @@
                                 >
                                     <div class="related-record-heading">
                                         <strong>{log.name}</strong>
-                                        <span>{log.maintenanceDate}</span>
+
+                                        <span>
+                                            {log.maintenanceDate}
+                                        </span>
                                     </div>
 
                                     <template lwc:if={log.summary}>
@@ -305,6 +489,7 @@
                                             <strong>
                                                 Technician Notes:
                                             </strong>
+
                                             <span class="inline-value">
                                                 {log.technicianNotes}
                                             </span>
@@ -312,15 +497,20 @@
                                     </template>
 
                                     <div class="record-metadata">
-                                        <template lwc:if={log.maintenanceType}>
+
+                                        <template
+                                            lwc:if={log.maintenanceType}
+                                        >
                                             <span>
-                                                Type: {log.maintenanceType}
+                                                Type:
+                                                {log.maintenanceType}
                                             </span>
                                         </template>
 
                                         <template lwc:if={log.laborHours}>
                                             <span>
-                                                Labor: {log.laborHours} hours
+                                                Labor:
+                                                {log.laborHours} hours
                                             </span>
                                         </template>
                                     </div>
@@ -329,7 +519,9 @@
                         </lightning-accordion-section>
                     </template>
 
-                    <!-- Previous service visits -->
+                    <!-- =================================================
+                         Service History
+                         ================================================= -->
                     <template lwc:if={showServiceHistory}>
                         <lightning-accordion-section
                             name="serviceHistory"
@@ -345,7 +537,10 @@
                                 >
                                     <div class="related-record-heading">
                                         <strong>{history.name}</strong>
-                                        <span>{history.maintenanceDate}</span>
+
+                                        <span>
+                                            {history.maintenanceDate}
+                                        </span>
                                     </div>
 
                                     <template lwc:if={history.summary}>
@@ -354,7 +549,10 @@
 
                                     <template lwc:if={history.rootCause}>
                                         <p>
-                                            <strong>Root Cause:</strong>
+                                            <strong>
+                                                Root Cause:
+                                            </strong>
+
                                             <span class="inline-value">
                                                 {history.rootCause}
                                             </span>
@@ -363,18 +561,24 @@
 
                                     <template lwc:if={history.partsUsed}>
                                         <p>
-                                            <strong>Parts Used:</strong>
+                                            <strong>
+                                                Parts Used:
+                                            </strong>
+
                                             <span class="inline-value">
                                                 {history.partsUsed}
                                             </span>
                                         </p>
                                     </template>
 
-                                    <template lwc:if={history.technicianNotes}>
+                                    <template
+                                        lwc:if={history.technicianNotes}
+                                    >
                                         <p>
                                             <strong>
                                                 Technician Notes:
                                             </strong>
+
                                             <span class="inline-value">
                                                 {history.technicianNotes}
                                             </span>
@@ -385,18 +589,22 @@
                         </lightning-accordion-section>
                     </template>
 
-                    <!-- Customer -->
+                    <!-- =================================================
+                         Customer Information
+                         ================================================= -->
                     <template lwc:if={showCustomerInformation}>
                         <lightning-accordion-section
                             name="customer"
                             label="Customer Information"
                         >
                             <div class="detail-grid">
+
                                 <template lwc:if={account}>
                                     <div class="detail-item">
                                         <span class="detail-label">
                                             Account
                                         </span>
+
                                         <span>{account.name}</span>
                                     </div>
 
@@ -404,6 +612,7 @@
                                         <span class="detail-label">
                                             Account Phone
                                         </span>
+
                                         <span>{account.phone}</span>
                                     </div>
                                 </template>
@@ -413,6 +622,7 @@
                                         <span class="detail-label">
                                             Contact
                                         </span>
+
                                         <span>{contact.name}</span>
                                     </div>
 
@@ -420,6 +630,7 @@
                                         <span class="detail-label">
                                             Contact Phone
                                         </span>
+
                                         <span>{contact.phone}</span>
                                     </div>
 
@@ -427,6 +638,7 @@
                                         <span class="detail-label">
                                             Contact Email
                                         </span>
+
                                         <span>{contact.email}</span>
                                     </div>
                                 </template>
@@ -436,21 +648,32 @@
                                         <span class="detail-label">
                                             Case Number
                                         </span>
-                                        <span>{caseRecord.caseNumber}</span>
+
+                                        <span>
+                                            {caseRecord.caseNumber}
+                                        </span>
                                     </div>
 
                                     <div class="detail-item full-width">
                                         <span class="detail-label">
                                             Case Subject
                                         </span>
-                                        <span>{caseRecord.subject}</span>
+
+                                        <span>
+                                            {caseRecord.subject}
+                                        </span>
                                     </div>
 
-                                    <template lwc:if={caseRecord.description}>
-                                        <div class="detail-item full-width">
+                                    <template
+                                        lwc:if={caseRecord.description}
+                                    >
+                                        <div
+                                            class="detail-item full-width"
+                                        >
                                             <span class="detail-label">
                                                 Customer-Reported Issue
                                             </span>
+
                                             <span>
                                                 {caseRecord.description}
                                             </span>
@@ -461,27 +684,36 @@
                         </lightning-accordion-section>
                     </template>
 
-                    <!-- Work Order Details -->
+                    <!-- =================================================
+                         Work Order Details
+                         ================================================= -->
                     <template lwc:if={showWorkOrderDetails}>
                         <lightning-accordion-section
                             name="workOrderDetails"
                             label="Work Order Details"
                         >
                             <div class="detail-grid">
+
                                 <template lwc:if={serviceManager}>
                                     <div class="detail-item">
                                         <span class="detail-label">
                                             Service Manager
                                         </span>
-                                        <span>{serviceManager.name}</span>
+
+                                        <span>
+                                            {serviceManager.name}
+                                        </span>
                                     </div>
                                 </template>
 
-                                <template lwc:if={workOrder.workStartedDateTime}>
+                                <template
+                                    lwc:if={workOrder.workStartedDateTime}
+                                >
                                     <div class="detail-item">
                                         <span class="detail-label">
                                             Work Started Date &amp; Time
                                         </span>
+
                                         <lightning-formatted-date-time
                                             value={workOrder.workStartedDateTime}
                                             year="numeric"
@@ -489,17 +721,21 @@
                                             day="2-digit"
                                             hour="2-digit"
                                             minute="2-digit"
-                                        ></lightning-formatted-date-time>
+                                        >
+                                        </lightning-formatted-date-time>
                                     </div>
                                 </template>
 
                                 <div></div>
 
-                                <template lwc:if={workOrder.workEndedDateTime}>
+                                <template
+                                    lwc:if={workOrder.workEndedDateTime}
+                                >
                                     <div class="detail-item">
                                         <span class="detail-label">
                                             Work Ended Date &amp; Time
                                         </span>
+
                                         <lightning-formatted-date-time
                                             value={workOrder.workEndedDateTime}
                                             year="numeric"
@@ -507,12 +743,14 @@
                                             day="2-digit"
                                             hour="2-digit"
                                             minute="2-digit"
-                                        ></lightning-formatted-date-time>
+                                        >
+                                        </lightning-formatted-date-time>
                                     </div>
                                 </template>
                             </div>
                         </lightning-accordion-section>
                     </template>
+
                 </lightning-accordion>
             </div>
         </template>

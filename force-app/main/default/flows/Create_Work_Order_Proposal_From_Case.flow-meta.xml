@@ -80,11 +80,86 @@
         <offset>0</offset>
         <storeOutputAutomatically>true</storeOutputAutomatically>
     </actionCalls>
+    <actionCalls>
+        <name>Send_New_Service_Case_Notification</name>
+        <label>Send New Service Case Notification</label>
+        <locationX>861</locationX>
+        <locationY>300</locationY>
+        <actionName>customNotificationAction</actionName>
+        <actionType>customNotificationAction</actionType>
+        <flowTransactionModel>CurrentTransaction</flowTransactionModel>
+        <inputParameters>
+            <name>customNotifTypeId</name>
+            <value>
+                <elementReference>Get_New_Service_Case_Notification_Type.Id</elementReference>
+                <inputConfiguratorMode>Resource</inputConfiguratorMode>
+            </value>
+        </inputParameters>
+        <inputParameters>
+            <name>recipientIds</name>
+            <value>
+                <elementReference>newCaseRecipientIds</elementReference>
+            </value>
+        </inputParameters>
+        <inputParameters>
+            <name>title</name>
+            <value>
+                <elementReference>newCaseNotificationTitle</elementReference>
+                <inputConfiguratorMode>Resource</inputConfiguratorMode>
+            </value>
+        </inputParameters>
+        <inputParameters>
+            <name>body</name>
+            <value>
+                <elementReference>newCaseNotificationBody</elementReference>
+                <inputConfiguratorMode>Resource</inputConfiguratorMode>
+            </value>
+        </inputParameters>
+        <inputParameters>
+            <name>targetId</name>
+            <value>
+                <elementReference>Create_Work_Order.Id</elementReference>
+                <inputConfiguratorMode>Resource</inputConfiguratorMode>
+            </value>
+        </inputParameters>
+        <nameSegment>customNotificationAction</nameSegment>
+        <offset>0</offset>
+    </actionCalls>
     <apiVersion>67.0</apiVersion>
     <areMetricsLoggedToDataCloud>false</areMetricsLoggedToDataCloud>
+    <assignments>
+        <name>Add_Service_Manager_User_to_Notification_Recipients</name>
+        <label>Add Service Manager User to Notification Recipients</label>
+        <locationX>1250</locationX>
+        <locationY>516</locationY>
+        <assignmentItems>
+            <assignToReference>newCaseRecipientIds</assignToReference>
+            <operator>Add</operator>
+            <value>
+                <elementReference>Loop_Service_Manager_Queue_Members.UserOrGroupId</elementReference>
+            </value>
+        </assignmentItems>
+        <connector>
+            <targetReference>Loop_Service_Manager_Queue_Members</targetReference>
+        </connector>
+    </assignments>
     <environments>Default</environments>
     <interviewLabel>Create Work Order Proposal From Case {!$Flow.CurrentDateTime}</interviewLabel>
     <label>Create Work Order Proposal From Case</label>
+    <loops>
+        <name>Loop_Service_Manager_Queue_Members</name>
+        <label>Loop Service Manager Queue Members</label>
+        <locationX>1249</locationX>
+        <locationY>298</locationY>
+        <collectionReference>Get_Service_Manager_Queue_Members</collectionReference>
+        <iterationOrder>Asc</iterationOrder>
+        <nextValueConnector>
+            <targetReference>Add_Service_Manager_User_to_Notification_Recipients</targetReference>
+        </nextValueConnector>
+        <noMoreValuesConnector>
+            <targetReference>Get_New_Service_Case_Notification_Type</targetReference>
+        </noMoreValuesConnector>
+    </loops>
     <processMetadataValues>
         <name>BuilderType</name>
         <value>
@@ -221,6 +296,27 @@
         <storeOutputAutomatically>true</storeOutputAutomatically>
     </recordLookups>
     <recordLookups>
+        <name>Get_New_Service_Case_Notification_Type</name>
+        <label>Get New Service Case Notification Type</label>
+        <locationX>1022</locationX>
+        <locationY>300</locationY>
+        <assignNullValuesIfNoRecordsFound>false</assignNullValuesIfNoRecordsFound>
+        <connector>
+            <targetReference>Send_New_Service_Case_Notification</targetReference>
+        </connector>
+        <filterLogic>and</filterLogic>
+        <filters>
+            <field>DeveloperName</field>
+            <operator>EqualTo</operator>
+            <value>
+                <stringValue>New_Service_Case</stringValue>
+            </value>
+        </filters>
+        <getFirstRecordOnly>true</getFirstRecordOnly>
+        <object>CustomNotificationType</object>
+        <storeOutputAutomatically>true</storeOutputAutomatically>
+    </recordLookups>
+    <recordLookups>
         <name>Get_Queue</name>
         <label>Get Queue</label>
         <locationX>1008</locationX>
@@ -248,11 +344,59 @@
         <object>Group</object>
         <storeOutputAutomatically>true</storeOutputAutomatically>
     </recordLookups>
+    <recordLookups>
+        <name>Get_Service_Manager_Queue_Members</name>
+        <label>Get Service Manager Queue Members</label>
+        <locationX>1414</locationX>
+        <locationY>298</locationY>
+        <assignNullValuesIfNoRecordsFound>false</assignNullValuesIfNoRecordsFound>
+        <connector>
+            <targetReference>Loop_Service_Manager_Queue_Members</targetReference>
+        </connector>
+        <filterLogic>and</filterLogic>
+        <filters>
+            <field>GroupId</field>
+            <operator>EqualTo</operator>
+            <value>
+                <elementReference>Get_Queue.Id</elementReference>
+            </value>
+        </filters>
+        <getFirstRecordOnly>false</getFirstRecordOnly>
+        <object>GroupMember</object>
+        <storeOutputAutomatically>true</storeOutputAutomatically>
+    </recordLookups>
+    <recordUpdates>
+        <name>Update_Machine_to_Needs_Service</name>
+        <label>Update Machine to Needs Service</label>
+        <locationX>1413</locationX>
+        <locationY>135</locationY>
+        <connector>
+            <targetReference>Get_Service_Manager_Queue_Members</targetReference>
+        </connector>
+        <filterLogic>and</filterLogic>
+        <filters>
+            <field>Id</field>
+            <operator>EqualTo</operator>
+            <value>
+                <elementReference>Get_Case_Asset.Id</elementReference>
+            </value>
+        </filters>
+        <inputAssignments>
+            <field>Machine_Status__c</field>
+            <value>
+                <stringValue>Needs Service</stringValue>
+            </value>
+        </inputAssignments>
+        <object>Asset</object>
+    </recordUpdates>
     <recordUpdates>
         <name>Update_Triggering_Case</name>
         <label>Update Triggering Case</label>
         <locationX>1278</locationX>
         <locationY>135</locationY>
+        <connector>
+            <targetReference>Update_Machine_to_Needs_Service</targetReference>
+        </connector>
         <inputAssignments>
             <field>Work_Order_Proposal_Created__c</field>
             <value>
@@ -288,6 +432,16 @@
     </start>
     <status>Active</status>
     <textTemplates>
+        <name>newCaseNotificationBody</name>
+        <isViewedAsPlainText>true</isViewedAsPlainText>
+        <text>New service request for {!Get_Case_Asset.Name}: {!$Record.Subject}</text>
+    </textTemplates>
+    <textTemplates>
+        <name>newCaseNotificationTitle</name>
+        <isViewedAsPlainText>true</isViewedAsPlainText>
+        <text>New Service Case - Case {!$Record.CaseNumber}</text>
+    </textTemplates>
+    <textTemplates>
         <name>ttDispatchContext</name>
         <isViewedAsPlainText>true</isViewedAsPlainText>
         <text>CASE INFORMATION
@@ -308,4 +462,11 @@ Model: {!Get_Case_Asset.Model__c}
 Serial Number: {!Get_Case_Asset.Serial_Number__c}
 Machine Status: {!Get_Case_Asset.Machine_Status__c}</text>
     </textTemplates>
+    <variables>
+        <name>newCaseRecipientIds</name>
+        <dataType>String</dataType>
+        <isCollection>true</isCollection>
+        <isInput>false</isInput>
+        <isOutput>false</isOutput>
+    </variables>
 </Flow>

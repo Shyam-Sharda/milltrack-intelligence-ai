@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SharingRules xmlns="http://soap.sforce.com/2006/04/metadata">
+    <sharingOwnerRules>
+        <fullName>Service_Manager_Maintenance_Logs_Service_Managers</fullName>
+        <accessLevel>Edit</accessLevel>
+        <label>Service Manager Maintenance Logs → Service Managers</label>
+        <sharedTo>
+            <group>MillTrack_Service_Managers</group>
+        </sharedTo>
+        <sharedFrom>
+            <roleAndSubordinatesInternal>MillTrack_Service_Manager</roleAndSubordinatesInternal>
+        </sharedFrom>
+    </sharingOwnerRules>
+    <sharingOwnerRules>
+        <fullName>Technician_Maintenance_Logs_Service_Managers</fullName>
+        <accessLevel>Edit</accessLevel>
+        <label>Technician Maintenance Logs → Service Managers</label>
+        <sharedTo>
+            <group>MillTrack_Service_Managers</group>
+        </sharedTo>
+        <sharedFrom>
+            <roleAndSubordinatesInternal>MillTrack_Technician</roleAndSubordinatesInternal>
+        </sharedFrom>
+    </sharingOwnerRules>
+</SharingRules>

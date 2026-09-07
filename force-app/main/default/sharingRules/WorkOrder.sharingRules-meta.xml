@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SharingRules xmlns="http://soap.sforce.com/2006/04/metadata">
+    <sharingOwnerRules>
+        <fullName>Service_Manager_Work_Orders_Service_Managers</fullName>
+        <accessLevel>Edit</accessLevel>
+        <label>Service Manager Work Orders → Service Managers</label>
+        <sharedTo>
+            <group>MillTrack_Service_Managers</group>
+        </sharedTo>
+        <sharedFrom>
+            <roleAndSubordinatesInternal>MillTrack_Service_Manager</roleAndSubordinatesInternal>
+        </sharedFrom>
+    </sharingOwnerRules>
+    <sharingOwnerRules>
+        <fullName>Service_Manager_Work_Orders_to_Technician_AI</fullName>
+        <accessLevel>Read</accessLevel>
+        <label>Service Manager Work Orders to Technician AI</label>
+        <sharedTo>
+            <group>MillTrack_Technician_AI</group>
+        </sharedTo>
+        <sharedFrom>
+            <roleAndSubordinatesInternal>MillTrack_Service_Manager</roleAndSubordinatesInternal>
+        </sharedFrom>
+    </sharingOwnerRules>
+    <sharingOwnerRules>
+        <fullName>Technician_Work_Orders_Service_Managers</fullName>
+        <accessLevel>Edit</accessLevel>
+        <label>Technician Work Orders → Service Managers</label>
+        <sharedTo>
+            <group>MillTrack_Service_Managers</group>
+        </sharedTo>
+        <sharedFrom>
+            <roleAndSubordinatesInternal>MillTrack_Technician</roleAndSubordinatesInternal>
+        </sharedFrom>
+    </sharingOwnerRules>
+    <sharingOwnerRules>
+        <fullName>Technician_Work_Orders_to_Technician_AI</fullName>
+        <accessLevel>Read</accessLevel>
+        <label>Technician Work Orders to Technician AI</label>
+        <sharedTo>
+            <group>MillTrack_Technician_AI</group>
+        </sharedTo>
+        <sharedFrom>
+            <roleAndSubordinatesInternal>MillTrack_Technician</roleAndSubordinatesInternal>
+        </sharedFrom>
+    </sharingOwnerRules>
+</SharingRules>

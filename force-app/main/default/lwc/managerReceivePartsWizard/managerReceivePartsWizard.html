@@ -1,0 +1,878 @@
+<template>
+
+    <div class="wizard-shell">
+
+        <!-- =====================================================
+             LOADING
+             ===================================================== -->
+
+        <template if:true={isLoading}>
+
+            <div class="loading-state">
+
+                <lightning-spinner
+                    alternative-text="Loading parts receipt"
+                    size="medium">
+                </lightning-spinner>
+
+            </div>
+
+        </template>
+
+
+        <!-- =====================================================
+             LOADED
+             ===================================================== -->
+
+        <template if:false={isLoading}>
+
+            <!-- ERROR -->
+
+            <template if:true={errorMessage}>
+
+                <div class="error-state">
+
+                    <lightning-icon
+                        icon-name="utility:error"
+                        size="small">
+                    </lightning-icon>
+
+                    <div>
+
+                        <h2>
+                            Unable to Receive Parts
+                        </h2>
+
+                        <p>
+                            {errorMessage}
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <footer class="wizard-footer">
+
+                    <button
+                        type="button"
+                        class="secondary-button"
+                        onclick={handleCancel}>
+                        Close
+                    </button>
+
+                </footer>
+
+            </template>
+
+
+            <!-- MAIN WIZARD -->
+
+            <template if:false={errorMessage}>
+
+                <!-- =====================================================
+                     HEADER
+                     ===================================================== -->
+
+                <header class="wizard-header">
+
+                    <div class="header-content">
+
+                        <div class="header-icon">
+
+                            <lightning-icon
+                                icon-name="standard:product_item"
+                                size="small">
+                            </lightning-icon>
+
+                        </div>
+
+
+                        <div>
+
+                            <p class="eyebrow">
+                                Manager Parts
+                            </p>
+
+                            <h1>
+                                Receive Parts
+                            </h1>
+
+                            <p class="header-subtitle">
+                                Confirm the parts included in this delivery
+                                and advance the Work Order when all required
+                                parts have arrived.
+                            </p>
+
+
+                            <div class="header-meta">
+
+                                <span class="work-order-number">
+                                    {workOrderNumber}
+                                </span>
+
+                                <span class="header-meta-divider"></span>
+
+                                <span class="header-machine">
+
+                                    <lightning-icon
+                                        icon-name="standard:asset_object"
+                                        size="xx-small">
+                                    </lightning-icon>
+
+                                    <span>
+                                        {assetName}
+                                    </span>
+
+                                </span>
+
+                                <span class="header-meta-divider"></span>
+
+                                <span class="status-badge parts-status-badge">
+                                    {dispatchStatus}
+                                </span>
+
+                                <span class="status-badge count-status-badge">
+                                    {receivableCountLabel}
+                                </span>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </header>
+
+
+                <!-- =====================================================
+                     PROGRESS
+                     ===================================================== -->
+
+                <div class="progress-shell">
+
+                    <div class={stepOneClass}>
+
+                        <div class="step-circle">
+                            1
+                        </div>
+
+                        <div>
+
+                            <strong>
+                                Confirm Receipt
+                            </strong>
+
+                            <span>
+                                Select arrived parts
+                            </span>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="progress-line"></div>
+
+
+                    <div class={stepTwoClass}>
+
+                        <div class="step-circle">
+                            2
+                        </div>
+
+                        <div>
+
+                            <strong>
+                                Review &amp; Save
+                            </strong>
+
+                            <span>
+                                Confirm next step
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- =====================================================
+                     STEP 1 — CONFIRM RECEIVED PARTS
+                     ===================================================== -->
+
+                <template if:true={isStepOne}>
+
+                    <main class="wizard-content">
+
+                        <div class="step-heading">
+
+                            <p class="eyebrow">
+                                Step 1 of 2
+                            </p>
+
+                            <h2>
+                                Confirm Parts Received
+                            </h2>
+
+                            <p>
+                                Select each Ordered or Shipped part that was
+                                physically included in this delivery. Leave
+                                parts unselected if they have not arrived.
+                            </p>
+
+                        </div>
+
+
+                        <div class="review-notice">
+
+                            <lightning-icon
+                                icon-name="utility:info"
+                                size="xx-small">
+                            </lightning-icon>
+
+                            <span>
+                                Nothing is updated yet. Only the parts you
+                                select will be marked Received after you
+                                review the summary and click Done.
+                            </span>
+
+                        </div>
+
+
+                        <section class="content-card receipt-card">
+
+                            <div class="card-heading-row">
+
+                                <div>
+
+                                    <p class="section-kicker parts-kicker">
+                                        Current Delivery
+                                    </p>
+
+                                    <h3>
+                                        Ordered &amp; Shipped Parts
+                                    </h3>
+
+                                    <p class="field-helper">
+                                        Check each part that has actually arrived.
+                                    </p>
+
+                                </div>
+
+
+                                <span class="count-badge">
+                                    {selectedPartCountLabel}
+                                </span>
+
+                            </div>
+
+
+                            <div class="receipt-part-list">
+
+                                <template
+                                    for:each={reviewParts}
+                                    for:item="part">
+
+                                    <article
+                                        key={part.workOrderPartId}
+                                        class={part.rowClass}>
+
+                                        <div class="part-checkbox-wrap">
+
+                                            <input
+                                                type="checkbox"
+                                                class="part-checkbox"
+                                                data-id={part.workOrderPartId}
+                                                checked={part.receivedSelected}
+                                                onchange={handleReceivedChange}
+                                                aria-label="Confirm part received">
+
+                                        </div>
+
+
+                                        <div class="receipt-part-main">
+
+                                            <div class="part-icon">
+
+                                                <lightning-icon
+                                                    icon-name="standard:product_item"
+                                                    size="xx-small">
+                                                </lightning-icon>
+
+                                            </div>
+
+
+                                            <div class="part-copy">
+
+                                                <strong>
+                                                    {part.partName}
+                                                </strong>
+
+                                                <div class="part-meta">
+
+                                                    <span>
+                                                        {part.partNumber}
+                                                    </span>
+
+                                                    <span class="meta-dot">
+                                                        •
+                                                    </span>
+
+                                                    <span>
+                                                        {part.category}
+                                                    </span>
+
+                                                </div>
+
+
+                                                <template if:true={part.supplierName}>
+
+                                                    <div class="supplier-copy">
+
+                                                        <span>
+                                                            Supplier
+                                                        </span>
+
+                                                        <strong>
+                                                            {part.supplierName}
+                                                        </strong>
+
+                                                    </div>
+
+                                                </template>
+
+                                            </div>
+
+                                        </div>
+
+
+                                        <div class="part-right">
+
+                                            <span class={part.statusClass}>
+                                                {part.orderStatus}
+                                            </span>
+
+
+                                            <div class="quantity-badge">
+
+                                                <span>
+                                                    Qty
+                                                </span>
+
+                                                <strong>
+                                                    {part.quantity}
+                                                </strong>
+
+                                            </div>
+
+                                        </div>
+
+                                    </article>
+
+                                </template>
+
+                            </div>
+
+
+                            <template if:true={hasSelectedParts}>
+
+                                <div class="selection-summary">
+
+                                    <lightning-icon
+                                        icon-name="utility:check"
+                                        size="xx-small">
+                                    </lightning-icon>
+
+                                    <span>
+                                        {selectedPartCountLabel}
+                                        ·
+                                        {selectedUnitCountLabel}
+                                        in this delivery
+                                    </span>
+
+                                </div>
+
+                            </template>
+
+                        </section>
+
+                    </main>
+
+
+                    <footer class="wizard-footer">
+
+                        <button
+                            type="button"
+                            class="secondary-button"
+                            onclick={handleCancel}>
+                            Cancel
+                        </button>
+
+
+                        <button
+                            type="button"
+                            class="primary-button"
+                            disabled={isContinueDisabled}
+                            onclick={handleContinue}>
+
+                            Continue to Review
+
+                            <lightning-icon
+                                icon-name="utility:chevronright"
+                                size="xx-small">
+                            </lightning-icon>
+
+                        </button>
+
+                    </footer>
+
+                </template>
+
+
+                <!-- =====================================================
+                     STEP 2 — RECEIPT SUMMARY
+                     ===================================================== -->
+
+                <template if:true={isStepTwo}>
+
+                    <main class="wizard-content">
+
+                        <div class="step-heading">
+
+                            <p class="eyebrow">
+                                Step 2 of 2
+                            </p>
+
+                            <h2>
+                                Receipt Summary
+                            </h2>
+
+                            <p>
+                                Review the delivery and resulting Work Order
+                                stage before saving.
+                            </p>
+
+                        </div>
+
+
+                        <div class="review-notice">
+
+                            <lightning-icon
+                                icon-name="utility:info"
+                                size="xx-small">
+                            </lightning-icon>
+
+                            <span>
+                                No Work Order, Asset, or Work Order Part
+                                records will be updated until you click Done.
+                            </span>
+
+                        </div>
+
+
+                        <!-- =================================================
+                             BLUE CARD — PARTS RECEIVED
+                             ================================================= -->
+
+                        <section
+                            class="content-card summary-blue-card summary-flow-card">
+
+                            <div class="summary-title-row">
+
+                                <div class="summary-step-number summary-step-blue">
+                                    1
+                                </div>
+
+
+                                <div class="summary-card-icon summary-blue-icon">
+
+                                    <lightning-icon
+                                        icon-name="utility:package"
+                                        size="small">
+                                    </lightning-icon>
+
+                                </div>
+
+
+                                <div class="summary-heading">
+
+                                    <p class="section-kicker summary-blue-kicker">
+                                        Parts Received
+                                    </p>
+
+                                    <h3>
+                                        Confirmed Delivery
+                                    </h3>
+
+                                    <p class="field-helper">
+                                        These parts will be changed from their
+                                        current ordering status to Received
+                                        when you click Done.
+                                    </p>
+
+                                </div>
+
+
+                                <span class="count-badge summary-blue-count">
+                                    {receivedPartCountLabel}
+                                </span>
+
+                            </div>
+
+
+                            <div class="summary-part-list">
+
+                                <template
+                                    for:each={selectedParts}
+                                    for:item="part">
+
+                                    <div
+                                        key={part.workOrderPartId}
+                                        class="summary-part-row summary-part-row-blue">
+
+                                        <div class="summary-part-main">
+
+                                            <div class="part-icon">
+
+                                                <lightning-icon
+                                                    icon-name="standard:product_item"
+                                                    size="xx-small">
+                                                </lightning-icon>
+
+                                            </div>
+
+
+                                            <div>
+
+                                                <strong>
+                                                    {part.partName}
+                                                </strong>
+
+
+                                                <div class="part-meta">
+
+                                                    <span>
+                                                        {part.partNumber}
+                                                    </span>
+
+                                                    <span class="meta-dot">
+                                                        •
+                                                    </span>
+
+                                                    <span>
+                                                        {part.supplierName}
+                                                    </span>
+
+                                                </div>
+
+                                            </div>
+
+                                        </div>
+
+
+                                        <div class="summary-status-transition">
+
+                                            <span class="summary-old-status">
+                                                {part.orderStatus}
+                                            </span>
+
+                                            <lightning-icon
+                                                icon-name="utility:forward"
+                                                size="xx-small">
+                                            </lightning-icon>
+
+                                            <span class="summary-new-status">
+                                                Received
+                                            </span>
+
+                                        </div>
+
+
+                                        <div class="quantity-badge">
+
+                                            <span>
+                                                Qty
+                                            </span>
+
+                                            <strong>
+                                                {part.quantity}
+                                            </strong>
+
+                                        </div>
+
+                                    </div>
+
+                                </template>
+
+                            </div>
+
+                        </section>
+
+
+                        <!-- =================================================
+                             GREEN CONNECTOR
+                             ================================================= -->
+
+                        <div
+                            class="summary-flow-connector"
+                            aria-hidden="true">
+
+                            <div class="summary-flow-arrow">
+
+                                <lightning-icon
+                                    icon-name="utility:down"
+                                    size="xx-small">
+                                </lightning-icon>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- =================================================
+                             GREEN CARD — NEXT STEP
+                             ================================================= -->
+
+                        <section
+                            class="content-card summary-green-card summary-flow-card">
+
+                            <div class="summary-title-row">
+
+                                <div class="summary-step-number summary-step-green">
+                                    2
+                                </div>
+
+
+                                <div class="summary-card-icon summary-green-icon">
+
+                                    <lightning-icon
+                                        icon-name="utility:check"
+                                        size="small">
+                                    </lightning-icon>
+
+                                </div>
+
+
+                                <div class="summary-heading">
+
+                                    <p class="section-kicker summary-green-kicker">
+                                        Next Step
+                                    </p>
+
+                                    <h3>
+                                        {nextStepTitle}
+                                    </h3>
+
+
+                                    <span class={nextStepStatusClass}>
+                                        {nextStepStatusLabel}
+                                    </span>
+
+
+                                    <p class="next-step-message">
+                                        {nextStepMessage}
+                                    </p>
+
+                                </div>
+
+                            </div>
+
+
+                            <div class="next-step-detail">
+
+                                <lightning-icon
+                                    icon-name="utility:info_alt"
+                                    size="xx-small">
+                                </lightning-icon>
+
+                                <span>
+                                    {outstandingPreviewLabel}
+                                </span>
+
+                            </div>
+
+                        </section>
+
+
+                        <template if:true={saveErrorMessage}>
+
+                            <div class="save-error">
+
+                                <lightning-icon
+                                    icon-name="utility:error"
+                                    size="xx-small">
+                                </lightning-icon>
+
+                                <span>
+                                    {saveErrorMessage}
+                                </span>
+
+                            </div>
+
+                        </template>
+
+                    </main>
+
+
+                    <footer class="wizard-footer">
+
+                        <button
+                            type="button"
+                            class="secondary-button"
+                            onclick={handleCancel}>
+                            Cancel
+                        </button>
+
+
+                        <div class="footer-actions">
+
+                            <button
+                                type="button"
+                                class="secondary-button"
+                                disabled={isSaving}
+                                onclick={handleBack}>
+
+                                <lightning-icon
+                                    icon-name="utility:chevronleft"
+                                    size="xx-small">
+                                </lightning-icon>
+
+                                Back
+
+                            </button>
+
+
+                            <button
+                                type="button"
+                                class="done-button"
+                                disabled={isDoneDisabled}
+                                onclick={handleDone}>
+
+                                <template if:false={isSaving}>
+
+                                    <lightning-icon
+                                        icon-name="utility:success"
+                                        size="xx-small">
+                                    </lightning-icon>
+
+                                    Done
+
+                                </template>
+
+
+                                <template if:true={isSaving}>
+
+                                    <span class="saving-content">
+
+                                        <lightning-spinner
+                                            alternative-text="Saving received parts"
+                                            size="small">
+                                        </lightning-spinner>
+
+                                        <span>
+                                            Saving...
+                                        </span>
+
+                                    </span>
+
+                                </template>
+
+                            </button>
+
+                        </div>
+
+                    </footer>
+
+                </template>
+
+
+                <!-- =====================================================
+                     POST-DML SUCCESS CONFIRMATION
+                     ===================================================== -->
+
+                <template if:true={showSuccessConfirmation}>
+
+                    <div class="completion-overlay">
+
+                        <div class="completion-backdrop"></div>
+
+
+                        <section
+                            class="completion-dialog"
+                            role="alertdialog"
+                            aria-modal="true"
+                            aria-label="Parts receipt completed">
+
+                            <div class="completion-icon">
+
+                                <lightning-icon
+                                    icon-name="utility:success"
+                                    size="medium">
+                                </lightning-icon>
+
+                            </div>
+
+
+                            <p class="completion-eyebrow">
+                                Receipt Saved
+                            </p>
+
+
+                            <h2>
+                                {successHeading}
+                            </h2>
+
+
+                            <p class="completion-message">
+                                {successMessage}
+                            </p>
+
+
+                            <div class="completion-result">
+
+                                <span class="completion-result-label">
+                                    Work Order Stage
+                                </span>
+
+                                <span class={successStatusClass}>
+                                    {successStatusLabel}
+                                </span>
+
+                            </div>
+
+
+                            <div class="completion-next-step">
+
+                                <strong>
+                                    {successNextStepTitle}
+                                </strong>
+
+                                <p>
+                                    {successNextStepMessage}
+                                </p>
+
+                            </div>
+
+
+                            <button
+                                type="button"
+                                class="completion-button"
+                                onclick={handleSuccessClose}>
+                                Close
+                            </button>
+
+                        </section>
+
+                    </div>
+
+                </template>
+
+            </template>
+
+        </template>
+
+    </div>
+
+</template>

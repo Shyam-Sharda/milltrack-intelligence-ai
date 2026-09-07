@@ -1,0 +1,143 @@
+<template>
+    <div class="header-shell">
+
+        <!-- =====================================================
+             MAIN HEADER
+             ===================================================== -->
+        <header class="chat-header">
+
+            <div class="brand">
+                <div class="ai-icon">
+                    <img
+                        src={botAvatarUrl}
+                        alt="MillTrack AI"
+                        class="bot-avatar">
+                </div>
+
+                <div class="brand-text">
+                    <span class="title">MillTrack AI</span>
+                    <span class="status">Service Support</span>
+                </div>
+            </div>
+
+
+            <!-- =================================================
+                 HEADER ACTIONS
+                 ================================================= -->
+            <div class="actions">
+
+                <!-- More Options / End Chat -->
+                <div class="menu-container">
+
+                    <button
+                        class="icon-button"
+                        type="button"
+                        onclick={handleMenuToggle}
+                        title="More options"
+                        aria-label="More options"
+                        aria-expanded={showMenu}>
+
+                        <lightning-icon
+                            icon-name="utility:threedots_vertical"
+                            size="x-small"
+                            alternative-text="More options">
+                        </lightning-icon>
+                    </button>
+
+
+                    <template if:true={showMenu}>
+                        <div class="header-menu">
+
+                            <button
+                                class="menu-item end-chat-item"
+                                type="button"
+                                onclick={handleEndChat}>
+
+                                <lightning-icon
+                                    icon-name="utility:end_chat"
+                                    size="xx-small"
+                                    alternative-text="">
+                                </lightning-icon>
+
+                                <span>End Chat</span>
+                            </button>
+
+                        </div>
+                    </template>
+
+                </div>
+
+
+                <!-- Minimize -->
+                <button
+                    class="icon-button"
+                    type="button"
+                    onclick={handleMinimize}
+                    title="Minimize"
+                    aria-label="Minimize">
+
+                    <lightning-icon
+                        icon-name="utility:minimize_window"
+                        size="x-small"
+                        alternative-text="Minimize">
+                    </lightning-icon>
+
+                </button>
+
+            </div>
+
+        </header>
+
+
+        <!-- =====================================================
+             AGENT LEFT / START ANOTHER ISSUE CUE
+             ===================================================== -->
+        <template if:true={showNewIssueCue}>
+
+            <div class="new-issue-cue">
+
+                <div class="cue-text">
+                    <strong>Need help with something else?</strong>
+
+                    <span>
+                        Start a new issue and MillTrack AI will assist you.
+                    </span>
+                </div>
+
+                <button
+                    class="cue-button"
+                    type="button"
+                    onclick={handleStartNewIssue}
+                    disabled={isStartingNewIssue}>
+
+                    <lightning-icon
+                        icon-name="utility:add"
+                        size="xx-small"
+                        alternative-text="">
+                    </lightning-icon>
+
+                    <span>{startButtonLabel}</span>
+                </button>
+
+            </div>
+
+        </template>
+
+
+        <!-- =====================================================
+             ERROR FALLBACK
+             ===================================================== -->
+        <template if:true={startError}>
+
+            <div
+                class="error-cue"
+                role="alert">
+
+                {startError}
+
+            </div>
+
+        </template>
+
+    </div>
+</template>

@@ -1,0 +1,22 @@
+.milltrack-chat-launcher {
+    position: fixed;
+    right: 95px;
+    bottom: 24px;
+    z-index: 9999;
+
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+
+    padding: 0.7rem 1rem;
+    border: 1px solid #0b2e59;
+    border-radius: 999px;
+
+    background: #ffffff;
+    color: #0b2e59;
+
+    font-weight: 600;
+    cursor: pointer;
+
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+}

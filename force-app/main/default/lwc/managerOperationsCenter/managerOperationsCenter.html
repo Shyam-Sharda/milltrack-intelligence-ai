@@ -1,5 +1,25 @@
 <template>
-    <lightning-card title="Manager Operations Center" icon-name="standard:work_order">
+    <lightning-card>
+
+        <!-- =====================================================
+             Manager Operations Center Header
+             ===================================================== -->
+        <div slot="title" class="manager-card-title">
+            <span class="manager-title-icon">
+                <lightning-icon
+                    icon-name="utility:settings"
+                    alternative-text="Manager Operations Center"
+                    size="x-small"
+                    variant="inverse"
+                >
+                </lightning-icon>
+            </span>
+
+            <span class="manager-title-text">
+                Manager Operations Center
+            </span>
+        </div>
+
         <lightning-button-icon
             slot="actions"
             icon-name="utility:refresh"
@@ -11,17 +31,31 @@
         </lightning-button-icon>
 
         <div class="operations-center">
-            <!-- Loading State -->
+
+            <!-- =================================================
+                 Loading State
+                 ================================================= -->
             <template lwc:if={isBusy}>
                 <div class="spinner-container">
-                    <lightning-spinner alternative-text="Loading manager operations" size="medium"></lightning-spinner>
+                    <lightning-spinner
+                        alternative-text="Loading manager operations"
+                        size="medium"
+                    >
+                    </lightning-spinner>
                 </div>
             </template>
 
-            <!-- Error State -->
+            <!-- =================================================
+                 Error State
+                 ================================================= -->
             <template lwc:if={errorMessage}>
-                <div class="error-state slds-notify slds-notify_alert slds-alert_error" role="alert">
-                    <span class="slds-assistive-text">Error</span>
+                <div
+                    class="error-state slds-notify slds-notify_alert slds-alert_error"
+                    role="alert"
+                >
+                    <span class="slds-assistive-text">
+                        Error
+                    </span>
 
                     <lightning-icon
                         icon-name="utility:error"
@@ -36,18 +70,106 @@
                 </div>
             </template>
 
-            <!-- Queue Cards -->
-            <section class="overview-section" aria-labelledby="service-overview-heading">
+            <!-- =================================================
+                 Service Case Overview
+                 ================================================= -->
+            <section
+                class="case-summary-section"
+                aria-labelledby="open-service-cases-heading"
+            >
+                <div class={openCasesSummaryClass}>
+
+                    <div class="open-cases-summary__icon">
+                        <lightning-icon
+                            icon-name="standard:case"
+                            alternative-text="Service Cases"
+                            size="medium"
+                        >
+                        </lightning-icon>
+                    </div>
+
+                    <div class="open-cases-summary__content">
+                        <span class="open-cases-summary__eyebrow">
+                            Service Case Overview
+                        </span>
+
+                        <div class="open-cases-summary__title-row">
+                            <span class="open-cases-summary__count">
+                                {openServiceCasesCount}
+                            </span>
+
+                            <div>
+                                <h2
+                                    id="open-service-cases-heading"
+                                    class="open-cases-summary__title"
+                                >
+                                    Open Service Cases
+                                </h2>
+
+                                <p class="open-cases-summary__description">
+                                    Customer service cases that have not been closed.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="open-cases-summary__new">
+                        <span class="open-cases-summary__new-count">
+                            {newCasesCount}
+                        </span>
+
+                        <span class="open-cases-summary__new-label">
+                            Cases with Status: New
+                        </span>
+                    </div>
+
+                    <button
+                        type="button"
+                        class="open-cases-action"
+                        aria-pressed={isNewCasesSelected}
+                        onclick={handleViewNewCases}
+                    >
+                        <span>View New Cases</span>
+
+                        <lightning-icon
+                            icon-name="utility:chevronright"
+                            alternative-text=""
+                            size="xx-small"
+                            class="open-cases-action__icon"
+                        >
+                        </lightning-icon>
+                    </button>
+
+                </div>
+            </section>
+
+            <!-- =================================================
+                 Work Order Workflow
+                 ================================================= -->
+            <section
+                class="overview-section work-order-overview"
+                aria-labelledby="work-order-workflow-heading"
+            >
                 <div class="section-heading">
                     <div>
-                        <h2 id="service-overview-heading" class="section-title">Today’s Service Overview</h2>
+                        <h2
+                            id="work-order-workflow-heading"
+                            class="section-title"
+                        >
+                            Work Order Workflow
+                        </h2>
 
-                        <p class="section-subtitle">Select a queue to review its records and available manager actions.</p>
+                        <p class="section-subtitle">
+                            Select a workflow stage to review its Work Orders and available manager actions.
+                        </p>
                     </div>
                 </div>
 
                 <div class="queue-grid">
-                    <template for:each={queueCards} for:item="card">
+                    <template
+                        for:each={queueCards}
+                        for:item="card"
+                    >
                         <button
                             key={card.key}
                             type="button"
@@ -56,23 +178,41 @@
                             aria-pressed={card.ariaPressed}
                             onclick={handleQueueSelect}
                         >
-                            <span class="queue-count">{card.count}</span>
+                            <span class="queue-count">
+                                {card.count}
+                            </span>
 
-                            <span class="queue-label">{card.label}</span>
+                            <span class="queue-label">
+                                {card.label}
+                            </span>
 
-                            <span class="queue-description">{card.description}</span>
+                            <span class="queue-description">
+                                {card.description}
+                            </span>
                         </button>
                     </template>
                 </div>
             </section>
 
-            <!-- Selected Queue Table -->
-            <section class="queue-table-section" aria-labelledby="selected-queue-heading">
+            <!-- =================================================
+                 Selected Queue Table
+                 ================================================= -->
+            <section
+                class="queue-table-section"
+                aria-labelledby="selected-queue-heading"
+            >
                 <div class="table-heading">
                     <div>
-                        <h2 id="selected-queue-heading" class="section-title">{selectedQueueLabel}</h2>
+                        <h2
+                            id="selected-queue-heading"
+                            class="section-title"
+                        >
+                            {selectedQueueLabel}
+                        </h2>
 
-                        <p class="section-subtitle">{selectedQueueDescription}</p>
+                        <p class="section-subtitle">
+                            {selectedQueueDescription}
+                        </p>
 
                         <p class="table-instructions">
                             Use the record number to open the record. Where
@@ -85,17 +225,159 @@
 
                 <!-- Records Found -->
                 <template lwc:if={showTable}>
-                    <div class="datatable-container">
-                        <lightning-datatable
-                            key-field="recordId"
-                            data={selectedRows}
-                            columns={columns}
-                            hide-checkbox-column
-                            show-row-number-column
-                            onrowaction={handleRowAction}
-                            wrap-table-header
-                        >
-                        </lightning-datatable>
+                    <div class="portal-table-container">
+
+                        <div class="portal-table-scroll">
+                            <table class="portal-record-table">
+
+                                <thead>
+                                    <tr>
+                                        <template
+                                            for:each={portalColumns}
+                                            for:item="column">
+
+                                            <th
+                                                key={column.key}
+                                                class={column.headerClass}
+                                                scope="col">
+
+                                                <template lwc:if={column.sortable}>
+                                                    <button
+                                                        type="button"
+                                                        class="portal-sort-button"
+                                                        data-field={column.sortField}
+                                                        onclick={handlePortalSort}>
+
+                                                        <span>{column.label}</span>
+
+                                                        <template lwc:if={column.showSortIcon}>
+                                                            <lightning-icon
+                                                                icon-name={column.sortIconName}
+                                                                size="xx-small"
+                                                                class="portal-sort-icon">
+                                                            </lightning-icon>
+                                                        </template>
+
+                                                    </button>
+                                                </template>
+
+                                                <template lwc:else>
+                                                    <span class="portal-column-label">
+                                                        {column.label}
+                                                    </span>
+                                                </template>
+
+                                            </th>
+
+                                        </template>
+                                    </tr>
+                                </thead>
+
+                                <tbody>
+                                    <template
+                                        for:each={portalRows}
+                                        for:item="row">
+
+                                        <tr
+                                            key={row.recordId}
+                                            class={row.rowClass}
+                                            data-work-order-group={row.workOrderGroupKey}
+                                            onmouseenter={handlePortalRowMouseEnter}
+                                            onmouseleave={handlePortalRowMouseLeave}>
+
+                                            <template
+                                                for:each={row.cells}
+                                                for:item="cell">
+
+                                                <td
+                                                    key={cell.key}
+                                                    lwc:if={cell.renderCell}
+                                                    class={cell.cellClass}
+                                                    rowspan={cell.rowSpan}>
+
+                                                    <!-- Standard text -->
+                                                    <template lwc:if={cell.isText}>
+                                                        <span>{cell.value}</span>
+                                                    </template>
+
+                                                    <!-- Number -->
+                                                    <template lwc:if={cell.isNumber}>
+                                                        <span>{cell.value}</span>
+                                                    </template>
+
+                                                    <!-- Date -->
+                                                    <template lwc:if={cell.isDate}>
+                                                        <lightning-formatted-date-time
+                                                            value={cell.value}
+                                                            year="numeric"
+                                                            month="short"
+                                                            day="2-digit"
+                                                            hour="2-digit"
+                                                            minute="2-digit"
+                                                            hour12>
+                                                        </lightning-formatted-date-time>
+                                                    </template>
+
+                                                    <template lwc:if={cell.isBlankDate}>
+                                                        <span>—</span>
+                                                    </template>
+
+                                                    <!-- Record Link -->
+                                                    <template lwc:if={cell.isRecord}>
+                                                        <button
+                                                            type="button"
+                                                            class="portal-record-link"
+                                                            data-record-id={cell.recordId}
+                                                            disabled={cell.recordDisabled}
+                                                            onclick={handlePortalRecordOpen}>
+                                                            {cell.value}
+                                                        </button>
+                                                    </template>
+
+                                                    <!-- Parent Work Order Link / Group -->
+                                                    <template lwc:if={cell.isWorkOrder}>
+                                                        <button
+                                                            type="button"
+                                                            class="portal-record-link portal-work-order-group-link"
+                                                            data-record-id={cell.recordId}
+                                                            disabled={cell.workOrderDisabled}
+                                                            onclick={handlePortalWorkOrderOpen}>
+                                                            {cell.value}
+                                                        </button>
+                                                    </template>
+
+                                                   <!-- Part Source / Record Type -->
+                                                    <template lwc:if={cell.isPartSource}>
+                                                        <span class={cell.sourceBadgeClass}>
+                                                            <span class="part-source-badge__marker" aria-hidden="true"></span>
+                                                            <span>{cell.value}</span>
+                                                        </span>
+                                                    </template>
+
+                                                    <!-- Workflow Action -->
+                                                    <template lwc:if={cell.isAction}>
+                                                        <button
+                                                            type="button"
+                                                            class="portal-action-button"
+                                                            data-record-id={cell.recordId}
+                                                            disabled={cell.actionDisabled}
+                                                            onclick={handlePortalPrimaryAction}>
+                                                            {cell.actionLabel}
+                                                        </button>
+                                                    </template>
+
+                                                </td>
+
+                                            </template>
+
+                                        </tr>
+
+                                    </template>
+                                </tbody>
+
+                            </table>
+                        </div>
+
                     </div>
                 </template>
 
@@ -110,7 +392,9 @@
                         >
                         </lightning-icon>
 
-                        <h3 class="empty-state-title">No records in this queue</h3>
+                        <h3 class="empty-state-title">
+                            No records in this queue
+                        </h3>
 
                         <p class="empty-state-message">
                             There are currently no records requiring attention
@@ -122,7 +406,227 @@
         </div>
     </lightning-card>
 
-    <!-- Manager Flow Modal -->
+    <!-- =========================================================
+         Review Work Order Wizard Modal
+         ========================================================= -->
+    <template lwc:if={isReviewWizardOpen}>
+        <div
+            class="manager-review-backdrop"
+            role="presentation"
+            onclick={handleReviewWizardCancel}
+        >
+        </div>
+
+        <section
+            role="dialog"
+            tabindex="-1"
+            aria-modal="true"
+            aria-label="Review Work Order"
+            class="manager-review-modal"
+        >
+            <div class="manager-review-modal__container">
+
+                <button
+                    type="button"
+                    class="manager-review-close"
+                    title="Close Work Order review"
+                    onclick={handleReviewWizardCancel}
+                >
+                    <lightning-icon
+                        icon-name="utility:close"
+                        alternative-text="Close"
+                        variant="inverse"
+                        size="x-small"
+                    >
+                    </lightning-icon>
+
+                    <span class="slds-assistive-text">
+                        Close Work Order review
+                    </span>
+                </button>
+
+                <div class="manager-review-modal__content">
+                    <c-manager-review-work-order-wizard
+                        record-id={activeReviewWorkOrderId}
+                        onapproved={handleReviewApproved}
+                        oncancel={handleReviewWizardCancel}
+                    >
+                    </c-manager-review-work-order-wizard>
+                </div>
+
+            </div>
+        </section>
+    </template>
+
+
+    <!-- =========================================================
+         Order Required Parts Wizard Modal
+         ========================================================= -->
+    <template lwc:if={isOrderPartsWizardOpen}>
+        <div
+            class="manager-review-backdrop"
+            role="presentation"
+            onclick={handleOrderPartsWizardCancel}
+        >
+        </div>
+
+        <section
+            role="dialog"
+            tabindex="-1"
+            aria-modal="true"
+            aria-label={orderPartsModalLabel}
+            class="manager-review-modal"
+        >
+            <div class="manager-review-modal__container">
+
+                <button
+                    type="button"
+                    class="manager-review-close"
+                    title={orderPartsCloseTitle}
+                    onclick={handleOrderPartsWizardCancel}
+                >
+                    <lightning-icon
+                        icon-name="utility:close"
+                        alternative-text="Close"
+                        variant="inverse"
+                        size="x-small"
+                    >
+                    </lightning-icon>
+
+                    <span class="slds-assistive-text">
+                        {orderPartsCloseTitle}
+                    </span>
+                </button>
+
+                <div class="manager-review-modal__content">
+                    <c-manager-order-parts-wizard
+                        record-id={activeOrderPartsRecordId}
+                        mode={activeOrderPartsMode}
+                        oncomplete={handleOrderPartsComplete}
+                        oncancel={handleOrderPartsWizardCancel}
+                    >
+                    </c-manager-order-parts-wizard>
+                </div>
+
+            </div>
+        </section>
+    </template>
+
+     <!-- =========================================================
+        Receive Parts Wizard Modal
+        ========================================================= -->
+    <template lwc:if={isReceivePartsWizardOpen}>
+
+        <div
+            class="manager-review-backdrop"
+            role="presentation"
+            onclick={handleReceivePartsWizardCancel}
+        >
+        </div>
+
+        <section
+            role="dialog"
+            tabindex="-1"
+            aria-modal="true"
+            aria-label="Receive Parts"
+            class="manager-review-modal"
+        >
+            <div class="manager-review-modal__container">
+
+                <button
+                    type="button"
+                    class="manager-review-close"
+                    title="Close parts receipt"
+                    onclick={handleReceivePartsWizardCancel}
+                >
+                    <lightning-icon
+                        icon-name="utility:close"
+                        alternative-text="Close"
+                        variant="inverse"
+                        size="x-small"
+                    >
+                    </lightning-icon>
+
+                    <span class="slds-assistive-text">
+                        Close parts receipt
+                    </span>
+                </button>
+
+                <div class="manager-review-modal__content">
+
+                    <c-manager-receive-parts-wizard
+                        record-id={activeReceivePartsWorkOrderId}
+                        oncomplete={handleReceivePartsComplete}
+                        oncancel={handleReceivePartsWizardCancel}
+                    >
+                    </c-manager-receive-parts-wizard>
+
+                </div>
+
+            </div>
+        </section>
+
+    </template>
+
+    <!-- =========================================================
+        Dispatch Technician Wizard Modal
+        ========================================================= -->
+
+    <template lwc:if={isDispatchTechnicianWizardOpen}>
+
+        <div
+            class="manager-review-backdrop"
+            role="presentation"
+            onclick={handleDispatchTechnicianWizardCancel}>
+        </div>
+
+        <section
+            role="dialog"
+            tabindex="-1"
+            aria-modal="true"
+            aria-label="Dispatch Technician"
+            class="manager-review-modal">
+
+            <div class="manager-review-modal__container">
+
+                <button
+                    type="button"
+                    class="manager-review-close"
+                    title="Close technician dispatch"
+                    onclick={handleDispatchTechnicianWizardCancel}>
+
+                    <lightning-icon
+                        icon-name="utility:close"
+                        alternative-text="Close"
+                        variant="inverse"
+                        size="x-small">
+                    </lightning-icon>
+
+                    <span class="slds-assistive-text">
+                        Close technician dispatch
+                    </span>
+
+                </button>
+
+                <div class="manager-review-modal__content">
+
+                    <c-manager-dispatch-technician-wizard
+                        record-id={activeDispatchWorkOrderId}
+                        oncomplete={handleDispatchTechnicianComplete}
+                        oncancel={handleDispatchTechnicianWizardCancel}>
+                    </c-manager-dispatch-technician-wizard>
+
+                </div>
+
+            </div>
+
+        </section>
+
+    </template>
+
+    <!-- =========================================================
+         Manager Flow Modal
+         ========================================================= -->
     <template lwc:if={isFlowModalOpen}>
         <section
             role="dialog"
@@ -132,6 +636,7 @@
             class="slds-modal slds-fade-in-open manager-flow-modal"
         >
             <div class="slds-modal__container">
+
                 <header class="slds-modal__header">
                     <button
                         type="button"
@@ -149,13 +654,22 @@
                         >
                         </lightning-icon>
 
-                        <span class="slds-assistive-text">Close</span>
+                        <span class="slds-assistive-text">
+                            Close
+                        </span>
                     </button>
 
-                    <h2 id="flow-modal-heading" class="slds-text-heading_medium">{activeFlowLabel}</h2>
+                    <h2
+                        id="flow-modal-heading"
+                        class="slds-text-heading_medium"
+                    >
+                        {activeFlowLabel}
+                    </h2>
                 </header>
 
-                <div class="slds-modal__content slds-p-around_medium flow-modal-content">
+                <div
+                    class="slds-modal__content slds-p-around_medium flow-modal-content"
+                >
                     <lightning-flow
                         flow-api-name={activeFlowApiName}
                         flow-input-variables={flowInputVariables}
@@ -166,7 +680,10 @@
             </div>
         </section>
 
-        <div class="slds-backdrop slds-backdrop_open" role="presentation">
+        <div
+            class="slds-backdrop slds-backdrop_open"
+            role="presentation"
+        >
         </div>
     </template>
 </template>
