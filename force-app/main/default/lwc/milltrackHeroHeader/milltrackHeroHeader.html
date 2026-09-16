@@ -1,10 +1,14 @@
 <template>
     <section class="hero">
-        <div class="wave wave-one"></div>
-        <div class="wave wave-two"></div>
-        <div class="wave wave-three"></div>
+        <div class="wave wave-one" aria-hidden="true"></div>
+        <div class="wave wave-two" aria-hidden="true"></div>
+        <div class="wave wave-three" aria-hidden="true"></div>
 
         <div class="hero-content">
+            <span class="hero-eyebrow">
+                Service Operations
+            </span>
+
             <template if:true={title}>
                 <p class="workspace-title">{title}</p>
             </template>

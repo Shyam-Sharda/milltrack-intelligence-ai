@@ -1,0 +1,1310 @@
+<template>
+
+    <div class="wizard-shell">
+
+        <template if:true={isLoading}>
+            <div class="loading-state">
+                <lightning-spinner alternative-text="Loading Work Order follow-up" size="medium"></lightning-spinner>
+            </div>
+        </template>
+
+        <template if:false={isLoading}>
+
+            <template if:true={errorMessage}>
+                <div class="error-state">
+                    <lightning-icon icon-name="utility:error" size="small" class="error-icon"></lightning-icon>
+
+                    <div>
+                        <h2>Unable to Load Work Order Follow-Up</h2>
+                        <p>{errorMessage}</p>
+                    </div>
+                </div>
+            </template>
+
+            <template if:false={errorMessage}>
+
+                <!-- =====================================================
+                     HEADER
+                     ===================================================== -->
+
+                <header class="wizard-header">
+
+                    <div class="header-content">
+
+                        <div class="header-icon">
+                            <lightning-icon icon-name="standard:work_order" size="small"></lightning-icon>
+                        </div>
+
+                        <div>
+                            <p class="eyebrow">Manager Follow-Up</p>
+                            <h1>Review Follow-Up</h1>
+
+                            <p class="header-subtitle">
+                                Review the previous technician visit and prepare the next repair plan.
+                            </p>
+
+                            <div class="header-meta">
+
+                                <span class="work-order-number">{workOrderNumber}</span>
+                                <span class="header-meta-divider"></span>
+
+                                <span class="header-machine">
+                                    <lightning-icon icon-name="standard:asset_object" size="xx-small"></lightning-icon>
+                                    <span>{machineLabel}</span>
+                                </span>
+
+                                <span class="header-meta-divider"></span>
+                                <span class="header-serial">S/N {serialNumber}</span>
+
+                                <span class="header-meta-divider"></span>
+                                <span class={priorityClass}>{priority}</span>
+
+                                <span class="follow-up-header-badge">{dispatchStatus}</span>
+
+                            </div>
+                        </div>
+
+                    </div>
+
+                </header>
+
+                <!-- =====================================================
+                     CUSTOMER / CASE CONTEXT
+                     ===================================================== -->
+
+                <section class="context-strip">
+
+                    <div class="context-panel customer-panel">
+
+                        <div class="context-panel-header">
+                            <div class="context-icon customer-context-icon">
+                                <lightning-icon icon-name="standard:account" size="small"></lightning-icon>
+                            </div>
+
+                            <div class="context-details">
+                                <p class="context-label">Customer</p>
+                                <h2>{accountName}</h2>
+                            </div>
+                        </div>
+
+                        <div class="context-info-grid">
+                            <span class="context-info-label">Contact</span>
+                            <strong>{contactName}</strong>
+
+                            <template if:true={hasContactTitle}>
+                                <span class="context-info-label">Role</span>
+                                <span>{contactTitle}</span>
+                            </template>
+
+                            <template if:true={hasContactEmail}>
+                                <span class="context-info-label">Email</span>
+                                <span>{contactEmail}</span>
+                            </template>
+
+                            <template if:true={hasContactPhone}>
+                                <span class="context-info-label">Phone</span>
+                                <span>{contactPhone}</span>
+                            </template>
+                        </div>
+
+                    </div>
+
+                    <template if:true={hasCaseNumber}>
+
+                        <div class="context-panel case-panel">
+
+                            <div class="context-panel-header">
+                                <div class="context-icon case-context-icon">
+                                    <lightning-icon icon-name="standard:case" size="small"></lightning-icon>
+                                </div>
+
+                                <div class="context-details">
+                                    <p class="context-label">Service Case</p>
+                                    <h2>{caseNumber}</h2>
+                                </div>
+                            </div>
+
+                            <div class="context-info-grid">
+                                <span class="context-info-label">Subject</span>
+                                <span>{caseSubject}</span>
+
+                                <span class="context-info-label">Status</span>
+                                <span>
+                                    <span class={caseStatusClass}>{caseStatus}</span>
+                                </span>
+
+                                <span class="context-info-label">Machine Status</span>
+                                <span>
+                                    <span class={machineStatusClass}>{machineStatus}</span>
+                                </span>
+                            </div>
+
+                        </div>
+
+                    </template>
+
+                </section>
+
+                <!-- =====================================================
+                     PROGRESS
+                     ===================================================== -->
+
+                <div class="progress-shell">
+
+                    <div class={stepOneClass}>
+                        <div class="step-circle">1</div>
+                        <div>
+                            <strong>Previous Visit</strong>
+                            <span>Review technician findings</span>
+                        </div>
+                    </div>
+
+                    <div class="progress-line"></div>
+
+                    <div class={stepTwoClass}>
+                        <div class="step-circle">2</div>
+                        <div>
+                            <strong>Follow-Up Plan</strong>
+                            <span>Prepare the next repair</span>
+                        </div>
+                    </div>
+
+                    <div class="progress-line"></div>
+
+                    <div class={stepThreeClass}>
+                        <div class="step-circle">3</div>
+                        <div>
+                            <strong>Parts</strong>
+                            <span>Plan additional parts</span>
+                        </div>
+                    </div>
+
+                    <div class="progress-line"></div>
+
+                    <div class={stepFourClass}>
+                        <div class="step-circle">4</div>
+                        <div>
+                            <strong>Confirmation</strong>
+                            <span>Approve the follow-up</span>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- =====================================================
+                     STEP 1 - PREVIOUS VISIT
+                     ===================================================== -->
+
+                <template if:true={isStepOne}>
+
+                    <main class="wizard-content">
+
+                        <div class="step-heading">
+                            <p class="eyebrow">Step 1 of 4</p>
+                            <h2>Previous Visit</h2>
+                            <p>
+                                Review the original service issue, the plan the technician received,
+                                and what actually happened during the previous visit.
+                            </p>
+                        </div>
+
+                        <!-- ORIGINAL ISSUE -->
+
+                        <section class="content-card follow-up-issue-card">
+
+                            <div class="card-header">
+                                <div>
+                                    <p class="section-kicker follow-up-issue-kicker">Original Service Request</p>
+                                    <h3>Customer Issue</h3>
+                                </div>
+
+                                <lightning-icon icon-name="standard:case" size="small"></lightning-icon>
+                            </div>
+
+                            <div class="follow-up-readonly-section">
+                                <span class="follow-up-field-label">Case Subject</span>
+                                <p class="follow-up-subject">{caseSubject}</p>
+                            </div>
+
+                            <div class="follow-up-divider"></div>
+
+                            <div class="follow-up-readonly-section">
+                                <span class="follow-up-field-label">Problem Summary</span>
+                                <p class="primary-copy follow-up-copy">{problemSummary}</p>
+                            </div>
+
+                        </section>
+
+                        <!-- PREVIOUS PLAN -->
+
+                        <section class="content-card previous-plan-card">
+
+                            <div class="card-header">
+                                <div>
+                                    <p class="section-kicker previous-plan-kicker">Previous Visit Instructions</p>
+                                    <h3>Recommended Fix</h3>
+
+                                    <p class="field-helper">
+                                        This is the repair direction the previous technician received.
+                                    </p>
+                                </div>
+
+                                <div class="snapshot-badge">
+                                    <lightning-icon icon-name="utility:lock" size="xx-small"></lightning-icon>
+                                    <span>Visit Snapshot</span>
+                                </div>
+                            </div>
+
+                            <p class="primary-copy">{previousRecommendedFix}</p>
+
+                            <div class="previous-tools-block">
+
+                                <span class="follow-up-field-label">Tools Provided for Previous Visit</span>
+
+                                <template if:true={hasPreviousTools}>
+                                    <div class="previous-tool-list">
+
+                                        <template for:each={previousTools} for:item="tool">
+                                            <span key={tool.id} class="previous-tool-chip">
+                                                <lightning-icon icon-name="utility:setup" size="xx-small"></lightning-icon>
+                                                {tool.name}
+                                            </span>
+                                        </template>
+
+                                    </div>
+                                </template>
+
+                                <template if:false={hasPreviousTools}>
+                                    <p class="follow-up-muted-copy">No tools were recorded for the previous visit.</p>
+                                </template>
+
+                            </div>
+
+                        </section>
+
+                        <!-- TECHNICIAN VISIT -->
+
+                        <section class="content-card technician-visit-card">
+
+                            <div class="card-header">
+
+                                <div>
+                                    <p class="section-kicker technician-visit-kicker">What happened on site?</p>
+                                    <h3>Technician Visit Summary</h3>
+
+                                    <p class="field-helper">
+                                        Recorded service evidence from {maintenanceLogNumber}.
+                                    </p>
+                                </div>
+
+                                <span class={visitOutcomeClass}>{visitOutcomeLabel}</span>
+
+                            </div>
+
+                            <div class="visit-meta-grid">
+
+                                <div class="visit-meta-item">
+                                    <span>Technician</span>
+                                    <strong>{technicianName}</strong>
+                                </div>
+
+                                <div class="visit-meta-item">
+                                    <span>Visit Date</span>
+                                    <strong>
+                                        <lightning-formatted-date-time
+                                            value={maintenanceDate}
+                                            year="numeric"
+                                            month="short"
+                                            day="2-digit">
+                                        </lightning-formatted-date-time>
+                                    </strong>
+                                </div>
+
+                                <div class="visit-meta-item">
+                                    <span>Labor</span>
+                                    <strong>{laborHours} hrs</strong>
+                                </div>
+
+                                <div class="visit-meta-item">
+                                    <span>Visit Type</span>
+                                    <strong>{maintenanceType}</strong>
+                                </div>
+
+                            </div>
+
+                            <div class="technician-summary-block">
+                                <span class="follow-up-field-label">Visit Summary</span>
+                                <p>{visitSummary}</p>
+                            </div>
+
+                        </section>
+
+                    </main>
+
+                    <footer class="wizard-footer">
+
+                        <button type="button" class="secondary-button" onclick={handleCancel}>
+                            Cancel
+                        </button>
+
+                        <button type="button" class="primary-button" onclick={handleContinue}>
+                            Continue to Follow-Up Plan
+                            <lightning-icon icon-name="utility:chevronright" size="xx-small"></lightning-icon>
+                        </button>
+
+                    </footer>
+
+                </template>
+
+                <!-- =====================================================
+                     STEP 2 - FOLLOW-UP PLAN
+                     ===================================================== -->
+
+                <template if:true={isStepTwo}>
+
+                    <main class="wizard-content">
+
+                        <div class="step-heading">
+                            <p class="eyebrow">Step 2 of 4</p>
+                            <h2>Follow-Up Plan</h2>
+                            <p>
+                                Define the repair direction and tools for the next technician visit.
+                            </p>
+                        </div>
+
+                        <section class="content-card fix-summary-card">
+
+                            <div class="card-header">
+
+                                <div>
+                                    <p class="section-kicker fix-kicker">Next Visit Direction</p>
+                                    <h3>Recommended Fix Summary</h3>
+
+                                    <p class="field-helper">
+                                        Write the repair direction for the next technician.
+                                        The previous visit plan remains preserved on its Maintenance Log.
+                                    </p>
+                                </div>
+
+                                <div class="manager-edit-badge">
+                                    <lightning-icon icon-name="utility:edit" size="xx-small"></lightning-icon>
+                                    <span>Manager Editable</span>
+                                </div>
+
+                            </div>
+
+                            <div class="fix-editor">
+
+                                <textarea
+                                    class="fix-summary-input"
+                                    maxlength="255"
+                                    value={recommendedFixSummary}
+                                    oninput={handleRecommendedFixChange}
+                                    aria-label="Follow-Up Recommended Fix Summary">
+                                </textarea>
+
+                                <div class={recommendedFixSummaryCounterClass}>
+                                    {recommendedFixSummaryLength} / 255
+                                </div>
+
+                            </div>
+
+                            <template if:true={planErrorMessage}>
+                                <div class="parts-inline-error follow-up-plan-error" role="alert">
+                                    <lightning-icon icon-name="utility:error" size="xx-small"></lightning-icon>
+                                    <span>{planErrorMessage}</span>
+                                </div>
+                            </template>
+
+                        </section>
+
+                        <section class="content-card tools-card">
+
+                            <div class="card-header">
+
+                                <div>
+                                    <p class="section-kicker tools-kicker">Visit Preparation</p>
+                                    <h3>Tools to Bring</h3>
+
+                                    <p class="field-helper">
+                                        Add the tools the next technician should bring for this follow-up visit.
+                                    </p>
+                                </div>
+
+                                <div class="tool-count-badge">
+                                    {recommendedTools.length} selected
+                                </div>
+
+                            </div>
+
+                            <template if:true={hasRecommendedTools}>
+
+                                <div class="tool-list">
+
+                                    <template for:each={recommendedTools} for:item="tool">
+
+                                        <div key={tool.id} class="tool-chip">
+
+                                            <div class="tool-chip-main">
+                                                <div class="tool-icon">
+                                                    <lightning-icon icon-name="utility:setup" size="xx-small"></lightning-icon>
+                                                </div>
+
+                                                <span>{tool.name}</span>
+                                            </div>
+
+                                            <button
+                                                type="button"
+                                                class="remove-tool-button"
+                                                data-id={tool.id}
+                                                title="Remove tool"
+                                                onclick={handleRemoveTool}>
+
+                                                <lightning-icon icon-name="utility:close" size="xx-small"></lightning-icon>
+
+                                            </button>
+
+                                        </div>
+
+                                    </template>
+
+                                </div>
+
+                            </template>
+
+                            <template if:false={hasRecommendedTools}>
+
+                                <div class="empty-tools">
+
+                                    <lightning-icon icon-name="utility:info_alt" size="small"></lightning-icon>
+
+                                    <div>
+                                        <strong>No tools added yet</strong>
+                                        <p>Add any tools required for the follow-up repair.</p>
+                                    </div>
+
+                                </div>
+
+                            </template>
+
+                            <div class="add-tool-row">
+
+                                <div class="add-tool-input-wrap">
+                                    <lightning-icon icon-name="utility:add" size="xx-small"></lightning-icon>
+
+                                    <input
+                                        type="text"
+                                        class="add-tool-input"
+                                        placeholder="Add a tool..."
+                                        value={newToolName}
+                                        oninput={handleNewToolChange}
+                                        onkeydown={handleToolKeyDown}>
+                                </div>
+
+                                <button type="button" class="add-tool-button" onclick={handleAddTool}>
+                                    Add Tool
+                                </button>
+
+                            </div>
+
+                        </section>
+
+                    </main>
+
+                    <footer class="wizard-footer">
+
+                        <button type="button" class="secondary-button" onclick={handleBack}>
+                            <lightning-icon icon-name="utility:chevronleft" size="xx-small"></lightning-icon>
+                            Back
+                        </button>
+
+                        <button type="button" class="primary-button" onclick={handleContinueToParts}>
+                            Continue to Parts
+                            <lightning-icon icon-name="utility:chevronright" size="xx-small"></lightning-icon>
+                        </button>
+
+                    </footer>
+
+                </template>
+
+                <!-- =====================================================
+                     STEP 3 - PARTS
+                     ===================================================== -->
+
+                <template if:true={isStepThree}>
+
+                    <main class="wizard-content">
+
+                        <div class="step-heading">
+                            <p class="eyebrow">Step 3 of 4</p>
+                            <h2>Parts</h2>
+
+                            <p>
+                                Review parts already connected to this Work Order,
+                                then select any additional parts required for the follow-up visit.
+                            </p>
+                        </div>
+
+                        <!-- EXISTING PARTS -->
+
+                        <section class="content-card existing-parts-card">
+
+                            <div class="card-header">
+
+                                <div>
+                                    <p class="section-kicker existing-parts-kicker">Already on this Work Order</p>
+                                    <h3>Existing Parts</h3>
+
+                                    <p class="field-helper">
+                                        Parts already on this Work Order cannot be selected again.
+                                    </p>
+                                </div>
+
+                                <div class="existing-parts-count">{existingPartCountLabel}</div>
+
+                            </div>
+
+                            <template if:true={hasExistingParts}>
+
+                                <div class="parts-table-wrap existing-parts-table-wrap">
+
+                                    <table class="parts-table">
+
+                                        <thead>
+                                            <tr>
+                                                <th>WOP</th>
+                                                <th>Part</th>
+                                                <th>Qty</th>
+                                                <th>Status</th>
+                                                <th>Source</th>
+                                            </tr>
+                                        </thead>
+
+                                        <tbody>
+
+                                            <template for:each={existingPartsView} for:item="part">
+
+                                                <tr key={part.workOrderPartId}>
+
+                                                    <td>
+                                                        <span class="part-number">{part.workOrderPartNumber}</span>
+                                                    </td>
+
+                                                    <td>
+                                                        <div class="part-name-cell">
+                                                            <div class="part-icon">
+                                                                <lightning-icon icon-name="standard:product_item" size="xx-small"></lightning-icon>
+                                                            </div>
+
+                                                            <strong>{part.partName}</strong>
+                                                        </div>
+                                                    </td>
+
+                                                    <td>{part.quantity}</td>
+
+                                                    <td>
+                                                        <span class={part.statusClass}>{part.status}</span>
+                                                    </td>
+
+                                                    <td>
+                                                        <span class={part.sourceClass}>{part.sourceLabel}</span>
+                                                    </td>
+
+                                                </tr>
+
+                                            </template>
+
+                                        </tbody>
+
+                                    </table>
+
+                                </div>
+
+                            </template>
+
+                            <template if:false={hasExistingParts}>
+
+                                <div class="empty-selected-parts">
+                                    <lightning-icon icon-name="utility:info_alt" size="small"></lightning-icon>
+
+                                    <div>
+                                        <strong>No existing parts</strong>
+                                        <p>No Work Order Parts have been created for this service issue yet.</p>
+                                    </div>
+                                </div>
+
+                            </template>
+
+                        </section>
+
+                        <!-- CATALOG -->
+
+                        <section class="content-card parts-catalog-card">
+
+                            <div class="parts-catalog-header">
+
+                                <div>
+                                    <p class="section-kicker parts-kicker">Additional Follow-Up Parts</p>
+                                    <h3>Part Catalog</h3>
+
+                                    <p class="field-helper">
+                                        Showing active compatible parts for {manufacturer} machines.
+                                    </p>
+                                </div>
+
+                                <div class="parts-search-wrap">
+                                    <lightning-icon icon-name="utility:search" size="xx-small"></lightning-icon>
+
+                                    <input
+                                        type="search"
+                                        class="parts-search-input"
+                                        placeholder="Search parts..."
+                                        value={partSearchTerm}
+                                        oninput={handlePartSearchChange}>
+                                </div>
+
+                            </div>
+
+                            <template if:true={isLoadingParts}>
+                                <div class="parts-loading-state">
+                                    <lightning-spinner alternative-text="Loading compatible parts" size="small"></lightning-spinner>
+                                </div>
+                            </template>
+
+                            <template if:true={partsErrorMessage}>
+                                <div class="parts-inline-error">
+                                    <lightning-icon icon-name="utility:error" size="xx-small"></lightning-icon>
+                                    <span>{partsErrorMessage}</span>
+                                </div>
+                            </template>
+
+                            <template if:false={isLoadingParts}>
+
+                                <template if:true={hasCatalogParts}>
+
+                                    <div class="parts-table-wrap">
+
+                                        <table class="parts-table">
+
+                                            <thead>
+                                                <tr>
+                                                    <th class="parts-select-column">
+                                                        <span class="slds-assistive-text">Select</span>
+                                                    </th>
+                                                    <th>Part</th>
+                                                    <th>Part Number</th>
+                                                    <th>Category</th>
+                                                    <th>Compatible Model</th>
+                                                </tr>
+                                            </thead>
+
+                                            <tbody>
+
+                                                <template for:each={visibleCatalogParts} for:item="part">
+
+                                                    <tr key={part.id} class={part.rowClass}>
+
+                                                        <td class="parts-select-column">
+                                                            <input
+                                                                type="checkbox"
+                                                                class="part-checkbox"
+                                                                data-id={part.id}
+                                                                checked={part.selected}
+                                                                disabled={part.alreadyRequested}
+                                                                onchange={handlePartSelection}
+                                                                aria-label={part.name}>
+                                                        </td>
+
+                                                        <td>
+                                                            <div class="part-name-cell">
+                                                                <div class="part-icon">
+                                                                    <lightning-icon icon-name="standard:product_item" size="xx-small"></lightning-icon>
+                                                                </div>
+
+                                                                <div>
+                                                                    <strong>{part.name}</strong>
+
+                                                                    <template if:true={part.alreadyRequested}>
+                                                                        <div class="already-on-work-order-text">
+                                                                            Already on Work Order
+                                                                        </div>
+                                                                    </template>
+                                                                </div>
+                                                            </div>
+                                                        </td>
+
+                                                        <td>
+                                                            <span class="part-number">{part.partNumber}</span>
+                                                        </td>
+
+                                                        <td>{part.category}</td>
+                                                        <td>{part.compatibleModel}</td>
+
+                                                    </tr>
+
+                                                </template>
+
+                                            </tbody>
+
+                                        </table>
+
+                                    </div>
+
+                                    <div class="parts-pagination-row">
+
+                                        <div class="parts-pagination-summary">
+                                            {catalogDisplayCountLabel}
+                                        </div>
+
+                                        <div class="parts-pagination-actions">
+
+                                            <template if:true={canShowLessCatalogParts}>
+                                                <button
+                                                    type="button"
+                                                    class="parts-pagination-button"
+                                                    onclick={handleShowLessCatalogParts}>
+
+                                                    <lightning-icon icon-name="utility:chevronup" size="xx-small"></lightning-icon>
+                                                    Show Less
+
+                                                </button>
+                                            </template>
+
+                                            <template if:true={hasMoreCatalogParts}>
+                                                <button
+                                                    type="button"
+                                                    class="parts-pagination-button parts-pagination-button-primary"
+                                                    onclick={handleShowMoreCatalogParts}>
+
+                                                    Show More
+                                                    <lightning-icon icon-name="utility:chevrondown" size="xx-small"></lightning-icon>
+
+                                                </button>
+                                            </template>
+
+                                        </div>
+
+                                    </div>
+
+                                </template>
+
+                                <template if:false={hasCatalogParts}>
+
+                                    <div class="empty-parts-state">
+                                        <lightning-icon icon-name="utility:search" size="small"></lightning-icon>
+
+                                        <div>
+                                            <strong>No matching catalog parts</strong>
+                                            <p>Try a different search term or verify the machine manufacturer and model.</p>
+                                        </div>
+                                    </div>
+
+                                </template>
+
+                            </template>
+
+                        </section>
+
+                        <!-- SELECTED NEW PARTS -->
+
+                        <section class="content-card selected-parts-card">
+
+                            <div class="card-header">
+
+                                <div>
+                                    <p class="section-kicker selected-parts-kicker">New Follow-Up Request</p>
+                                    <h3>Additional Parts</h3>
+
+                                    <p class="field-helper">
+                                        These are new part requests that will be created only after approval.
+                                    </p>
+                                </div>
+
+                                <div class="part-count-badge">{selectedPartCountLabel}</div>
+
+                            </div>
+
+                            <template if:true={hasSelectedParts}>
+
+                                <div class="selected-parts-list">
+
+                                    <template for:each={selectedParts} for:item="part">
+
+                                        <article key={part.id} class="selected-part-row">
+
+                                            <div class="selected-part-main">
+
+                                                <div class="selected-part-icon">
+                                                    <lightning-icon icon-name="standard:product_item" size="small"></lightning-icon>
+                                                </div>
+
+                                                <div>
+                                                    <strong>{part.name}</strong>
+
+                                                    <div class="selected-part-meta">
+                                                        <span>{part.partNumber}</span>
+                                                        <span class="meta-dot">•</span>
+                                                        <span>{part.category}</span>
+                                                    </div>
+                                                </div>
+
+                                            </div>
+
+                                            <div class="selected-part-actions">
+
+                                                <label class="quantity-field">
+                                                    <span>Quantity</span>
+
+                                                    <input
+                                                        type="number"
+                                                        min="1"
+                                                        step="1"
+                                                        value={part.quantity}
+                                                        data-id={part.id}
+                                                        onchange={handlePartQuantityChange}>
+                                                </label>
+
+                                                <button
+                                                    type="button"
+                                                    class="remove-part-button"
+                                                    data-id={part.id}
+                                                    title="Remove part"
+                                                    onclick={handleRemovePart}>
+
+                                                    <lightning-icon icon-name="utility:close" size="xx-small"></lightning-icon>
+
+                                                </button>
+
+                                            </div>
+
+                                        </article>
+
+                                    </template>
+
+                                </div>
+
+                            </template>
+
+                            <template if:false={hasSelectedParts}>
+
+                                <div class="empty-selected-parts">
+                                    <lightning-icon icon-name="utility:info_alt" size="small"></lightning-icon>
+
+                                    <div>
+                                        <strong>No additional parts selected</strong>
+                                        <p>You can continue without creating any new part requests.</p>
+                                    </div>
+                                </div>
+
+                            </template>
+
+                        </section>
+
+                    </main>
+
+                    <footer class="wizard-footer">
+
+                        <button type="button" class="secondary-button" onclick={handleBack}>
+                            <lightning-icon icon-name="utility:chevronleft" size="xx-small"></lightning-icon>
+                            Back
+                        </button>
+
+                        <button type="button" class="primary-button" onclick={handleContinueToApproval}>
+                            Continue to Confirmation
+                            <lightning-icon icon-name="utility:chevronright" size="xx-small"></lightning-icon>
+                        </button>
+
+                    </footer>
+
+                </template>
+
+                <!-- =====================================================
+                     STEP 4 - CONFIRMATION
+                     ===================================================== -->
+
+                <template if:true={isStepFour}>
+
+                    <main class="wizard-content">
+
+                        <div class="step-heading">
+                            <p class="eyebrow">Step 4 of 4</p>
+                            <h2>Follow-Up Confirmation</h2>
+
+                            <p>
+                                Confirm the previous visit handoff and the plan for the next technician.
+                            </p>
+                        </div>
+
+                        <!-- PREVIOUS VISIT -->
+
+                        <section class="content-card approval-visit-card approval-flow-card">
+
+                            <div class="approval-flow-title-row">
+
+                                <div class="approval-step-number approval-step-number-visit">1</div>
+
+                                <div class="approval-card-heading approval-flow-heading">
+
+                                    <div class="approval-card-icon approval-visit-icon">
+                                        <lightning-icon icon-name="utility:history" size="small"></lightning-icon>
+                                    </div>
+
+                                    <div>
+                                        <p class="section-kicker approval-visit-kicker">Previous Visit</p>
+                                        <h3>Technician Handoff</h3>
+
+                                        <p class="field-helper">
+                                            What happened during the service visit that created this follow-up.
+                                        </p>
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                            <div class="approval-visit-meta">
+                                <span>{technicianName}</span>
+
+                                <span class="meta-dot">•</span>
+
+                                <lightning-formatted-date-time
+                                    value={maintenanceDate}
+                                    year="numeric"
+                                    month="short"
+                                    day="2-digit">
+                                </lightning-formatted-date-time>
+
+                                <span class="meta-dot">•</span>
+                                <span>{laborHours} hrs</span>
+
+                                <span class="meta-dot">•</span>
+                                <span>{maintenanceType}</span>
+                            </div>
+
+                            <div class="approval-visit-summary">
+                                <span class="approval-summary-label">Technician Summary</span>
+                                <p>{visitSummary}</p>
+                            </div>
+
+                        </section>
+
+                        <div class="approval-flow-connector" aria-hidden="true">
+                            <div class="approval-flow-arrow">
+                                <lightning-icon icon-name="utility:down" size="xx-small"></lightning-icon>
+                            </div>
+                        </div>
+
+                        <!-- NEW PLAN -->
+
+                        <section class="content-card approval-repair-card approval-flow-card">
+
+                            <div class="approval-flow-title-row">
+
+                                <div class="approval-step-number approval-step-number-repair">2</div>
+
+                                <div class="approval-card-heading approval-flow-heading">
+
+                                    <div class="approval-card-icon repair-plan-icon">
+                                        <lightning-icon
+                                            icon-name="utility:check"
+                                            size="small"
+                                            class="repair-plan-lightning-icon">
+                                        </lightning-icon>
+                                    </div>
+
+                                    <div>
+                                        <p class="section-kicker approval-repair-kicker">Next Visit</p>
+                                        <h3>Follow-Up Repair Plan</h3>
+
+                                        <p class="field-helper">
+                                            This becomes the technician-facing direction for the next visit.
+                                        </p>
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                            <div class="approval-summary-grid">
+
+                                <div class="approval-summary-item approval-summary-wide">
+                                    <span class="approval-summary-label">Recommended Fix Summary</span>
+                                    <p>{recommendedFixSummary}</p>
+                                </div>
+
+                                <div class="approval-summary-item approval-tools-summary">
+
+                                    <div class="approval-summary-row">
+                                        <span class="approval-summary-label">Tools to Bring</span>
+                                        <span class="approval-count-badge">{approvalToolCountLabel}</span>
+                                    </div>
+
+                                    <template if:true={hasRecommendedTools}>
+
+                                        <div class="approval-tool-list">
+
+                                            <template for:each={recommendedTools} for:item="tool">
+                                                <span key={tool.id} class="approval-tool-chip">
+                                                    <lightning-icon icon-name="utility:setup" size="xx-small"></lightning-icon>
+                                                    {tool.name}
+                                                </span>
+                                            </template>
+
+                                        </div>
+
+                                    </template>
+
+                                    <template if:false={hasRecommendedTools}>
+                                        <p class="approval-empty-copy">No tools were identified for the follow-up visit.</p>
+                                    </template>
+
+                                </div>
+
+                            </div>
+
+                        </section>
+
+                        <div class="approval-flow-connector" aria-hidden="true">
+                            <div class="approval-flow-arrow">
+                                <lightning-icon icon-name="utility:down" size="xx-small"></lightning-icon>
+                            </div>
+                        </div>
+
+                        <!-- NEW PARTS -->
+
+                        <section class="content-card approval-parts-card approval-flow-card">
+
+                            <div class="approval-flow-title-row approval-card-heading-row">
+
+                                <div class="approval-heading-main">
+
+                                    <div class="approval-step-number approval-step-number-parts">3</div>
+
+                                    <div class="approval-card-icon approval-parts-icon">
+                                        <lightning-icon icon-name="standard:product_item" size="small"></lightning-icon>
+                                    </div>
+
+                                    <div>
+                                        <p class="section-kicker approval-parts-kicker">Additional Parts</p>
+                                        <h3>New Part Requests</h3>
+
+                                        <p class="field-helper">
+                                            Existing Work Order Parts remain unchanged. Only these selections will create new requests.
+                                        </p>
+                                    </div>
+
+                                </div>
+
+                                <div class="approval-count-badge approval-part-count">
+                                    {approvalPartCountLabel}
+                                </div>
+
+                            </div>
+
+                            <template if:true={hasSelectedParts}>
+
+                                <div class="approval-parts-list">
+
+                                    <template for:each={selectedParts} for:item="part">
+
+                                        <div key={part.id} class="approval-part-row">
+
+                                            <div class="approval-part-main">
+
+                                                <div class="approval-part-icon">
+                                                    <lightning-icon icon-name="standard:product_item" size="xx-small"></lightning-icon>
+                                                </div>
+
+                                                <div>
+                                                    <strong>{part.name}</strong>
+
+                                                    <div class="approval-part-meta">
+                                                        <span>{part.partNumber}</span>
+                                                        <span class="meta-dot">•</span>
+                                                        <span>{part.category}</span>
+                                                    </div>
+                                                </div>
+
+                                            </div>
+
+                                            <div class="approval-quantity">
+                                                <span>Qty</span>
+                                                <strong>{part.quantity}</strong>
+                                            </div>
+
+                                        </div>
+
+                                    </template>
+
+                                </div>
+
+                            </template>
+
+                            <template if:false={hasSelectedParts}>
+
+                                <div class="approval-empty-parts">
+
+                                    <div class="approval-empty-parts-icon">
+                                        <lightning-icon icon-name="utility:info_alt" size="xx-small"></lightning-icon>
+                                    </div>
+
+                                    <div>
+                                        <strong>No additional parts required</strong>
+                                        <p>No new Work Order Part records will be created.</p>
+                                    </div>
+
+                                </div>
+
+                            </template>
+
+                        </section>
+
+                        <div class="approval-flow-connector" aria-hidden="true">
+                            <div class="approval-flow-arrow">
+                                <lightning-icon icon-name="utility:down" size="xx-small"></lightning-icon>
+                            </div>
+                        </div>
+
+                        <!-- NEXT STEP -->
+
+                        <section class="content-card approval-dispatch-card approval-flow-card">
+
+                            <div class="approval-flow-title-row">
+
+                                <div class="approval-step-number approval-step-number-next">4</div>
+
+                                <div class="approval-card-icon dispatch-icon">
+                                    <lightning-icon icon-name="utility:forward" size="small"></lightning-icon>
+                                </div>
+
+                                <div class="approval-dispatch-copy">
+
+                                    <p class="section-kicker dispatch-kicker">Next Workflow Stage</p>
+
+                                    <template if:true={hasSelectedParts}>
+                                        <h3>Order Follow-Up Parts</h3>
+                                    </template>
+
+                                    <template if:false={hasSelectedParts}>
+                                        <h3>Assign the Follow-Up Visit</h3>
+                                    </template>
+
+                                    <div class={approvalDispatchClass}>
+                                        {approvalDispatchStatus}
+                                    </div>
+
+                                    <p>{approvalDispatchDescription}</p>
+
+                                </div>
+
+                            </div>
+
+                        </section>
+
+                        <template if:true={approvalErrorMessage}>
+
+                            <div class="parts-inline-error approval-error" role="alert">
+                                <lightning-icon icon-name="utility:error" size="xx-small"></lightning-icon>
+                                <span>{approvalErrorMessage}</span>
+                            </div>
+
+                        </template>
+
+                        <div class="approval-notice">
+                            <lightning-icon icon-name="utility:info" size="xx-small"></lightning-icon>
+
+                            <span>
+                                Approval replaces the live Work Order Recommended Fix and Tools with this
+                                new follow-up plan. The previous visit remains preserved on its Maintenance Log.
+                            </span>
+                        </div>
+
+                    </main>
+
+                    <footer class="wizard-footer approval-footer">
+
+                        <button
+                            type="button"
+                            class="secondary-button"
+                            onclick={handleCancel}
+                            disabled={isApproving}>
+                            Cancel
+                        </button>
+
+                        <div class="approval-footer-actions">
+
+                            <button
+                                type="button"
+                                class="secondary-button"
+                                onclick={handleBack}
+                                disabled={isApproving}>
+
+                                <lightning-icon icon-name="utility:chevronleft" size="xx-small"></lightning-icon>
+                                Back
+
+                            </button>
+
+                            <button
+                                type="button"
+                                class="approve-work-order-button"
+                                onclick={handleApproveFollowUp}
+                                disabled={isApproveDisabled}>
+
+                                <template if:false={isApproving}>
+                                    <lightning-icon icon-name="utility:success" size="xx-small"></lightning-icon>
+                                    Approve Follow-Up Plan
+                                </template>
+
+                                <template if:true={isApproving}>
+                                    <lightning-icon
+                                        icon-name="utility:refresh"
+                                        size="xx-small"
+                                        class="regenerate-icon regenerate-icon-spinning">
+                                    </lightning-icon>
+
+                                    Approving...
+                                </template>
+
+                            </button>
+
+                        </div>
+
+                    </footer>
+
+                </template>
+
+            </template>
+
+        </template>
+
+        <!-- APPROVAL PROCESSING OVERLAY -->
+
+        <template if:true={isApproving}>
+
+            <div class="regeneration-processing-overlay" role="status" aria-live="polite">
+
+                <div class="regeneration-processing-card">
+
+                    <div class="regeneration-spinner-wrap">
+                        <lightning-spinner alternative-text="Approving follow-up plan" size="medium"></lightning-spinner>
+                    </div>
+
+                    <h2>Approving Follow-Up Plan</h2>
+
+                    <p>
+                        Saving the next repair plan and creating any additional part requests.
+                    </p>
+
+                    <span class="regeneration-processing-note">
+                        The previous visit record will remain unchanged.
+                    </span>
+
+                </div>
+
+            </div>
+
+        </template>
+
+    </div>
+
+</template>

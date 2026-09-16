@@ -1,0 +1,135 @@
+<template>
+    <div class="context-shell">
+
+        <!-- WORK ORDER -->
+        <section class="manager-card work-order-card">
+
+            <div class="card-header work-order-header">
+                <div class="header-main">
+                    <span class="header-icon"><lightning-icon icon-name="standard:work_order" size="small"></lightning-icon></span>
+
+                    <div>
+                        <p class="eyebrow">SERVICE COORDINATION</p>
+                        <h2>Work Order Overview</h2>
+                    </div>
+                </div>
+
+                <template if:true={hasWorkOrder}>
+                    <button class="open-button" onclick={handleWorkOrderOpen}>Open</button>
+                </template>
+            </div>
+
+            <template if:true={hasWorkOrder}>
+                <div class="card-body">
+
+                    <div class="record-heading">
+                        <div>
+                            <span class="field-label">WORK ORDER</span>
+                            <strong class="record-title">{workOrderNumber}</strong>
+                        </div>
+
+                        <template if:true={dispatchStatus}><span class={workOrderStatusClass}>{dispatchStatus}</span></template>
+                    </div>
+
+                    <template if:true={workOrderSubject}>
+                        <div class="subject-block">
+                            <span class="field-label">SUBJECT</span>
+                            <p>{workOrderSubject}</p>
+                        </div>
+                    </template>
+
+                    <template if:true={problemSummary}>
+                        <div class="problem-block">
+                            <span class="field-label">PROBLEM SUMMARY</span>
+                            <p>{problemSummary}</p>
+                        </div>
+                    </template>
+
+                    <div class="detail-grid">
+
+                        <div class="detail-item">
+                            <span class="field-label">TECHNICIAN</span>
+                            <strong>{technicianName}</strong>
+                        </div>
+
+                        <div class="detail-item">
+                            <span class="field-label">SCHEDULED VISIT</span>
+                            <strong>{scheduledVisitLabel}</strong>
+                        </div>
+
+                        <div class="detail-item">
+                            <span class="field-label">CUMULATIVE LABOR</span>
+                            <strong>{workOrderLaborLabel}</strong>
+                        </div>
+
+                    </div>
+
+                </div>
+            </template>
+
+            <template if:false={hasWorkOrder}>
+                <div class="empty-state">Work Order information is unavailable.</div>
+            </template>
+
+        </section>
+
+        <!-- MACHINE -->
+        <section class="manager-card machine-card">
+
+            <div class="card-header machine-header">
+                <div class="header-main">
+                    <span class="header-icon"><lightning-icon icon-name="standard:asset_object" size="small"></lightning-icon></span>
+
+                    <div>
+                        <p class="eyebrow">MACHINE CONTEXT</p>
+                        <h2>Machine Overview</h2>
+                    </div>
+                </div>
+
+                <template if:true={hasAsset}>
+                    <button class="open-button" onclick={handleAssetOpen}>Open</button>
+                </template>
+            </div>
+
+            <template if:true={hasAsset}>
+                <div class="card-body">
+
+                    <div class="record-heading">
+                        <div>
+                            <span class="field-label">MACHINE</span>
+                            <strong class="record-title">{assetName}</strong>
+                        </div>
+
+                        <template if:true={machineStatus}><span class={machineStatusClass}>{machineStatus}</span></template>
+                    </div>
+
+                    <div class="detail-grid machine-grid">
+
+                        <div class="detail-item">
+                            <span class="field-label">SERIAL NUMBER</span>
+                            <strong>{serialNumber}</strong>
+                        </div>
+
+                        <div class="detail-item">
+                            <span class="field-label">MANUFACTURER</span>
+                            <strong>{manufacturer}</strong>
+                        </div>
+
+                        <div class="detail-item">
+                            <span class="field-label">MODEL</span>
+                            <strong>{model}</strong>
+                        </div>
+
+                    </div>
+
+                </div>
+            </template>
+
+            <template if:false={hasAsset}>
+                <div class="empty-state">Machine information is unavailable.</div>
+            </template>
+
+        </section>
+
+    </div>
+</template>

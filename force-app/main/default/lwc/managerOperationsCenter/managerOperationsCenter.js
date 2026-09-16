@@ -50,9 +50,11 @@ const PORTAL_TABLE_CONFIG = {
     ],
 
     partsToOrder: [
+        { key: 'workOrder', label: 'Work Order', type: 'workOrderGroup', fieldName: 'displayWorkOrderNumber', sortField: 'displayWorkOrderNumber', sortable: true },
         { key: 'type', label: 'Type', type: 'partSource', fieldName: 'displayTypeLabel', sortField: 'displayTypeLabel', sortable: true },
-        { key: 'record', label: 'Record', type: 'record', fieldName: 'recordNumber', sortField: 'recordNumber', sortable: true },
-        { key: 'partSummary', label: 'Part / Summary', type: 'text', fieldName: 'displayPartSummary', sortField: 'displayPartSummary', sortable: true },
+        { key: 'wop', label: 'WOP', type: 'wop', fieldName: 'displayWopNumber', sortField: 'displayWopNumber', sortable: true },
+        { key: 'part', label: 'Part', type: 'text', fieldName: 'partName', sortField: 'partName', sortable: true },
+        { key: 'partSummary', label: 'Part Summary', type: 'text', fieldName: 'displayPartSummary', sortField: 'displayPartSummary', sortable: true },
         { key: 'account', label: 'Account', type: 'text', fieldName: 'accountName', sortField: 'accountName', sortable: true },
         { key: 'machine', label: 'Machine', type: 'text', fieldName: 'assetName', sortField: 'assetName', sortable: true },
         { key: 'notes', label: 'Request Notes', type: 'text', fieldName: 'notes', sortField: 'notes', sortable: true },
@@ -107,13 +109,15 @@ const PORTAL_TABLE_CONFIG = {
 export default class ManagerOperationsCenter extends NavigationMixin(LightningElement) {
 
     selectedQueueKey = 'requiresReview'; operationsData; wiredOperationsResult; errorMessage; sortedBy;
-    sortDirection = 'asc'; waitingOnPartsGroupDirection = 'asc'; hoveredWorkOrderGroupKey;
+    sortDirection = 'asc'; workOrderGroupDirection = 'asc'; hoveredWorkOrderGroupKey;
 
     isLoading = true; isRefreshing = false;
 
     isFlowModalOpen = false; activeFlowApiName; activeFlowLabel; activeFlowRecordId;
 
     isReviewWizardOpen = false; activeReviewWorkOrderId; activeReviewWorkOrderNumber;
+
+    isFollowUpWizardOpen = false; activeFollowUpWorkOrderId;
 
     isOrderPartsWizardOpen = false; activeOrderPartsRecordId; activeOrderPartsMode = 'work-order';
 
@@ -163,7 +167,7 @@ export default class ManagerOperationsCenter extends NavigationMixin(LightningEl
     get newCasesCount() { return this.operationsData?.newCasesCount ?? 0; }
     get isNewCasesSelected() { return this.selectedQueueKey === 'newCases'; }
     get openCasesSummaryClass() { return this.isNewCasesSelected ? 'open-cases-summary open-cases-summary_selected' : 'open-cases-summary'; }
-    get isWaitingOnPartsQueue() { return this.selectedQueueKey === 'waitingOnParts'; }
+    get isWorkOrderGroupedQueue() { return this.selectedQueueKey === 'waitingOnParts' || this.selectedQueueKey === 'partsToOrder'; }
 
     // =========================================================
     // Portal-Style Table
@@ -173,10 +177,10 @@ export default class ManagerOperationsCenter extends NavigationMixin(LightningEl
         const columns = PORTAL_TABLE_CONFIG[this.selectedQueueKey] || [];
 
         return columns.map(column => {
-            const isPrimaryWorkOrderGroup = this.isWaitingOnPartsQueue && column.type === 'workOrderGroup';
+            const isPrimaryWorkOrderGroup = this.isWorkOrderGroupedQueue && column.type === 'workOrderGroup';
             const isSorted = Boolean(column.sortable && this.sortedBy === column.sortField);
             const showSortIcon = isPrimaryWorkOrderGroup || isSorted;
-            const sortDirection = isPrimaryWorkOrderGroup ? this.waitingOnPartsGroupDirection : this.sortDirection;
+            const sortDirection = isPrimaryWorkOrderGroup ? this.workOrderGroupDirection : this.sortDirection;
 
             return {
                 ...column,
@@ -193,7 +197,7 @@ export default class ManagerOperationsCenter extends NavigationMixin(LightningEl
         const rows = this.operationsData?.[this.selectedQueueKey] ?? [];
         const normalizedRows = rows.map(row => this.normalizeRow(row));
 
-        if (this.isWaitingOnPartsQueue) return this.prepareWaitingOnPartsRows(normalizedRows);
+        if (this.isWorkOrderGroupedQueue) return this.prepareWorkOrderGroupedRows(normalizedRows);
 
         const sortedRows = this.sortedBy ? this.sortRows(normalizedRows, this.sortedBy, this.sortDirection) : normalizedRows;
         return sortedRows.map(row => ({ ...row, rowClass: 'portal-table-row' }));
@@ -204,16 +208,13 @@ export default class ManagerOperationsCenter extends NavigationMixin(LightningEl
         return this.selectedRows.map(row => ({ ...row, cells: columns.map(column => this.buildPortalCell(row, column)) }));
     }
 
-    prepareWaitingOnPartsRows(rows) {
-        const groupDirection = this.waitingOnPartsGroupDirection === 'desc' ? -1 : 1;
-        const secondaryField = this.sortedBy && this.sortedBy !== 'relatedRecordNumber' ? this.sortedBy : 'partName';
-        const secondaryDirection = this.sortedBy && this.sortedBy !== 'relatedRecordNumber' ? this.sortDirection : 'asc';
+    prepareWorkOrderGroupedRows(rows) {
+        const groupDirection = this.workOrderGroupDirection === 'desc' ? -1 : 1;
+        const secondaryField = this.sortedBy && this.sortedBy !== 'displayWorkOrderNumber' ? this.sortedBy : 'partName';
+        const secondaryDirection = this.sortedBy && this.sortedBy !== 'displayWorkOrderNumber' ? this.sortDirection : 'asc';
 
         const sortedRows = [...rows].sort((a, b) => {
-            const aWorkOrder = a.relatedRecordNumber || a.workOrderId || '';
-            const bWorkOrder = b.relatedRecordNumber || b.workOrderId || '';
-            const workOrderCompare = this.compareStrings(aWorkOrder, bWorkOrder);
-
+            const workOrderCompare = this.compareStrings(a.displayWorkOrderNumber || '', b.displayWorkOrderNumber || '');
             if (workOrderCompare !== 0) return workOrderCompare * groupDirection;
             return this.compareRowsByField(a, b, secondaryField, secondaryDirection);
         });
@@ -221,14 +222,14 @@ export default class ManagerOperationsCenter extends NavigationMixin(LightningEl
         const groupCounts = new Map();
 
         sortedRows.forEach(row => {
-            const groupKey = row.workOrderId || row.relatedRecordNumber || '';
+            const groupKey = row.workOrderId || row.displayWorkOrderNumber || '';
             groupCounts.set(groupKey, (groupCounts.get(groupKey) || 0) + 1);
         });
 
         return sortedRows.map((row, index) => {
-            const groupKey = row.workOrderId || row.relatedRecordNumber || '';
+            const groupKey = row.workOrderId || row.displayWorkOrderNumber || '';
             const previousRow = sortedRows[index - 1];
-            const previousGroupKey = previousRow ? previousRow.workOrderId || previousRow.relatedRecordNumber || '' : undefined;
+            const previousGroupKey = previousRow ? previousRow.workOrderId || previousRow.displayWorkOrderNumber || '' : undefined;
             const showWorkOrderGroupCell = index === 0 || groupKey !== previousGroupKey;
 
             return {
@@ -242,8 +243,11 @@ export default class ManagerOperationsCenter extends NavigationMixin(LightningEl
     }
 
     buildPortalCell(row, column) {
-        const rawValue = column.fieldName ? row[column.fieldName] : undefined, value = this.isBlankValue(rawValue) ? '—' : rawValue;
-        const key = `${row.recordId}-${column.key}`, isWorkOrderGroup = column.type === 'workOrderGroup';
+        const rawValue = column.fieldName ? row[column.fieldName] : undefined;
+        const value = this.isBlankValue(rawValue) ? '—' : rawValue;
+        const key = `${row.recordId}-${column.key}`;
+        const isWorkOrderGroup = column.type === 'workOrderGroup';
+        const isWop = column.type === 'wop';
         const renderCell = !isWorkOrderGroup || row.showWorkOrderGroupCell;
         const isHoveredWorkOrderGroup = isWorkOrderGroup && row.workOrderGroupKey && row.workOrderGroupKey === this.hoveredWorkOrderGroupKey;
 
@@ -256,14 +260,18 @@ export default class ManagerOperationsCenter extends NavigationMixin(LightningEl
             isDate: column.type === 'date' && !this.isBlankValue(rawValue),
             isBlankDate: column.type === 'date' && this.isBlankValue(rawValue),
             isRecord: column.type === 'record',
+            isWop,
             isWorkOrder: column.type === 'workOrder' || isWorkOrderGroup,
             isPartSource: column.type === 'partSource',
             isAction: column.type === 'action',
             sourceBadgeClass: row.partSourceBadgeClass,
-            recordId: row.recordId,
-            recordDisabled: row.recordNavigationDisabled,
+
+            recordId: isWop ? row.wopRecordId : row.recordId,
+            recordDisabled: isWop ? row.wopNavigationDisabled : row.recordNavigationDisabled,
+
             workOrderId: row.workOrderId,
             workOrderDisabled: row.workOrderNavigationDisabled,
+
             actionLabel: row.actionLabel,
             actionDisabled: row.actionDisabled
         };
@@ -311,19 +319,17 @@ export default class ManagerOperationsCenter extends NavigationMixin(LightningEl
 
     handlePortalSort(event) {
         const fieldName = event.currentTarget.dataset.field;
-
         if (!fieldName) return;
 
-        if (this.isWaitingOnPartsQueue && fieldName === 'relatedRecordNumber') {
-            this.waitingOnPartsGroupDirection = this.waitingOnPartsGroupDirection === 'asc' ? 'desc' : 'asc';
-            this.sortedBy = 'relatedRecordNumber';
-            this.sortDirection = this.waitingOnPartsGroupDirection;
+        if (this.isWorkOrderGroupedQueue && fieldName === 'displayWorkOrderNumber') {
+            this.workOrderGroupDirection = this.workOrderGroupDirection === 'asc' ? 'desc' : 'asc';
+            this.sortedBy = 'displayWorkOrderNumber';
+            this.sortDirection = this.workOrderGroupDirection;
             return;
         }
 
-        if (this.sortedBy === fieldName) {
-            this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
-        } else {
+        if (this.sortedBy === fieldName) this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+        else {
             this.sortedBy = fieldName;
             this.sortDirection = 'asc';
         }
@@ -363,11 +369,13 @@ export default class ManagerOperationsCenter extends NavigationMixin(LightningEl
         const isWorkOrderPart = row.objectApiName === 'Work_Order_Part__c';
         const isPreDispatchWorkOrder = row.rowType === 'WORK_ORDER' && row.status === 'Parts to Order';
         const isTechnicianRequest = row.rowType === 'TECHNICIAN_REQUESTED_PART' || Boolean(row.technicianRequested);
-        const displaySubject = row.subject || row.workOrderSubject || row.partName || 'No summary provided';
 
-        let displayPartSummary = displaySubject;
-        if (isWorkOrderPart) displayPartSummary = row.partName || row.recordNumber || 'Part request';
-        else if (isPreDispatchWorkOrder) displayPartSummary = row.subject || 'Pre-dispatch parts required';
+        const displaySubject = row.subject || row.workOrderSubject || row.partName || 'No summary provided';
+        const displayWorkOrderNumber = isPreDispatchWorkOrder ? (row.recordNumber || '—') : (row.relatedRecordNumber || '—');
+        const displayWopNumber = isWorkOrderPart ? (row.recordNumber || '—') : '—';
+
+        let displayPartSummary = row.partSummary || row.workOrderSubject || row.subject || '—';
+        if (isPreDispatchWorkOrder) displayPartSummary = row.subject || 'Pre-dispatch parts required';
 
         let displayTypeLabel = row.recordTypeLabel || 'Record';
         let partSourceBadgeClass = 'part-source-badge part-source-badge_required';
@@ -382,17 +390,27 @@ export default class ManagerOperationsCenter extends NavigationMixin(LightningEl
             displayTypeLabel = row.partSourceLabel || 'Required Part';
         }
 
+        const workOrderId = row.workOrderId || (isPreDispatchWorkOrder ? row.recordId : null);
         const hasPrimaryAction = Boolean(row.actionType && row.actionName);
 
         return {
             ...row,
-            displaySubject, displayPartSummary, displayTypeLabel, partSourceBadgeClass,
+            displaySubject,
+            displayPartSummary,
+            displayWorkOrderNumber,
+            displayWopNumber,
+            displayTypeLabel,
+            partSourceBadgeClass,
+
+            workOrderId,
+            wopRecordId: isWorkOrderPart ? row.recordId : null,
+
             recordTypeLabel: row.recordTypeLabel || 'Record',
             recordNumber: row.recordNumber || 'Open',
             relatedRecordNumber: row.relatedRecordNumber || '—',
             accountName: row.accountName || '—',
             assetName: row.assetName || '—',
-            partName: row.partName || '—',
+            partName: isPreDispatchWorkOrder ? '—' : (row.partName || '—'),
             quantity: row.quantity ?? row.quantityNeeded ?? null,
             status: row.status || '—',
             priority: row.priority || '—',
@@ -402,9 +420,12 @@ export default class ManagerOperationsCenter extends NavigationMixin(LightningEl
             supplierName: row.supplierName || '—',
             supplierPhone: row.supplierPhone || '—',
             orderedByName: row.orderedByName || '—',
+
             actionLabel: row.actionLabel || 'Open Record',
             recordNavigationDisabled: !row.recordId || !row.objectApiName,
-            workOrderNavigationDisabled: !row.workOrderId,
+            wopNavigationDisabled: !isWorkOrderPart || !row.recordId,
+            workOrderNavigationDisabled: !workOrderId,
+
             actionDisabled:
                 !hasPrimaryAction ||
                 (row.actionType === 'FLOW' && (!row.flowApiName || !row.actionRecordId)) ||
@@ -432,10 +453,10 @@ export default class ManagerOperationsCenter extends NavigationMixin(LightningEl
     resetSelectedQueueSort() {
         this.hoveredWorkOrderGroupKey = undefined;
 
-        if (this.isWaitingOnPartsQueue) {
-            this.sortedBy = 'relatedRecordNumber';
+        if (this.isWorkOrderGroupedQueue) {
+            this.sortedBy = 'displayWorkOrderNumber';
             this.sortDirection = 'asc';
-            this.waitingOnPartsGroupDirection = 'asc';
+            this.workOrderGroupDirection = 'asc';
             return;
         }
 
@@ -465,6 +486,11 @@ export default class ManagerOperationsCenter extends NavigationMixin(LightningEl
 
     runPrimaryAction(row) {
         if (!row) return;
+
+        if (row.actionName === 'FOLLOW_UP_WORK_ORDER') {
+            this.openFollowUpWizard(row);
+            return;
+        }
 
         if (row.actionName === 'REVIEW_WORK_ORDER') {
             this.openReviewWizard(row);
@@ -548,6 +574,52 @@ export default class ManagerOperationsCenter extends NavigationMixin(LightningEl
         const detail = event.detail || {}, dispatchStatus = detail.dispatchStatus;
 
         this.closeReviewWizard();
+
+        if (dispatchStatus === 'Parts to Order') this.selectedQueueKey = 'partsToOrder';
+        else if (dispatchStatus === 'Ready_to_Assign' || dispatchStatus === 'Ready to Assign') this.selectedQueueKey = 'readyToAssign';
+
+        this.resetSelectedQueueSort();
+
+        if (!this.wiredOperationsResult) return;
+
+        try {
+            this.isRefreshing = true;
+            this.errorMessage = undefined;
+            await refreshApex(this.wiredOperationsResult);
+        } catch (error) {
+            this.errorMessage = this.normalizeError(error);
+            this.showToast('Refresh failed', this.errorMessage, 'error');
+        } finally {
+            this.isRefreshing = false;
+        }
+    }
+
+    // =========================================================
+    // Follow-Up Work Order Wizard
+    // =========================================================
+
+    openFollowUpWizard(row) {
+        const workOrderId = row?.workOrderId || row?.actionRecordId || row?.recordId;
+
+        if (!workOrderId) {
+            this.showToast('Unable to open follow-up', 'The Work Order ID is missing.', 'error');
+            return;
+        }
+
+        this.activeFollowUpWorkOrderId = workOrderId;
+        this.isFollowUpWizardOpen = true;
+    }
+
+    closeFollowUpWizard() {
+        this.isFollowUpWizardOpen = false; this.activeFollowUpWorkOrderId = undefined;
+    }
+
+    handleFollowUpWizardCancel() { this.closeFollowUpWizard(); }
+
+    async handleFollowUpApproved(event) {
+        const detail = event.detail || {}, dispatchStatus = detail.dispatchStatus;
+
+        this.closeFollowUpWizard();
 
         if (dispatchStatus === 'Parts to Order') this.selectedQueueKey = 'partsToOrder';
         else if (dispatchStatus === 'Ready_to_Assign' || dispatchStatus === 'Ready to Assign') this.selectedQueueKey = 'readyToAssign';
@@ -802,12 +874,12 @@ export default class ManagerOperationsCenter extends NavigationMixin(LightningEl
     }
 
     handlePortalRowMouseEnter(event) {
-        if (!this.isWaitingOnPartsQueue) return;
+        if (!this.isWorkOrderGroupedQueue) return;
         this.hoveredWorkOrderGroupKey = event.currentTarget.dataset.workOrderGroup || undefined;
     }
 
     handlePortalRowMouseLeave() {
-        if (this.isWaitingOnPartsQueue) this.hoveredWorkOrderGroupKey = undefined;
+        if (this.isWorkOrderGroupedQueue) this.hoveredWorkOrderGroupKey = undefined;
     }
 
     // =========================================================

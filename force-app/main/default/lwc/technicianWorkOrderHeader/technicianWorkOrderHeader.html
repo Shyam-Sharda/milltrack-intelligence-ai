@@ -1,0 +1,97 @@
+<template>
+    <template if:true={isLoading}>
+        <div class="loading-shell">
+            <lightning-spinner alternative-text="Loading Work Order" size="medium"></lightning-spinner>
+        </div>
+    </template>
+
+    <template if:true={hasRecord}>
+        <section class="hero">
+            <div class="hero-decoration hero-decoration-one"></div>
+            <div class="hero-decoration hero-decoration-two"></div>
+
+            <div class="hero-content">
+                <div class="hero-main">
+                    <div class="eyebrow">TECHNICIAN WORK ORDER</div>
+
+                    <div class="title-row">
+                        <h1>{workOrderNumber}</h1>
+                        <span class={dispatchStatusClass}>{dispatchStatusLabel}</span>
+                        <span class={priorityClass}>{priorityLabel}</span>
+                    </div>
+
+                    <div class="hero-meta">
+                        <span>{assetName}</span>
+                        <span class="dot">•</span>
+                        <span>{accountName}</span>
+                    </div>
+                </div>
+
+                <template if:true={hasActions}>
+                    <div class="action-area">
+                        <template if:true={showStartWork}>
+                            <button class="action-button" onclick={handleStartWork}>
+                                <lightning-icon
+                                    icon-name="utility:play"
+                                    size="xx-small"
+                                    class="action-icon">
+                                </lightning-icon>
+
+                                <span>Start Work</span>
+                            </button>
+                        </template>
+
+                        <template if:true={showActiveRepairActions}>
+                            <button class="action-button" onclick={handleRequestParts}>
+                                <lightning-icon
+                                    icon-name="utility:package"
+                                    size="xx-small"
+                                    class="action-icon">
+                                </lightning-icon>
+
+                                <span>Request Parts</span>
+                            </button>
+
+                            <button class="action-button" onclick={handleTemporaryFix}>
+                                <lightning-icon
+                                    icon-name="utility:settings"
+                                    size="xx-small"
+                                    class="action-icon">
+                                </lightning-icon>
+
+                                <span>Temporary Fix &amp; Follow-Up</span>
+                            </button>
+
+                            <button class="action-button" onclick={handleComplete}>
+                                <lightning-icon
+                                    icon-name="utility:check"
+                                    size="xx-small"
+                                    class="action-icon">
+                                </lightning-icon>
+
+                                <span>Complete Work Order</span>
+                            </button>
+                        </template>
+                    </div>
+                </template>
+            </div>
+
+            <div class="context-strip">
+                <div class="context-item">
+                    <span class="context-label">Subject</span>
+                    <strong>{subject}</strong>
+                </div>
+
+                <div class="context-item">
+                    <span class="context-label">Scheduled Visit</span>
+                    <strong>{scheduledVisit}</strong>
+                </div>
+
+                <div class="context-item">
+                    <span class="context-label">Assigned Technician</span>
+                    <strong>{technicianName}</strong>
+                </div>
+            </div>
+        </section>
+    </template>
+</template>

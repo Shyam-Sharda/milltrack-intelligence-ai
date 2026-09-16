@@ -1,0 +1,300 @@
+<template>
+
+    <template if:true={isLoading}>
+        <div class="loading-state">
+            <lightning-spinner alternative-text="Loading Part Catalog" size="medium"></lightning-spinner>
+            <p>Preparing part information...</p>
+        </div>
+    </template>
+
+    <template if:true={hasError}>
+        <div class="error-state">
+            <lightning-icon icon-name="utility:warning" size="small" variant="inverse"></lightning-icon>
+
+            <div>
+                <strong>Part Information Unavailable</strong>
+                <p>{errorMessage}</p>
+            </div>
+        </div>
+    </template>
+
+    <template if:true={partRecord.data}>
+        <div class="part-shell">
+
+            <!-- HERO -->
+            <section class="part-hero">
+
+                <div class="hero-main">
+                    <div class="hero-icon">
+                        <lightning-icon icon-name="utility:package" size="small" variant="inverse"></lightning-icon>
+                    </div>
+
+                    <div class="hero-copy">
+
+                        <div class="hero-meta-row">
+                            <span class="eyebrow">PART CATALOG</span>
+                            <span class="part-number-pill">{partNumber}</span>
+                            <span class={activeClass}>{activeLabel}</span>
+                            <span class={stockClass}>{stockStatus}</span>
+                        </div>
+
+                        <div class="hero-title-row">
+                            <h1>{partName}</h1>
+                        </div>
+
+                    </div>
+                </div>
+
+                <template if:true={enableManagerEditing}>
+                    <button class="hero-edit-button" onclick={handleEdit}>
+                        <lightning-icon icon-name="utility:edit" size="xx-small" variant="inverse"></lightning-icon>
+                        <span>Edit Part Details</span>
+                    </button>
+                </template>
+
+            </section>
+
+            <!-- QUICK DETAILS -->
+            <section class="detail-strip">
+
+                <div class="detail-item">
+                    <span class="field-label">PART CATEGORY</span>
+                    <strong>{partsCategory}</strong>
+                </div>
+
+                <div class="detail-item">
+                    <span class="field-label">COMPATIBLE MODEL</span>
+                    <strong>{compatibleModel}</strong>
+                </div>
+
+                <div class="detail-item">
+                    <span class="field-label">MANUFACTURER</span>
+                    <strong>{manufacturer}</strong>
+                </div>
+
+            </section>
+
+            <!-- PART INFORMATION -->
+            <section class="information-card">
+
+                <div class="section-heading">
+                    <div class="heading-icon">
+                        <lightning-icon icon-name="utility:info" size="x-small" variant="inverse"></lightning-icon>
+                    </div>
+
+                    <div>
+                        <h2>Part Information</h2>
+                        <p>Identification and machine compatibility for this catalog part.</p>
+                    </div>
+                </div>
+
+                <div class="info-grid">
+
+                    <div class="info-item">
+                        <span class="field-label">PART NAME</span>
+                        <strong>{partName}</strong>
+                    </div>
+
+                    <div class="info-item">
+                        <span class="field-label">PART NUMBER</span>
+                        <strong>{partNumber}</strong>
+                    </div>
+
+                    <div class="info-item">
+                        <span class="field-label">MANUFACTURER</span>
+                        <strong>{manufacturer}</strong>
+                    </div>
+
+                    <div class="info-item">
+                        <span class="field-label">COMPATIBLE MODEL</span>
+                        <strong>{compatibleModel}</strong>
+                    </div>
+
+                </div>
+
+            </section>
+
+            <!-- SUPPLIER -->
+            <section class="information-card">
+
+                <div class="section-heading">
+                    <div class="heading-icon supplier-icon">
+                        <lightning-icon icon-name="utility:cart" size="x-small" variant="inverse"></lightning-icon>
+                    </div>
+
+                    <div>
+                        <h2>Supplier &amp; Ordering</h2>
+                        <p>Supplier information and ordering details for this part.</p>
+                    </div>
+                </div>
+
+                <div class="info-grid">
+
+                    <div class="info-item">
+                        <span class="field-label">SUPPLIER</span>
+                        <strong>{supplierName}</strong>
+                    </div>
+
+                    <div class="info-item">
+                        <span class="field-label">PREFERRED SUPPLIER</span>
+                        <strong>{preferredSupplier}</strong>
+                    </div>
+
+                    <div class="info-item">
+                        <span class="field-label">SUPPLIER PHONE</span>
+                        <strong>{supplierPhone}</strong>
+                    </div>
+
+                    <div class="info-item">
+                        <span class="field-label">COST</span>
+                        <strong>{costLabel}</strong>
+                    </div>
+
+                </div>
+
+                <template if:true={hasOrderUrl}>
+                    <div class="order-action">
+                        <button class="order-button" onclick={handleOrder}>
+                            <lightning-icon icon-name="utility:new_window" size="xx-small" variant="inverse"></lightning-icon>
+                            <span>Open Order Page</span>
+                        </button>
+                    </div>
+                </template>
+
+            </section>
+
+            <!-- NOTES -->
+            <template if:true={hasNotes}>
+                <section class="text-card">
+                    <span class="field-label">NOTES</span>
+                    <p>{notes}</p>
+                </section>
+            </template>
+
+            <template if:true={hasKeywords}>
+                <section class="text-card keyword-card">
+                    <span class="field-label">KEYWORDS / ALIASES</span>
+                    <p>{keywords}</p>
+                </section>
+            </template>
+
+        </div>
+    </template>
+
+    <!-- EDIT PART DETAILS -->
+    <template if:true={isEditOpen}>
+        <section class="modal-backdrop">
+
+            <div class="edit-modal">
+
+                <div class="modal-header">
+                    <div>
+                        <p class="modal-eyebrow">PART CATALOG UPDATE</p>
+                        <h2>Edit Part Details</h2>
+                        <p>Update catalog identification, compatibility, and supplier information.</p>
+                    </div>
+
+                    <button class="close-button" onclick={handleCloseEdit} title="Close">
+                        <lightning-icon icon-name="utility:close" size="small"></lightning-icon>
+                    </button>
+                </div>
+
+                <lightning-record-edit-form
+                    record-id={recordId}
+                    object-api-name="Part_Catalog__c"
+                    onsuccess={handleSaveSuccess}
+                    onerror={handleSaveError}>
+
+                    <div class="modal-body">
+
+                        <div class="edit-section">
+                            <div class="edit-section-heading">
+                                <div class="edit-section-icon">
+                                    <lightning-icon icon-name="utility:info" size="xx-small" variant="inverse"></lightning-icon>
+                                </div>
+
+                                <div>
+                                    <h3>Part Information</h3>
+                                    <p>Update the part name and compatible machine models.</p>
+                                </div>
+                            </div>
+
+                            <div class="edit-grid">
+
+                                <div class="edit-field">
+                                    <span class="edit-field-label">Part Name</span>
+                                    <lightning-input-field field-name={partNameField} variant="label-hidden"></lightning-input-field>
+                                </div>
+
+                                <div class="edit-field">
+                                    <span class="edit-field-label">Compatible Model</span>
+                                    <lightning-input-field field-name={compatibleModelField} variant="label-hidden"></lightning-input-field>
+                                </div>
+
+                            </div>
+                        </div>
+
+                        <div class="edit-section">
+                            <div class="edit-section-heading">
+                                <div class="edit-section-icon supplier-edit-icon">
+                                    <lightning-icon icon-name="utility:cart" size="xx-small" variant="inverse"></lightning-icon>
+                                </div>
+
+                                <div>
+                                    <h3>Supplier Information</h3>
+                                    <p>Update supplier and ordering reference information.</p>
+                                </div>
+                            </div>
+
+                            <div class="edit-grid">
+
+                                <div class="edit-field">
+                                    <span class="edit-field-label">Supplier</span>
+                                    <lightning-input-field field-name={supplierNameField} variant="label-hidden"></lightning-input-field>
+                                </div>
+
+                                <div class="edit-field">
+                                    <span class="edit-field-label">Supplier Phone</span>
+                                    <lightning-input-field field-name={supplierPhoneField} variant="label-hidden"></lightning-input-field>
+                                </div>
+
+                                <div class="edit-field">
+                                    <span class="edit-field-label">Preferred Supplier</span>
+                                    <lightning-input-field field-name={preferredSupplierField} variant="label-hidden"></lightning-input-field>
+                                </div>
+
+                            </div>
+                        </div>
+
+                        <div class="edit-section">
+                            <div class="edit-section-heading">
+                                <div class="edit-section-icon">
+                                    <lightning-icon icon-name="utility:search" size="xx-small" variant="inverse"></lightning-icon>
+                                </div>
+
+                                <div>
+                                    <h3>Search &amp; Identification</h3>
+                                    <p>Maintain aliases used to identify this part in search and AI workflows.</p>
+                                </div>
+                            </div>
+
+                            <div class="edit-field">
+                                <span class="edit-field-label">Keywords / Aliases</span>
+                                <lightning-input-field field-name={keywordsField} variant="label-hidden"></lightning-input-field>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="secondary-button" onclick={handleCloseEdit}>Cancel</button>
+                        <lightning-button type="submit" variant="brand" label="Save Changes"></lightning-button>
+                    </div>
+
+                </lightning-record-edit-form>
+
+            </div>
+        </section>
+    </template>
+
+</template>

@@ -1,6 +1,6 @@
-/* =========================================
-   MillTrack Header
-   ========================================= */
+/* =========================================================
+   MILLTRACK CUSTOMER PORTAL HEADER
+   ========================================================= */
 
 :host {
     display: block;
@@ -10,6 +10,11 @@
 
     margin-left: calc(50% - 50vw);
 }
+
+
+/* =========================================================
+   HEADER
+   ========================================================= */
 
 .milltrack-header {
     position: relative;
@@ -22,16 +27,16 @@
 
     padding: 0 2rem;
 
-    background: #061d3d;
     color: #ffffff;
+    background: #061d3d;
 
     box-sizing: border-box;
 }
 
 
-/* =========================================
-   Brand / Logo
-   ========================================= */
+/* =========================================================
+   BRAND
+   ========================================================= */
 
 .brand-section {
     position: relative;
@@ -45,7 +50,8 @@
     margin-right: 0.75rem;
 }
 
-/* Vertical divider between logo and navigation */
+
+/* Vertical divider */
 
 .brand-section::after {
     content: '';
@@ -63,40 +69,92 @@
     transform: translateY(-50%);
 }
 
+
 .brand-button {
-    display: flex;
+    display: inline-flex;
     align-items: center;
-    justify-content: flex-start;
+
+    gap: 0.7rem;
 
     margin: 0;
     padding: 0;
 
+    color: #ffffff;
     background: transparent;
+
     border: 0;
 
     cursor: pointer;
+
+    font: inherit;
+    text-align: left;
+}
+
+.brand-button:hover .brand-name {
+    color: #ffffff;
+}
+
+.brand-button:hover .brand-mark {
+    transform: translateY(-1px);
 }
 
 .brand-button:focus-visible {
     outline: 2px solid #ffffff;
-    outline-offset: 4px;
-    border-radius: 0.25rem;
+    outline-offset: 5px;
+
+    border-radius: 0.3rem;
 }
 
-.brand-logo {
+
+/* =========================================================
+   BRAND MARK
+   ========================================================= */
+
+.brand-mark {
     display: block;
 
-    width: 195px;
-    max-width: 100%;
-    height: auto;
+    flex: 0 0 auto;
 
-    object-fit: contain;
+    width: 2.65rem;
+    height: 3rem;
+
+    fill: none;
+
+    stroke: #ffffff;
+    stroke-width: 2.15;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+
+    transition:
+        transform 150ms ease;
 }
 
 
-/* =========================================
-   Main Navigation
-   ========================================= */
+/* =========================================================
+   WORDMARK
+   ========================================================= */
+
+.brand-name {
+    display: block;
+
+    color: #ffffff;
+
+    font-size: 1.45rem;
+    font-weight: 800;
+    line-height: 1;
+
+    letter-spacing: -0.025rem;
+
+    white-space: nowrap;
+
+    transition:
+        color 150ms ease;
+}
+
+
+/* =========================================================
+   MAIN NAVIGATION
+   ========================================================= */
 
 .main-navigation {
     display: flex;
@@ -119,21 +177,21 @@
     margin: 0;
     padding: 0 1.4rem;
 
+    color: rgba(255, 255, 255, 0.86);
     background: transparent;
+
     border: 0;
 
-    color: rgba(255, 255, 255, 0.86);
+    cursor: pointer;
 
     font-family: inherit;
     font-size: 1rem;
     font-weight: 600;
     line-height: 1;
 
-    cursor: pointer;
-
     transition:
-        color 0.15s ease,
-        background-color 0.15s ease;
+        color 150ms ease,
+        background-color 150ms ease;
 }
 
 .nav-item:hover {
@@ -151,7 +209,7 @@
 }
 
 
-/* Bright blue active-page underline */
+/* Active page underline */
 
 .nav-item-active::after {
     content: '';
@@ -165,6 +223,7 @@
     height: 4px;
 
     background: #1683ff;
+
     border-radius: 4px 4px 0 0;
 }
 
@@ -177,9 +236,9 @@
 }
 
 
-/* =========================================
-   Right-side Header Actions
-   ========================================= */
+/* =========================================================
+   RIGHT-SIDE ACTIONS
+   ========================================================= */
 
 .header-actions {
     display: flex;
@@ -191,9 +250,9 @@
 }
 
 
-/* =========================================
-   Help Button
-   ========================================= */
+/* =========================================================
+   HELP BUTTON
+   ========================================================= */
 
 .icon-button {
     display: flex;
@@ -203,10 +262,10 @@
     margin: 0;
     padding: 0;
 
-    background: transparent;
-    border: 0;
-
     color: #ffffff;
+    background: transparent;
+
+    border: 0;
 
     cursor: pointer;
 }
@@ -219,13 +278,14 @@
     border-radius: 50%;
 
     transition:
-        background-color 0.15s ease,
-        border-color 0.15s ease,
-        transform 0.15s ease;
+        background-color 150ms ease,
+        border-color 150ms ease,
+        transform 150ms ease;
 }
 
 .help-button:hover {
     background: rgba(255, 255, 255, 0.1);
+
     border-color: #ffffff;
 }
 
@@ -247,9 +307,9 @@
 }
 
 
-/* =========================================
-   Profile
-   ========================================= */
+/* =========================================================
+   PROFILE
+   ========================================================= */
 
 .profile-container {
     position: relative;
@@ -272,12 +332,14 @@
     padding: 0 0.65rem;
 
     background: transparent;
+
     border: 0;
     border-radius: 0.5rem;
 
     cursor: pointer;
 
-    transition: background-color 0.15s ease;
+    transition:
+        background-color 150ms ease;
 }
 
 .profile-button:hover {
@@ -290,7 +352,7 @@
 }
 
 
-/* Circular user icon */
+/* User icon */
 
 .profile-icon-wrapper {
     display: flex;
@@ -315,9 +377,9 @@
 }
 
 
-/* =========================================
-   Profile Dropdown
-   ========================================= */
+/* =========================================================
+   PROFILE DROPDOWN
+   ========================================================= */
 
 .profile-menu {
     position: absolute;
@@ -342,7 +404,7 @@
 }
 
 
-/* Small arrow above dropdown */
+/* Dropdown arrow */
 
 .profile-menu::before {
     content: '';
@@ -364,9 +426,9 @@
 }
 
 
-/* =========================================
-   Profile Dropdown Header
-   ========================================= */
+/* =========================================================
+   PROFILE MENU HEADER
+   ========================================================= */
 
 .profile-menu-header {
     position: relative;
@@ -397,9 +459,9 @@
 }
 
 
-/* =========================================
-   Dropdown Divider
-   ========================================= */
+/* =========================================================
+   DROPDOWN DIVIDER
+   ========================================================= */
 
 .profile-menu-divider {
     height: 1px;
@@ -408,9 +470,9 @@
 }
 
 
-/* =========================================
-   Dropdown Menu Items
-   ========================================= */
+/* =========================================================
+   DROPDOWN MENU ITEMS
+   ========================================================= */
 
 .profile-menu-item {
     display: flex;
@@ -423,26 +485,26 @@
     margin: 0;
     padding: 0.85rem 1.1rem;
 
+    color: #24364f;
     background: #ffffff;
+
     border: 0;
 
-    color: #24364f;
+    cursor: pointer;
 
     font-family: inherit;
     font-size: 0.92rem;
     font-weight: 500;
     text-align: left;
 
-    cursor: pointer;
-
     transition:
-        background-color 0.15s ease,
-        color 0.15s ease;
+        background-color 150ms ease,
+        color 150ms ease;
 }
 
 .profile-menu-item:hover {
-    background: #f3f7fc;
     color: #071d3f;
+    background: #f3f7fc;
 }
 
 .profile-menu-item:focus-visible {
@@ -455,31 +517,33 @@
     --slds-c-icon-color-foreground: #43617f;
 }
 
-
-/* Logout gets a subtle distinction */
-
 .logout-item {
     color: #364a63;
 }
 
 
-/* =========================================
-   Tablet
-   ========================================= */
+/* =========================================================
+   TABLET
+   ========================================================= */
 
-@media only screen and (max-width: 900px) {
+@media only screen and (max-width: 1050px) {
 
     .milltrack-header {
         padding: 0 1.25rem;
     }
 
     .brand-section {
-        padding-right: 1rem;
-        margin-right: 0.5rem;
+        padding-right: 1.25rem;
+        margin-right: 0.4rem;
     }
 
-    .brand-logo {
-        width: 165px;
+    .brand-mark {
+        width: 2.35rem;
+        height: 2.7rem;
+    }
+
+    .brand-name {
+        font-size: 1.2rem;
     }
 
     .nav-item {
@@ -494,9 +558,9 @@
 }
 
 
-/* =========================================
-   Mobile
-   ========================================= */
+/* =========================================================
+   MOBILE
+   ========================================================= */
 
 @media only screen and (max-width: 700px) {
 
@@ -519,8 +583,17 @@
         display: none;
     }
 
-    .brand-logo {
-        width: 145px;
+    .brand-button {
+        gap: 0.5rem;
+    }
+
+    .brand-mark {
+        width: 2rem;
+        height: 2.3rem;
+    }
+
+    .brand-name {
+        font-size: 1.05rem;
     }
 
     .header-actions {
@@ -557,7 +630,9 @@
         margin-left: -1rem;
         margin-right: -1rem;
 
-        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        border-top:
+            1px solid
+            rgba(255, 255, 255, 0.1);
     }
 
     .nav-item {
@@ -581,14 +656,19 @@
 }
 
 
-/* =========================================
-   Small Mobile
-   ========================================= */
+/* =========================================================
+   SMALL MOBILE
+   ========================================================= */
 
 @media only screen and (max-width: 430px) {
 
-    .brand-logo {
-        width: 130px;
+    .brand-mark {
+        width: 1.85rem;
+        height: 2.15rem;
+    }
+
+    .brand-name {
+        font-size: 0.92rem;
     }
 
     .help-button {

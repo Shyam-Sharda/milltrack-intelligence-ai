@@ -1,0 +1,44 @@
+<template>
+    <div class="modal-body">
+
+        <template if:true={isLoading}>
+            <div class="state-panel loading-panel">
+                <div class="spinner-wrap">
+                    <lightning-spinner alternative-text="Starting work" size="small"></lightning-spinner>
+                </div>
+                <h2>Starting Work</h2>
+                <p>Updating the Work Order...</p>
+            </div>
+        </template>
+
+        <template if:true={isSuccess}>
+            <div class="state-panel success-panel">
+                <div class="state-icon">
+                    <lightning-icon icon-name="utility:success" size="small" variant="inverse"></lightning-icon>
+                </div>
+
+                <h2>Work Started</h2>
+                <div class="status-pill">In Progress</div>
+
+                <p class="main-message">This Work Order is now In Progress.</p>
+                <p class="sub-message">You can begin servicing the machine.</p>
+
+                <button class="light-button success-button" onclick={handleDone}>Done</button>
+            </div>
+        </template>
+
+        <template if:true={isError}>
+            <div class="state-panel error-panel">
+                <div class="state-icon">
+                    <lightning-icon icon-name="utility:warning" size="small" variant="inverse"></lightning-icon>
+                </div>
+
+                <h2>Work Cannot Be Started</h2>
+                <p class="error-message">{errorMessage}</p>
+
+                <button class="light-button error-button" onclick={handleDone}>Close</button>
+            </div>
+        </template>
+
+    </div>
+</template>

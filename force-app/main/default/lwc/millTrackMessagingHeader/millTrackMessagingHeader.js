@@ -54,9 +54,6 @@ export default class MillTrackMessagingHeader extends LightningElement {
 
             /*
              * Agentforce has joined/rejoined.
-             *
-             * Hide the "Need help with something else?" cue because
-             * MillTrack AI is active again.
              */
             assignMessagingEventHandler(
                 MESSAGING_EVENT.PARTICIPANT_JOINED,
@@ -72,14 +69,8 @@ export default class MillTrackMessagingHeader extends LightningElement {
             /*
              * Agentforce has left.
              *
-             * Salesforce will still display its normal:
-             *
-             * "MillTrack Customer AI left"
-             *
-             * transcript message.
-             *
-             * We then show our own helpful action immediately
-             * underneath the MillTrack header.
+             * Show the Start New Issue cue underneath
+             * the MillTrack header.
              */
             assignMessagingEventHandler(
                 MESSAGING_EVENT.PARTICIPANT_LEFT,
@@ -124,10 +115,6 @@ export default class MillTrackMessagingHeader extends LightningElement {
             this.configuration?.util?.sendTextMessage;
 
 
-        /*
-         * Defensive fallback in case Enhanced Chat does not inject
-         * the v2 Send Message API for some reason.
-         */
         if (typeof sendTextMessage !== 'function') {
 
             this.startError =
@@ -146,23 +133,11 @@ export default class MillTrackMessagingHeader extends LightningElement {
 
         try {
 
-            /*
-             * Send the phrase as the authenticated customer.
-             *
-             * Customer AI already understands this phrase through
-             * the New Issue Reset path.
-             */
             await this.configuration.util.sendTextMessage(
                 'Start a new issue'
             );
 
 
-            /*
-             * Hide the cue immediately after the action succeeds.
-             *
-             * PARTICIPANT_JOINED will also keep it hidden once
-             * Agentforce rejoins.
-             */
             this.showNewIssueCue = false;
 
         } catch (error) {
@@ -207,15 +182,9 @@ export default class MillTrackMessagingHeader extends LightningElement {
 
         try {
 
-            /*
-            * MillTrack uses credential-based verified users.
-            *
-            * For verified users Salesforce ends the current
-            * Messaging Session rather than closing the persistent
-            * Conversation.
-            */
             const endSession =
                 this.configuration?.util?.endSession;
+
 
             if (typeof endSession === 'function') {
 
@@ -223,19 +192,10 @@ export default class MillTrackMessagingHeader extends LightningElement {
                     this.configuration.util
                 );
 
-                /*
-                * PARTICIPANT_LEFT should fire when Agentforce leaves.
-                * Our existing listener will then show:
-                *
-                * "Need help with something else?"
-                */
                 return;
             }
 
-            /*
-            * Defensive fallback for contexts where endSession
-            * isn't exposed.
-            */
+
             dispatchMessagingEvent(
                 MESSAGING_EVENT.CLOSE_CONVERSATION,
                 {}
@@ -247,6 +207,7 @@ export default class MillTrackMessagingHeader extends LightningElement {
                 'MillTrack: Unable to end chat.',
                 error
             );
+
 
             this.startError =
                 'Unable to end the current chat. Please try again.';
@@ -263,6 +224,7 @@ export default class MillTrackMessagingHeader extends LightningElement {
     handleMinimize() {
 
         this.showMenu = false;
+
 
         dispatchMessagingEvent(
             MESSAGING_EVENT.MINIMIZE_BUTTON_CLICK,

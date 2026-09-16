@@ -10,12 +10,6 @@ public with sharing class ManagerOperationsCenterController {
     private static final Integer WORK_ORDER_ROW_LIMIT = 500;
     private static final Integer PART_ROW_LIMIT = 300;
 
-    private static final String FLOW_REVIEW_WORK_ORDER = 'Generate_Work_Order_Proposal_From_Case';
-    private static final String FLOW_ORDER_PARTS = 'X13_Order_Parts_From_Work_Order';
-    private static final String FLOW_ORDER_TECHNICIAN_REQUESTED_PART = 'Order_Technician_Requested_Part';
-    private static final String FLOW_RECEIVE_PARTS = 'Receive_Parts_From_Work_Order';
-    private static final String FLOW_DISPATCH_TECHNICIAN = 'Dispatch_Technician';
-
     private static final String STATUS_READY_TO_ASSIGN = 'Ready_to_Assign';
     private static final String LABEL_READY_TO_ASSIGN = 'Ready to Assign';
 
@@ -387,12 +381,14 @@ public with sharing class ManagerOperationsCenterController {
     }
 
     private static void configureWorkOrderAction(QueueItem item, String dispatchStatus) {
-        if (dispatchStatus == 'Pending' || dispatchStatus == 'Temporary Fix') {
-            configureFlowAction(item, 'REVIEW_WORK_ORDER', 'Review Work Order', FLOW_REVIEW_WORK_ORDER, item.workOrderId);
+        if (dispatchStatus == 'Pending') {
+            configureLwcAction(item, 'REVIEW_WORK_ORDER', 'Review Work Order', item.workOrderId);
+        } else if (dispatchStatus == 'Temporary Fix') {
+            configureLwcAction(item, 'FOLLOW_UP_WORK_ORDER', 'Review Follow-Up', item.workOrderId);
         } else if (dispatchStatus == 'Parts to Order') {
-            configureFlowAction(item, 'ORDER_REQUIRED_PARTS', 'Order Required Parts', FLOW_ORDER_PARTS, item.workOrderId);
+            configureLwcAction(item, 'ORDER_REQUIRED_PARTS', 'Order Required Parts', item.workOrderId);
         } else if (dispatchStatus == 'Ready_to_Assign') {
-            configureFlowAction(item, 'DISPATCH_TECHNICIAN', 'Dispatch Technician', FLOW_DISPATCH_TECHNICIAN, item.workOrderId);
+            configureLwcAction(item, 'DISPATCH_TECHNICIAN', 'Dispatch Technician', item.workOrderId);
         } else {
             configureNavigationAction(item, 'VIEW_WORK_ORDER', 'Open Work Order');
         }
@@ -404,21 +400,40 @@ public with sharing class ManagerOperationsCenterController {
             item.recordTypeLabel = 'Technician Part Request';
             item.subject = 'Requested part: ' + item.partName;
 
-            configureFlowAction(item, 'ORDER_TECHNICIAN_REQUESTED_PART', 'Order Requested Part', FLOW_ORDER_TECHNICIAN_REQUESTED_PART, part.Id);
+            configureLwcAction(
+                item,
+                'ORDER_TECHNICIAN_REQUESTED_PART',
+                'Order Requested Part',
+                part.Id
+            );
         } else if (part.Order_Status__c == 'Ordered' || part.Order_Status__c == 'Shipped') {
             item.rowType = 'ORDERED_PART';
             item.recordTypeLabel = 'Ordered Part';
             item.subject = part.Order_Status__c + ' part: ' + item.partName;
 
             if (part.Work_Order__c != null) {
-                configureFlowAction(item, 'RECEIVE_PARTS', 'Receive Parts', FLOW_RECEIVE_PARTS, part.Work_Order__c);
+                configureLwcAction(
+                    item,
+                    'RECEIVE_PARTS',
+                    'Receive Parts',
+                    part.Work_Order__c
+                );
             } else {
-                configureNavigationAction(item, 'OPEN_PART_REQUEST', 'Open Part');
+                configureNavigationAction(
+                    item,
+                    'OPEN_PART_REQUEST',
+                    'Open Part'
+                );
             }
         } else {
             item.rowType = 'WORK_ORDER_PART';
             item.subject = 'Part: ' + item.partName;
-            configureNavigationAction(item, 'OPEN_PART_REQUEST', 'Open Part');
+
+            configureNavigationAction(
+                item,
+                'OPEN_PART_REQUEST',
+                'Open Part'
+            );
         }
     }
 
@@ -426,11 +441,11 @@ public with sharing class ManagerOperationsCenterController {
         return dispatchStatus == STATUS_READY_TO_ASSIGN ? LABEL_READY_TO_ASSIGN : dispatchStatus;
     }
 
-    private static void configureFlowAction(QueueItem item, String actionName, String actionLabel, String flowApiName, Id actionRecordId) {
-        item.actionType = 'FLOW';
+    private static void configureLwcAction(QueueItem item, String actionName, String actionLabel, Id actionRecordId) {
+        item.actionType = 'LWC';
         item.actionName = actionName;
         item.actionLabel = actionLabel;
-        item.flowApiName = flowApiName;
+        item.flowApiName = null;
         item.actionRecordId = actionRecordId;
     }
 

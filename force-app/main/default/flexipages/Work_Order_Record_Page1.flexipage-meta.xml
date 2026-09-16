@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+﻿<?xml version="1.0" encoding="UTF-8"?>
 <FlexiPage xmlns="http://soap.sforce.com/2006/04/metadata">
     <flexiPageRegions>
         <itemInstances>
@@ -7,58 +7,12 @@
                     <name>actionNames</name>
                     <valueList>
                         <valueListItems>
-                            <value>WorkOrder.Start_Work</value>
-                            <visibilityRule>
-                                <criteria>
-                                    <leftValue>{!Record.Dispatch_Status__c}</leftValue>
-                                    <operator>EQUAL</operator>
-                                    <rightValue>Assigned</rightValue>
-                                </criteria>
-                            </visibilityRule>
-                        </valueListItems>
-                        <valueListItems>
-                            <value>WorkOrder.Request_Parts</value>
-                            <visibilityRule>
-                                <criteria>
-                                    <leftValue>{!Record.Dispatch_Status__c}</leftValue>
-                                    <operator>EQUAL</operator>
-                                    <rightValue>In Progress</rightValue>
-                                </criteria>
-                            </visibilityRule>
-                        </valueListItems>
-                        <valueListItems>
-                            <value>WorkOrder.Resume_Work</value>
-                            <visibilityRule>
-                                <criteria>
-                                    <leftValue>{!Record.Dispatch_Status__c}</leftValue>
-                                    <operator>EQUAL</operator>
-                                    <rightValue>Waiting on Parts</rightValue>
-                                </criteria>
-                            </visibilityRule>
-                        </valueListItems>
-                        <valueListItems>
                             <value>WorkOrder.Temporary_Fix</value>
                             <visibilityRule>
                                 <criteria>
                                     <leftValue>{!Record.Dispatch_Status__c}</leftValue>
                                     <operator>EQUAL</operator>
                                     <rightValue>In Progress</rightValue>
-                                </criteria>
-                            </visibilityRule>
-                        </valueListItems>
-                        <valueListItems>
-                            <value>WorkOrder.Complete_Work_Order</value>
-                            <visibilityRule>
-                                <booleanFilter>1 OR 2</booleanFilter>
-                                <criteria>
-                                    <leftValue>{!Record.Dispatch_Status__c}</leftValue>
-                                    <operator>EQUAL</operator>
-                                    <rightValue>In Progress</rightValue>
-                                </criteria>
-                                <criteria>
-                                    <leftValue>{!Record.Dispatch_Status__c}</leftValue>
-                                    <operator>EQUAL</operator>
-                                    <rightValue>Temporary FIx</rightValue>
                                 </criteria>
                             </visibilityRule>
                         </valueListItems>
@@ -648,3 +602,6 @@
     </template>
     <type>RecordPage</type>
 </FlexiPage>
+
+
+

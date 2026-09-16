@@ -116,7 +116,7 @@ private class ManagerOperationsCenterControllerTest {
 
         System.assertNotEquals(null, pendingItem, 'The explicitly seeded Pending Work Order should be returned.');
         System.assertEquals('WORK_ORDER', pendingItem.rowType, 'The review row should be identified as a Work Order.');
-        assertAction(pendingItem, 'FLOW', 'REVIEW_WORK_ORDER', 'Review Work Order', 'Generate_Work_Order_Proposal_From_Case', pendingWorkOrder.Id);
+        assertAction(pendingItem, 'LWC', 'REVIEW_WORK_ORDER', 'Review Work Order', null, pendingWorkOrder.Id);
 
         WorkOrder temporaryFixWorkOrder = [
             SELECT Id
@@ -130,7 +130,7 @@ private class ManagerOperationsCenterControllerTest {
         System.assertNotEquals(null, followUpItem, 'The Temporary Fix Work Order should appear in Follow-Up Required.');
         System.assertEquals(null, findItemByRecordId(data.activeRepairs, temporaryFixWorkOrder.Id), 'Temporary Fix should no longer appear in Active Repairs.');
         System.assertEquals('Temporary Fix', followUpItem.status, 'The Follow-Up Required row should retain the Temporary Fix status.');
-        assertAction(followUpItem, 'FLOW', 'REVIEW_WORK_ORDER', 'Review Work Order', 'Generate_Work_Order_Proposal_From_Case', temporaryFixWorkOrder.Id);
+        assertAction(followUpItem, 'LWC', 'FOLLOW_UP_WORK_ORDER', 'Review Follow-Up', null, temporaryFixWorkOrder.Id);
 
         WorkOrder preDispatchWorkOrder = [
             SELECT Id
@@ -144,7 +144,7 @@ private class ManagerOperationsCenterControllerTest {
         System.assertNotEquals(null, preDispatchItem, 'Parts to Order should contain the pre-dispatch Work Order.');
         System.assertEquals('WorkOrder', preDispatchItem.objectApiName);
         System.assertEquals('WORK_ORDER', preDispatchItem.rowType);
-        assertAction(preDispatchItem, 'FLOW', 'ORDER_REQUIRED_PARTS', 'Order Required Parts', 'X13_Order_Parts_From_Work_Order', preDispatchWorkOrder.Id);
+        assertAction(preDispatchItem, 'LWC', 'ORDER_REQUIRED_PARTS', 'Order Required Parts', null, preDispatchWorkOrder.Id);
 
         Work_Order_Part__c requestedPartRecord = [
             SELECT Id, Work_Order__c, Technician_Requested__c
@@ -169,7 +169,7 @@ private class ManagerOperationsCenterControllerTest {
         System.assertEquals(true, requestedPartItem.technicianRequested, 'The queue row should expose the technician-requested flag.');
         System.assertEquals('Technician Request', requestedPartItem.partSourceLabel, 'The queue row should expose the technician request source label.');
 
-        assertAction(requestedPartItem, 'FLOW', 'ORDER_TECHNICIAN_REQUESTED_PART', 'Order Requested Part', 'Order_Technician_Requested_Part', requestedPartRecord.Id);
+        assertAction(requestedPartItem, 'LWC', 'ORDER_TECHNICIAN_REQUESTED_PART', 'Order Requested Part', null, requestedPartRecord.Id);
 
         WorkOrder waitingWorkOrder = [
             SELECT Id
@@ -211,7 +211,7 @@ private class ManagerOperationsCenterControllerTest {
 
         System.assertNotEquals(null, readyItem, 'The Ready to Assign Work Order should be returned.');
         System.assertEquals('Ready to Assign', readyItem.status, 'The LWC should receive the readable picklist label.');
-        assertAction(readyItem, 'FLOW', 'DISPATCH_TECHNICIAN', 'Dispatch Technician', 'Dispatch_Technician', readyWorkOrder.Id);
+        assertAction(readyItem, 'LWC', 'DISPATCH_TECHNICIAN', 'Dispatch Technician', null, readyWorkOrder.Id);
 
         WorkOrder upcomingAssignedWorkOrder = [
             SELECT Id
@@ -365,7 +365,7 @@ private class ManagerOperationsCenterControllerTest {
         System.assertNotEquals(null, item.supplierName, 'Ordered and Shipped rows should return supplier information.');
         System.assertNotEquals(null, item.orderedByName, 'Ordered and Shipped rows should return Ordered By.');
 
-        assertAction(item, 'FLOW', 'RECEIVE_PARTS', 'Receive Parts', 'Receive_Parts_From_Work_Order', expectedPart.Work_Order__c);
+        assertAction(item, 'LWC', 'RECEIVE_PARTS', 'Receive Parts', null, expectedPart.Work_Order__c);
     }
 
     private static void assertCountsMatchLists(ManagerOperationsCenterController.OperationsData data) {

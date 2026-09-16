@@ -10,9 +10,9 @@ export default class MillTrackPageHero extends LightningElement {
     }
 
 
-    /* =========================================
-       Current Page Information
-       ========================================= */
+    // =========================================================
+    // Current Page Information
+    // =========================================================
 
     get objectApiName() {
         return (
@@ -31,9 +31,9 @@ export default class MillTrackPageHero extends LightningElement {
     }
 
 
-    /* =========================================
-       Page Type Detection
-       ========================================= */
+    // =========================================================
+    // Page Type Detection
+    // =========================================================
 
     get isAssetPage() {
         const objectName = this.objectApiName.toLowerCase();
@@ -66,38 +66,26 @@ export default class MillTrackPageHero extends LightningElement {
     }
 
     get isReportIssuePage() {
-        const pageName = this.pageName.toLowerCase();
-
-        return pageName === 'report_an_issue__c';
+        return this.pageName.toLowerCase() === 'report_an_issue__c';
     }
 
-    /* =========================================
-       Page Content
-       ========================================= */
+
+    // =========================================================
+    // Main Page Content
+    // =========================================================
 
     get pageTitle() {
-        if (this.isAssetPage) {
-            return 'Milling Machine Details';
-        }
+        if (this.isAssetPage) return 'Milling Machine Details';
+        if (this.isCasePage) return 'Service Request Details';
+        if (this.isWorkOrderPage) return 'Service Visit Details';
+        if (this.isReportIssuePage) return 'Report a Machine Issue';
 
-        if (this.isCasePage) {
-            return 'Service Request Details';
-        }
-
-        if (this.isWorkOrderPage) {
-            return 'Service Visit Details';
-        }
-
-        if (this.isReportIssuePage) {
-            return 'Report a Machine Issue';
-        }
-
-        return 'MillTrack';
+        return 'MillTrack Customer Portal';
     }
 
     get pageSubtitle() {
         if (this.isAssetPage) {
-            return 'Review your machine information, service history, and current service activity in one place.';
+            return 'Review your machine information, resources, maintenance plan, and service history in one place.';
         }
 
         if (this.isCasePage) {
@@ -105,13 +93,56 @@ export default class MillTrackPageHero extends LightningElement {
         }
 
         if (this.isWorkOrderPage) {
-            return 'Track the scheduling and progress of your MillTrack service visit.';
+            return 'Track the scheduling, progress, and service activity for your MillTrack visit.';
         }
 
         if (this.isReportIssuePage) {
             return 'Select the affected machine and tell us what is happening. MillTrack will create a service request for your account.';
         }
 
-        return '';
+        return 'Manage your machines, service activity, and MillTrack support from one secure workspace.';
+    }
+
+
+    // =========================================================
+    // Context Panel
+    // =========================================================
+
+    get contextEyebrow() {
+        if (this.isAssetPage) return 'Machine Workspace';
+        if (this.isCasePage) return 'Service Request';
+        if (this.isWorkOrderPage) return 'Service Visit';
+        if (this.isReportIssuePage) return 'Customer Support';
+
+        return 'Customer Portal';
+    }
+
+    get contextTitle() {
+        if (this.isAssetPage) return 'Machine Overview';
+        if (this.isCasePage) return 'Request Tracking';
+        if (this.isWorkOrderPage) return 'Visit Tracking';
+        if (this.isReportIssuePage) return 'Report an Issue';
+
+        return 'MillTrack Workspace';
+    }
+
+    get contextSubtitle() {
+        if (this.isAssetPage) {
+            return 'Details • Manual • Service History';
+        }
+
+        if (this.isCasePage) {
+            return 'Status • Details • Updates';
+        }
+
+        if (this.isWorkOrderPage) {
+            return 'Schedule • Progress • Service';
+        }
+
+        if (this.isReportIssuePage) {
+            return 'Machine • Issue • Review';
+        }
+
+        return 'Machines • Service • Support';
     }
 }

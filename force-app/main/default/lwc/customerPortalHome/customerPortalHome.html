@@ -1,0 +1,643 @@
+<template>
+    <div class="portal-home">
+
+        <!-- =========================================
+             LOADING
+             ========================================= -->
+        <template if:true={isLoading}>
+            <div class="loading-state">
+                <lightning-spinner
+                    alternative-text="Loading MillTrack"
+                    size="medium">
+                </lightning-spinner>
+            </div>
+        </template>
+
+        <!-- =========================================
+             ERROR
+             ========================================= -->
+        <template if:true={hasError}>
+            <div class="dashboard-shell">
+                <div class="error-state">
+                    <div class="error-icon">!</div>
+
+                    <div>
+                        <h2>We couldn't load your MillTrack dashboard.</h2>
+                        <p>{errorMessage}</p>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <!-- =========================================
+             DASHBOARD
+             ========================================= -->
+        <template if:true={hasData}>
+
+            <!-- =========================================
+                 HERO
+                 ========================================= -->
+            <section class="hero-panel full-bleed">
+
+                <img
+                    src={heroImage}
+                    class="hero-background"
+                    alt=""
+                    aria-hidden="true"
+                >
+
+                <div class="hero-overlay" aria-hidden="true"></div>
+
+                <div class="hero-content">
+                    <div class="hero-copy">
+
+                        <p class="hero-eyebrow">
+                            MILLTRACK CUSTOMER PORTAL
+                        </p>
+
+                        <h1>{welcomeTitle}</h1>
+
+                        <p class="hero-subtitle">
+                            Manage your milling machines, track service requests,
+                            and follow current service activity in one place.
+                        </p>
+
+                        <button
+                            type="button"
+                            class="ai-support"
+                            onclick={handleOpenAiChat}
+                            aria-label="Open MillTrack AI chat">
+
+                            <div class="ai-support-icon">
+                                AI
+                            </div>
+
+                            <div class="ai-support-copy">
+                                <strong>Need help? Ask MillTrack AI.</strong>
+
+                                <span>
+                                    Get guided troubleshooting and service support whenever you need it.
+                                    Select here to start a conversation with MillTrack AI.
+                                </span>
+                            </div>
+
+                            <div class="ai-support-action" aria-hidden="true">
+                                →
+                            </div>
+
+                        </button>
+
+                    </div>
+                </div>
+            </section>
+
+            <div class="dashboard-shell">
+
+                <!-- =========================================
+                     QUICK NAVIGATION
+                     ========================================= -->
+                <section
+                    class="quick-links-section"
+                    aria-label="MillTrack dashboard sections">
+
+                    <!-- MACHINES CARD -->
+                    <button
+                        type="button"
+                        class="quick-card quick-card-blue"
+                        data-target="machines"
+                        onclick={handleSectionNavigation}>
+
+                        <img
+                            src={machineCardImage}
+                            class="quick-card-background"
+                            alt=""
+                            aria-hidden="true"
+                        >
+
+                        <span class="quick-card-overlay" aria-hidden="true"></span>
+
+                        <div class="quick-card-content">
+
+                            <div class="quick-card-icon">
+                                <svg viewBox="0 0 24 24" aria-hidden="true">
+                                    <circle cx="12" cy="12" r="3.25"></circle>
+                                    <path d="M12 2.75v2.1M12 19.15v2.1M21.25 12h-2.1M4.85 12h-2.1"></path>
+                                    <path d="M18.54 5.46l-1.49 1.49M6.95 17.05l-1.49 1.49M18.54 18.54l-1.49-1.49M6.95 6.95L5.46 5.46"></path>
+                                    <circle cx="12" cy="12" r="7"></circle>
+                                </svg>
+                            </div>
+
+                            <div class="quick-card-count">
+                                {machineCountLabel}
+                            </div>
+
+                            <h2>My Machines</h2>
+
+                            <p>
+                                View the milling machines registered to your account,
+                                their current condition, and recent service information.
+                            </p>
+
+                            <span class="quick-card-action">
+                                View machines
+                                <span aria-hidden="true">→</span>
+                            </span>
+
+                        </div>
+                    </button>
+
+                    <!-- SERVICE REQUESTS CARD -->
+                    <button
+                        type="button"
+                        class="quick-card quick-card-tan"
+                        data-target="serviceRequests"
+                        onclick={handleSectionNavigation}>
+
+                        <img
+                            src={serviceRequestCardImage}
+                            class="quick-card-background"
+                            alt=""
+                            aria-hidden="true"
+                        >
+
+                        <span class="quick-card-overlay" aria-hidden="true"></span>
+
+                        <div class="quick-card-content">
+
+                            <div class="quick-card-icon">
+                                <svg viewBox="0 0 24 24" aria-hidden="true">
+                                    <path d="M6.5 3.75h8.25l2.75 2.75v13.75H6.5z"></path>
+                                    <path d="M14.75 3.75V6.5h2.75M9 10h6M9 13.25h6M9 16.5h4"></path>
+                                </svg>
+                            </div>
+
+                            <div class="quick-card-count">
+                                {serviceRequestCountLabel}
+                            </div>
+
+                            <h2>Service Requests</h2>
+
+                            <p>
+                                Track machine issues that are currently being reviewed,
+                                scheduled, or handled by MillTrack.
+                            </p>
+
+                            <span class="quick-card-action">
+                                View requests
+                                <span aria-hidden="true">→</span>
+                            </span>
+
+                        </div>
+                    </button>
+
+                    <!-- WORK ORDERS CARD -->
+                    <button
+                        type="button"
+                        class="quick-card quick-card-teal"
+                        data-target="workOrders"
+                        onclick={handleSectionNavigation}>
+
+                        <img
+                            src={workOrderCardImage}
+                            class="quick-card-background"
+                            alt=""
+                            aria-hidden="true"
+                        >
+
+                        <span class="quick-card-overlay" aria-hidden="true"></span>
+
+                        <div class="quick-card-content">
+
+                            <div class="quick-card-icon">
+                                <svg viewBox="0 0 24 24" aria-hidden="true">
+                                    <path d="M4 8.25h16v10.5H4z"></path>
+                                    <path d="M8 8.25V5.5h8v2.75M4 12.25h16M9.25 12.25v1.5h5.5v-1.5"></path>
+                                </svg>
+                            </div>
+
+                            <div class="quick-card-count">
+                                {workOrderCountLabel}
+                            </div>
+
+                            <h2>Work Orders</h2>
+
+                            <p>
+                                Follow current repairs, upcoming technician visits,
+                                parts activity, and service progress.
+                            </p>
+
+                            <span class="quick-card-action">
+                                View work orders
+                                <span aria-hidden="true">→</span>
+                            </span>
+
+                        </div>
+                    </button>
+
+                </section>
+
+                <!-- =========================================
+                     MACHINES
+                     ========================================= -->
+                <section
+                    class="data-section section-blue"
+                    data-section="machines">
+
+                    <div class="section-header">
+                        <div class="section-heading-group">
+
+                            <div class="section-icon machine-icon">
+                                <svg viewBox="0 0 24 24" aria-hidden="true">
+                                    <circle cx="12" cy="12" r="3"></circle>
+                                    <circle cx="12" cy="12" r="7"></circle>
+                                    <path d="M12 2.5v2M12 19.5v2M21.5 12h-2M4.5 12h-2"></path>
+                                </svg>
+                            </div>
+
+                            <div>
+                                <div class="section-title-row">
+                                    <h2>My Machines</h2>
+
+                                    <span class="section-count">
+                                        {machineCountLabel}
+                                    </span>
+                                </div>
+
+                                <p>
+                                    Machines registered to your MillTrack account.
+                                </p>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <template if:true={hasMachines}>
+                        <div class="table-wrapper">
+
+                            <table class="customer-table">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">Machine</th>
+                                        <th scope="col">Manufacturer &amp; Model</th>
+                                        <th scope="col">Serial Number</th>
+                                        <th scope="col">Status</th>
+                                        <th scope="col">Last Service</th>
+                                    </tr>
+                                </thead>
+
+                                <tbody>
+                                    <template
+                                        for:each={machines}
+                                        for:item="machine">
+
+                                        <tr key={machine.id}>
+
+                                            <td>
+                                                <button
+                                                    type="button"
+                                                    class="record-link record-link-primary"
+                                                    data-id={machine.id}
+                                                    data-object="Asset"
+                                                    onclick={handleRecordNavigation}>
+                                                    {machine.name}
+                                                </button>
+                                            </td>
+
+                                            <td>
+                                                <div class="primary-cell">
+                                                    {machine.modelDisplay}
+                                                </div>
+
+                                                <div class="secondary-cell">
+                                                    {machine.manufacturerDisplay}
+                                                </div>
+                                            </td>
+
+                                            <td>
+                                                <span class="serial-value">
+                                                    {machine.serialDisplay}
+                                                </span>
+                                            </td>
+
+                                            <td>
+                                                <span class={machine.statusClass}>
+                                                    {machine.statusDisplay}
+                                                </span>
+                                            </td>
+
+                                            <td>
+                                                <template if:true={machine.lastServiceDate}>
+                                                    <lightning-formatted-date-time
+                                                        value={machine.lastServiceDate}
+                                                        year="numeric"
+                                                        month="short"
+                                                        day="2-digit"
+                                                        time-zone="UTC">
+                                                    </lightning-formatted-date-time>
+                                                </template>
+
+                                                <template if:false={machine.lastServiceDate}>
+                                                    <span class="muted-value">
+                                                        No service recorded
+                                                    </span>
+                                                </template>
+                                            </td>
+
+                                        </tr>
+                                    </template>
+                                </tbody>
+                            </table>
+
+                        </div>
+                    </template>
+
+                    <template if:false={hasMachines}>
+                        <div class="empty-state">
+                            <h3>No machines available</h3>
+
+                            <p>
+                                No milling machines are currently linked to your MillTrack account.
+                            </p>
+                        </div>
+                    </template>
+
+                </section>
+
+                <!-- =========================================
+                     SERVICE REQUESTS
+                     ========================================= -->
+                <section
+                    class="data-section section-tan"
+                    data-section="serviceRequests">
+
+                    <div class="section-header">
+                        <div class="section-heading-group">
+
+                            <div class="section-icon request-icon">
+                                <svg viewBox="0 0 24 24" aria-hidden="true">
+                                    <path d="M6.5 3.75h8.25l2.75 2.75v13.75H6.5z"></path>
+                                    <path d="M14.75 3.75V6.5h2.75M9 10h6M9 13.25h6M9 16.5h4"></path>
+                                </svg>
+                            </div>
+
+                            <div>
+                                <div class="section-title-row">
+                                    <h2>My Service Requests</h2>
+
+                                    <span class="section-count">
+                                        {serviceRequestCountLabel}
+                                    </span>
+                                </div>
+
+                                <p>
+                                    Open machine issues currently being handled by MillTrack.
+                                </p>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <template if:true={hasServiceRequests}>
+                        <div class="table-wrapper">
+
+                            <table class="customer-table">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">Service Request</th>
+                                        <th scope="col">Machine</th>
+                                        <th scope="col">Status</th>
+                                        <th scope="col">Priority</th>
+                                        <th scope="col">Opened</th>
+                                    </tr>
+                                </thead>
+
+                                <tbody>
+                                    <template
+                                        for:each={serviceRequests}
+                                        for:item="request">
+
+                                        <tr key={request.id}>
+
+                                            <td>
+                                                <button
+                                                    type="button"
+                                                    class="record-link record-link-primary"
+                                                    data-id={request.id}
+                                                    data-object="Case"
+                                                    onclick={handleRecordNavigation}>
+                                                    {request.subjectDisplay}
+                                                </button>
+
+                                                <div class="secondary-cell">
+                                                    Request #{request.caseNumber}
+                                                </div>
+                                            </td>
+
+                                            <td>
+                                                <template if:true={request.assetId}>
+                                                    <button
+                                                        type="button"
+                                                        class="record-link"
+                                                        data-id={request.assetId}
+                                                        data-object="Asset"
+                                                        onclick={handleRecordNavigation}>
+                                                        {request.assetNameDisplay}
+                                                    </button>
+                                                </template>
+
+                                                <template if:false={request.assetId}>
+                                                    <span>
+                                                        {request.assetNameDisplay}
+                                                    </span>
+                                                </template>
+                                            </td>
+
+                                            <td>
+                                                <span class={request.statusClass}>
+                                                    {request.statusDisplay}
+                                                </span>
+                                            </td>
+
+                                            <td>
+                                                <span class={request.priorityClass}>
+                                                    {request.priorityDisplay}
+                                                </span>
+                                            </td>
+
+                                            <td>
+                                                <lightning-formatted-date-time
+                                                    value={request.createdDate}
+                                                    year="numeric"
+                                                    month="short"
+                                                    day="2-digit">
+                                                </lightning-formatted-date-time>
+                                            </td>
+
+                                        </tr>
+                                    </template>
+                                </tbody>
+                            </table>
+
+                        </div>
+                    </template>
+
+                    <template if:false={hasServiceRequests}>
+                        <div class="empty-state empty-state-success">
+
+                            <div class="empty-check">
+                                ✓
+                            </div>
+
+                            <h3>No open service requests</h3>
+
+                            <p>
+                                You don't currently have any service requests requiring attention.
+                            </p>
+                        </div>
+                    </template>
+
+                </section>
+
+                <!-- =========================================
+                     WORK ORDERS
+                     ========================================= -->
+                <section
+                    class="data-section section-teal"
+                    data-section="workOrders">
+
+                    <div class="section-header">
+                        <div class="section-heading-group">
+
+                            <div class="section-icon work-icon">
+                                <svg viewBox="0 0 24 24" aria-hidden="true">
+                                    <path d="M4 8.25h16v10.5H4z"></path>
+                                    <path d="M8 8.25V5.5h8v2.75M4 12.25h16M9.25 12.25v1.5h5.5v-1.5"></path>
+                                </svg>
+                            </div>
+
+                            <div>
+                                <div class="section-title-row">
+                                    <h2>My Work Orders</h2>
+
+                                    <span class="section-count">
+                                        {workOrderCountLabel}
+                                    </span>
+                                </div>
+
+                                <p>
+                                    Current and upcoming MillTrack service activity for your machines.
+                                </p>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <template if:true={hasWorkOrders}>
+                        <div class="table-wrapper">
+
+                            <table class="customer-table">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">Service Visit</th>
+                                        <th scope="col">Machine</th>
+                                        <th scope="col">Service Status</th>
+                                        <th scope="col">Scheduled Visit</th>
+                                    </tr>
+                                </thead>
+
+                                <tbody>
+                                    <template
+                                        for:each={workOrders}
+                                        for:item="workOrder">
+
+                                        <tr key={workOrder.id}>
+
+                                            <td>
+                                                <button
+                                                    type="button"
+                                                    class="record-link record-link-primary"
+                                                    data-id={workOrder.id}
+                                                    data-object="WorkOrder"
+                                                    onclick={handleRecordNavigation}>
+                                                    {workOrder.subjectDisplay}
+                                                </button>
+
+                                                <div class="secondary-cell">
+                                                    Work Order #{workOrder.workOrderNumber}
+                                                </div>
+                                            </td>
+
+                                            <td>
+                                                <template if:true={workOrder.assetId}>
+                                                    <button
+                                                        type="button"
+                                                        class="record-link"
+                                                        data-id={workOrder.assetId}
+                                                        data-object="Asset"
+                                                        onclick={handleRecordNavigation}>
+                                                        {workOrder.assetNameDisplay}
+                                                    </button>
+                                                </template>
+
+                                                <template if:false={workOrder.assetId}>
+                                                    <span>
+                                                        {workOrder.assetNameDisplay}
+                                                    </span>
+                                                </template>
+                                            </td>
+
+                                            <td>
+                                                <span class={workOrder.statusClass}>
+                                                    {workOrder.customerStatus}
+                                                </span>
+                                            </td>
+
+                                            <td>
+                                                <template if:true={workOrder.scheduledVisit}>
+                                                    <lightning-formatted-date-time
+                                                        value={workOrder.scheduledVisit}
+                                                        year="numeric"
+                                                        month="short"
+                                                        day="2-digit"
+                                                        hour="numeric"
+                                                        minute="2-digit">
+                                                    </lightning-formatted-date-time>
+                                                </template>
+
+                                                <template if:false={workOrder.scheduledVisit}>
+                                                    <span class="muted-value">
+                                                        To be scheduled
+                                                    </span>
+                                                </template>
+                                            </td>
+
+                                        </tr>
+                                    </template>
+                                </tbody>
+                            </table>
+
+                        </div>
+                    </template>
+
+                    <template if:false={hasWorkOrders}>
+                        <div class="empty-state empty-state-success">
+
+                            <div class="empty-check">
+                                ✓
+                            </div>
+
+                            <h3>No active work orders</h3>
+
+                            <p>
+                                There is no current service work scheduled or in progress.
+                            </p>
+                        </div>
+                    </template>
+
+                </section>
+
+            </div>
+        </template>
+
+    </div>
+</template>

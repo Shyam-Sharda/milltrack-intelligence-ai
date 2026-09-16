@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <PermissionSet xmlns="http://soap.sforce.com/2006/04/metadata">
   <applicationVisibilities>
     <application>MillTrack_Intelligence</application>
@@ -519,15 +519,7 @@
 
   <flowAccesses>
     <enabled>true</enabled>
-    <flow>Dispatch_Technician</flow>
-  </flowAccesses>
-  <flowAccesses>
-    <enabled>true</enabled>
     <flow>MGR_01_Regenerate_Work_Order_AI_Proposal</flow>
-  </flowAccesses>
-  <flowAccesses>
-    <enabled>true</enabled>
-    <flow>Order_Technician_Requested_Part</flow>
   </flowAccesses>
 
   <hasActivationRequired>false</hasActivationRequired>

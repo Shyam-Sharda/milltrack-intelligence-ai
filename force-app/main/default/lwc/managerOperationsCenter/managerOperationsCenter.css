@@ -1,15 +1,65 @@
 :host {
     display: block;
+
+    --milltrack-navy: #061d3d;
+    --milltrack-blue: #0b5cab;
+    --milltrack-blue-dark: #074f91;
+    --milltrack-border: #d8e2ee;
+    --milltrack-border-soft: #e7edf3;
+    --milltrack-text: #263b50;
+    --milltrack-muted: #60758a;
+    --milltrack-surface: #ffffff;
+    --milltrack-surface-soft: #f7f9fc;
+}
+
+/* =========================================================
+   Manager Operations Workspace Shell
+   ========================================================= */
+
+.manager-operations-shell {
+    overflow: hidden;
+
+    border: 2px solid #bdd2e3;
+    border-top: 4px solid var(--milltrack-blue);
+    border-radius: 16px;
+
+    background: var(--milltrack-surface);
+
+    box-shadow:
+        0 7px 20px rgba(6, 29, 61, 0.07),
+        0 1px 4px rgba(11, 92, 171, 0.05);
 }
 
 /* =========================================================
    Manager Operations Center Header
    ========================================================= */
 
-.manager-card-title {
+.manager-component-header {
     display: flex;
     align-items: center;
-    gap: 0.55rem;
+    justify-content: space-between;
+
+    gap: 1.25rem;
+
+    padding: 1.2rem 1.35rem;
+
+    background:
+        linear-gradient(
+            135deg,
+            #f8fbff 0%,
+            #f1f7fc 100%
+        );
+
+    border-bottom: 1px solid var(--milltrack-border-soft);
+}
+
+.manager-header-title-wrap {
+    display: flex;
+    align-items: center;
+
+    gap: 0.8rem;
+
+    min-width: 0;
 }
 
 .manager-title-icon {
@@ -17,23 +67,129 @@
     align-items: center;
     justify-content: center;
 
-    width: 2rem;
-    height: 2rem;
+    width: 2.7rem;
+    height: 2.7rem;
 
-    flex-shrink: 0;
+    flex: 0 0 2.7rem;
 
-    background: #0b5cab;
-    border-radius: 50%;
+    color: var(--milltrack-blue);
+    background: #e8f3fd;
 
-    box-shadow: 0 1px 3px rgba(6, 37, 74, 0.18);
+    border: 1px solid #c8dcef;
+    border-radius: 0.7rem;
+}
+
+.manager-title-icon lightning-icon {
+    --slds-c-icon-color-foreground-default: currentColor;
+}
+
+.manager-header-copy {
+    min-width: 0;
+}
+
+.manager-header-eyebrow {
+    margin: 0 0 0.18rem;
+
+    color: #718494;
+
+    font-size: 0.68rem;
+    font-weight: 800;
+    line-height: 1.2;
+
+    letter-spacing: 0.08em;
 }
 
 .manager-title-text {
-    color: #06254a;
+    margin: 0;
 
-    font-size: 1rem;
-    font-weight: 700;
+    color: var(--milltrack-navy);
+
+    font-size: 1.18rem;
+    font-weight: 800;
     line-height: 1.3;
+}
+
+.manager-header-subtitle {
+    margin: 0.22rem 0 0;
+
+    color: var(--milltrack-muted);
+
+    font-size: 0.76rem;
+    line-height: 1.45;
+}
+
+
+/* =========================================================
+   Header Refresh Button
+   ========================================================= */
+
+.manager-refresh-button {
+    appearance: none;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    gap: 0.4rem;
+
+    min-height: 2.2rem;
+
+    padding: 0.42rem 0.78rem;
+
+    color: var(--milltrack-blue);
+    background: #ffffff;
+
+    border: 1px solid #a9c8e5;
+    border-radius: 0.5rem;
+
+    font: inherit;
+    font-size: 0.72rem;
+    font-weight: 800;
+    line-height: 1.2;
+
+    white-space: nowrap;
+
+    cursor: pointer;
+
+    box-shadow:
+        0 1px 2px rgba(6, 29, 61, 0.035);
+
+    transition:
+        color 120ms ease,
+        background-color 120ms ease,
+        border-color 120ms ease,
+        box-shadow 120ms ease,
+        transform 120ms ease;
+}
+
+.manager-refresh-button lightning-icon {
+    --slds-c-icon-color-foreground-default: currentColor;
+}
+
+.manager-refresh-button:hover:not(:disabled) {
+    color: var(--milltrack-blue-dark);
+    background: #eef6ff;
+
+    border-color: #8fb7da;
+
+    box-shadow:
+        0 2px 6px rgba(11, 92, 171, 0.10);
+
+    transform: translateY(-1px);
+}
+
+.manager-refresh-button:focus-visible {
+    outline: 2px solid #1589ee;
+    outline-offset: 2px;
+}
+
+.manager-refresh-button:disabled {
+    opacity: 0.55;
+
+    cursor: default;
+
+    box-shadow: none;
+    transform: none;
 }
 
 /* =========================================================
@@ -42,8 +198,10 @@
 
 .operations-center {
     position: relative;
+
     min-height: 12rem;
-    padding: 0 1rem 1rem;
+
+    padding: 1rem;
 }
 
 .spinner-container {
@@ -57,19 +215,25 @@
 
     min-height: 12rem;
 
-    background: rgba(255, 255, 255, 0.78);
-    border-radius: 0.25rem;
+    background: rgba(248, 250, 252, 0.88);
 
-    backdrop-filter: blur(1px);
+    border-radius: 0.8rem;
+
+    -webkit-backdrop-filter: blur(2px);
+    backdrop-filter: blur(2px);
 }
 
 .error-state {
     margin-bottom: 1rem;
-    border-radius: 0.25rem;
+
+    border-radius: 0.65rem;
+
+    box-shadow:
+        0 2px 7px rgba(186, 5, 23, 0.08);
 }
 
 .overview-section {
-    padding-top: 0.25rem;
+    padding-top: 0;
 }
 
 .section-heading,
@@ -79,40 +243,36 @@
     justify-content: space-between;
 
     gap: 1rem;
-    margin-bottom: 0.875rem;
-}
-
-.table-heading {
-    margin-bottom: 1rem;
 }
 
 .section-title {
     margin: 0;
 
-    color: var(--lwc-colorTextDefault, #181818);
+    color: var(--milltrack-navy);
 
     font-size: 1rem;
-    font-weight: 700;
-    line-height: 1.4;
+    font-weight: 800;
+    line-height: 1.35;
 }
 
 .section-subtitle {
-    margin: 0.2rem 0 0;
+    margin: 0.18rem 0 0;
 
-    color: var(--lwc-colorTextWeak, #706e6b);
+    color: var(--milltrack-muted);
 
-    font-size: 0.8125rem;
-    line-height: 1.4;
+    font-size: 0.78rem;
+    line-height: 1.45;
 }
 
 .table-instructions {
-    max-width: 60rem;
-    margin: 0.35rem 0 0;
+    max-width: 64rem;
 
-    color: var(--lwc-colorTextWeak, #706e6b);
+    margin: 0.42rem 0 0;
 
-    font-size: 0.75rem;
-    line-height: 1.45;
+    color: #6b7d8f;
+
+    font-size: 0.72rem;
+    line-height: 1.5;
 }
 
 /* =========================================================
@@ -121,43 +281,57 @@
 
 .case-summary-section {
     padding-top: 0.25rem;
-    margin-bottom: 1.5rem;
+    margin-bottom: 1rem;
 }
 
 .open-cases-summary {
     display: grid;
-    grid-template-columns: auto minmax(0, 1fr) auto auto;
+
+    grid-template-columns:
+        auto
+        minmax(0, 1fr)
+        auto
+        auto;
+
     align-items: center;
 
     gap: 1rem;
 
-    padding: 1rem 1.1rem;
+    padding: 1rem 1.15rem;
 
     background:
-        linear-gradient(135deg, #f8fbff 0%, #f2f7fc 100%);
+        linear-gradient(
+            135deg,
+            #f8fbff 0%,
+            #eef6ff 100%
+        );
 
-    border: 1px solid #b9cfe4;
-    border-radius: 0.65rem;
+    border: 1px solid #c8dcef;
+    border-radius: 0.8rem;
 
     box-shadow:
-        0 1px 3px rgba(7, 29, 63, 0.04);
+        0 2px 7px rgba(6, 29, 61, 0.055);
 
     transition:
-        background-color 140ms ease,
         border-color 140ms ease,
-        box-shadow 140ms ease;
+        box-shadow 140ms ease,
+        transform 140ms ease;
 }
 
 .open-cases-summary:hover {
-    border-color: #8fb2d2;
+    border-color: #a9c8e5;
 
     box-shadow:
-        0 3px 9px rgba(11, 92, 171, 0.09);
+        0 4px 12px rgba(11, 92, 171, 0.09);
 }
 
 .open-cases-summary_selected {
     background:
-        linear-gradient(135deg, #edf5fc 0%, #e7f1fa 100%);
+        linear-gradient(
+            135deg,
+            #eef6ff 0%,
+            #e7f1fb 100%
+        );
 
     border-color: #0b5cab;
 
@@ -171,15 +345,18 @@
     align-items: center;
     justify-content: center;
 
-    width: 3rem;
-    height: 3rem;
+    width: 3.15rem;
+    height: 3.15rem;
 
     flex-shrink: 0;
 
-    background: #e9f3fc;
+    background: #edf6ff;
 
-    border: 1px solid #c8dced;
-    border-radius: 50%;
+    border: 1px solid #c7dced;
+    border-radius: 0.7rem;
+
+    box-shadow:
+        0 1px 3px rgba(6, 29, 61, 0.05);
 }
 
 .open-cases-summary__content {
@@ -189,15 +366,15 @@
 .open-cases-summary__eyebrow {
     display: block;
 
-    margin-bottom: 0.35rem;
+    margin-bottom: 0.32rem;
 
-    color: #5f6f82;
+    color: #60758a;
 
-    font-size: 0.7rem;
-    font-weight: 700;
+    font-size: 0.66rem;
+    font-weight: 800;
     line-height: 1.2;
-    letter-spacing: 0.055em;
 
+    letter-spacing: 0.07em;
     text-transform: uppercase;
 }
 
@@ -211,12 +388,12 @@
 .open-cases-summary__count {
     display: block;
 
-    min-width: 2.4rem;
+    min-width: 2.5rem;
 
     color: #0b5cab;
 
     font-size: 2.2rem;
-    font-weight: 700;
+    font-weight: 800;
     line-height: 1;
 
     text-align: center;
@@ -225,20 +402,20 @@
 .open-cases-summary__title {
     margin: 0;
 
-    color: #06254a;
+    color: var(--milltrack-navy);
 
     font-size: 1rem;
-    font-weight: 700;
+    font-weight: 800;
     line-height: 1.3;
 }
 
 .open-cases-summary__description {
     margin: 0.18rem 0 0;
 
-    color: #5f6b76;
+    color: #60758a;
 
-    font-size: 0.78rem;
-    line-height: 1.4;
+    font-size: 0.76rem;
+    line-height: 1.42;
 }
 
 .open-cases-summary__new {
@@ -247,27 +424,27 @@
     align-items: center;
     justify-content: center;
 
-    min-width: 6.5rem;
+    min-width: 7rem;
 
-    padding-left: 1rem;
+    padding-left: 1.1rem;
 
-    border-left: 1px solid #d6e2ed;
+    border-left: 1px solid #d4e1ed;
 }
 
 .open-cases-summary__new-count {
     color: #c96f1a;
 
-    font-size: 1.45rem;
-    font-weight: 700;
+    font-size: 1.5rem;
+    font-weight: 800;
     line-height: 1;
 }
 
 .open-cases-summary__new-label {
     margin-top: 0.25rem;
 
-    color: #5f6b76;
+    color: #60758a;
 
-    font-size: 0.72rem;
+    font-size: 0.7rem;
     font-weight: 600;
     line-height: 1.2;
 
@@ -275,6 +452,8 @@
 }
 
 .open-cases-action {
+    appearance: none;
+
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -282,16 +461,17 @@
     gap: 0.4rem;
 
     min-height: 2.25rem;
-    padding: 0.35rem 0.8rem;
 
-    color: #1268b3;
+    padding: 0.4rem 0.8rem;
+
+    color: #0b5cab;
     background: #ffffff;
 
-    border: 1px solid #1268b3;
+    border: 1px solid #0b5cab;
     border-radius: 0.45rem;
 
     font: inherit;
-    font-size: 0.75rem;
+    font-size: 0.73rem;
     font-weight: 700;
     line-height: 1.2;
 
@@ -299,25 +479,31 @@
 
     cursor: pointer;
 
+    box-shadow:
+        0 1px 3px rgba(6, 29, 61, 0.04);
+
     transition:
         color 120ms ease,
         background-color 120ms ease,
         border-color 120ms ease,
-        box-shadow 120ms ease;
+        box-shadow 120ms ease,
+        transform 120ms ease;
 }
 
 .open-cases-action:hover {
-    color: #ffffff;
-    background: #1268b3;
+    color: #074f91;
+    background: #eef6ff;
 
-    border-color: #1268b3;
+    border-color: #8fb7da;
 
     box-shadow:
-        0 2px 6px rgba(18, 104, 179, 0.16);
+        0 3px 8px rgba(11, 92, 171, 0.10);
+
+    transform: translateY(-1px);
 }
 
 .open-cases-action:focus-visible {
-    outline: 2px solid #1683ff;
+    outline: 2px solid #0b5cab;
     outline-offset: 2px;
 }
 
@@ -333,12 +519,33 @@
 }
 
 .open-cases-summary_selected .open-cases-action:hover {
-    background: #094f93;
-    border-color: #094f93;
+    color: #ffffff;
+    background: #074f91;
+
+    border-color: #074f91;
 }
 
+/* =========================================================
+   Work Order Workflow Section
+   ========================================================= */
+
 .work-order-overview {
-    padding-top: 0;
+    margin-top: 0.2rem;
+
+    padding: 1rem 1.05rem 1.1rem;
+
+    background: #ffffff;
+
+    border: 1px solid var(--milltrack-border);
+    border-top: 3px solid #0b5cab;
+    border-radius: 0.8rem;
+
+    box-shadow:
+        0 2px 7px rgba(6, 29, 61, 0.055);
+}
+
+.work-order-overview .section-heading {
+    margin-bottom: 0.9rem;
 }
 
 /* =========================================================
@@ -348,37 +555,42 @@
 .queue-grid {
     display: grid;
 
-    grid-template-columns: repeat(
-        auto-fit,
-        minmax(10.5rem, 1fr)
-    );
+    grid-template-columns:
+        repeat(
+            auto-fit,
+            minmax(10.5rem, 1fr)
+        );
 
     gap: 0.75rem;
 }
 
 .queue-card {
+    appearance: none;
+
     display: flex;
     flex-direction: column;
     align-items: flex-start;
 
     width: 100%;
-    min-height: 8.5rem;
+    min-height: 8.35rem;
 
     padding: 1rem;
+
     overflow: hidden;
+
+    color: var(--milltrack-text);
+    background: #ffffff;
+
+    border: 1px solid transparent;
+    border-radius: 0.75rem;
 
     font: inherit;
     text-align: left;
 
-    color: var(--lwc-colorTextDefault, #181818);
-
-    border: 1px solid transparent;
-    border-radius: 0.55rem;
+    cursor: pointer;
 
     box-shadow:
-        0 1px 2px rgba(0, 0, 0, 0.05);
-
-    cursor: pointer;
+        0 2px 6px rgba(6, 29, 61, 0.045);
 
     transition:
         border-color 140ms ease,
@@ -394,7 +606,13 @@
    ========================================================= */
 
 .queue-card_attention {
-    background: #fff9f3;
+    background:
+        linear-gradient(
+            180deg,
+            #fffaf5 0%,
+            #fff7ef 100%
+        );
+
     border-color: #e3a15f;
 }
 
@@ -407,7 +625,7 @@
     border-color: #cf7928;
 
     box-shadow:
-        0 3px 8px rgba(201, 111, 26, 0.14);
+        0 4px 10px rgba(201, 111, 26, 0.13);
 
     transform: translateY(-1px);
 }
@@ -420,8 +638,14 @@
    ========================================================= */
 
 .queue-card_workflow {
-    background: #f4f7fb;
-    border-color: #54799e;
+    background:
+        linear-gradient(
+            180deg,
+            #f7f9fc 0%,
+            #f1f5f9 100%
+        );
+
+    border-color: #7294b5;
 }
 
 .queue-card_workflow .queue-count {
@@ -433,7 +657,7 @@
     border-color: #315f8d;
 
     box-shadow:
-        0 3px 8px rgba(23, 77, 124, 0.14);
+        0 4px 10px rgba(23, 77, 124, 0.13);
 
     transform: translateY(-1px);
 }
@@ -445,7 +669,13 @@
    ========================================================= */
 
 .queue-card_active {
-    background: #f6fcfd;
+    background:
+        linear-gradient(
+            180deg,
+            #f7fcfd 0%,
+            #f1fafb 100%
+        );
+
     border-color: #96d5dc;
 }
 
@@ -458,30 +688,25 @@
     border-color: #68bdc7;
 
     box-shadow:
-        0 3px 8px rgba(39, 143, 155, 0.12);
+        0 4px 10px rgba(39, 143, 155, 0.12);
 
     transform: translateY(-1px);
 }
 
 /* =========================================================
-   Focus State
+   Focus / Selected States
    ========================================================= */
 
 .queue-card:focus-visible {
-    outline: 2px solid #06254a;
+    outline: 2px solid #0b5cab;
     outline-offset: 2px;
 }
 
-/* =========================================================
-   Selected States
-   ========================================================= */
-
 .queue-card_selected {
-    color: #181818;
+    color: var(--milltrack-text);
+
     transform: translateY(-1px);
 }
-
-/* Attention selected */
 
 .queue-card_attention.queue-card_selected {
     background: #fff0df;
@@ -489,14 +714,12 @@
 
     box-shadow:
         inset 0 0 0 1px #c96f1a,
-        0 4px 10px rgba(201, 111, 26, 0.16);
+        0 5px 13px rgba(201, 111, 26, 0.16);
 }
 
 .queue-card_attention.queue-card_selected:hover {
     background: #ffead4;
 }
-
-/* Workflow selected */
 
 .queue-card_workflow.queue-card_selected {
     background: #e8f0f8;
@@ -504,22 +727,20 @@
 
     box-shadow:
         inset 0 0 0 1px #174d7c,
-        0 4px 10px rgba(23, 77, 124, 0.16);
+        0 5px 13px rgba(23, 77, 124, 0.16);
 }
 
 .queue-card_workflow.queue-card_selected:hover {
     background: #e1ebf5;
 }
 
-/* Service execution selected */
-
 .queue-card_active.queue-card_selected {
     background: #eaf8fa;
-    border-color: #4caab5;
+    border-color: #278f9b;
 
     box-shadow:
-        inset 0 0 0 1px #4caab5,
-        0 4px 10px rgba(39, 143, 155, 0.14);
+        inset 0 0 0 1px #278f9b,
+        0 5px 13px rgba(39, 143, 155, 0.14);
 }
 
 .queue-card_active.queue-card_selected:hover {
@@ -536,7 +757,7 @@
     margin-bottom: 0.35rem;
 
     font-size: 2rem;
-    font-weight: 700;
+    font-weight: 800;
     line-height: 1;
 }
 
@@ -545,35 +766,60 @@
 
     margin-bottom: 0.35rem;
 
-    color: #181818;
+    color: var(--milltrack-navy);
 
-    font-size: 0.9375rem;
-    font-weight: 700;
+    font-size: 0.92rem;
+    font-weight: 800;
     line-height: 1.3;
 }
 
 .queue-description {
     display: block;
 
-    color: #5f6b76;
+    color: #60758a;
 
-    font-size: 0.75rem;
-    line-height: 1.4;
+    font-size: 0.73rem;
+    line-height: 1.42;
 }
 
 .queue-card_selected .queue-description {
-    color: #444444;
+    color: #4b5e72;
 }
 
 /* =========================================================
-   Queue Table
-   Portal Record List Styling
+   Selected Queue / Table Section
    ========================================================= */
 
 .queue-table-section {
-    margin-top: 1.25rem;
-    padding-top: 1.25rem;
-    border-top: 1px solid #d7e1ec;
+    overflow: hidden;
+
+    margin-top: 1rem;
+
+    padding: 0;
+
+    background: #ffffff;
+
+    border: 1px solid var(--milltrack-border);
+    border-top: 3px solid #0b5cab;
+    border-radius: 0.8rem;
+
+    box-shadow:
+        0 2px 7px rgba(6, 29, 61, 0.055);
+}
+
+.table-heading {
+    margin: 0;
+
+    padding: 0.95rem 1.05rem 0.9rem;
+
+    background:
+        linear-gradient(
+            90deg,
+            #fbfcfe 0%,
+            #f4f8fc 100%
+        );
+
+    border-bottom: 1px solid var(--milltrack-border-soft);
 }
 
 /* =========================================================
@@ -583,33 +829,40 @@
 .portal-table-container {
     width: 100%;
     max-width: 100%;
-    overflow: hidden;
-    background: #ffffff;
-    border: 1px solid #dce5ef;
-    border-radius: 0.65rem;
-    box-shadow: 0 1px 3px rgba(7, 29, 63, 0.03);
-}
 
-.portal-table-container:hover {
-    border-color: #cbd8e6;
-    box-shadow: 0 2px 5px rgba(7, 29, 63, 0.05);
+    overflow: hidden;
+
+    background: #ffffff;
+
+    border: 0;
+    border-radius: 0;
+
+    box-shadow: none;
 }
 
 .portal-table-scroll {
     width: 100%;
     max-width: 100%;
+
     overflow-x: auto;
     overflow-y: hidden;
+
     -webkit-overflow-scrolling: touch;
+
+    scrollbar-color: #b7c8d8 transparent;
+    scrollbar-width: thin;
 }
 
 .portal-record-table {
     width: 100%;
     min-width: 64rem;
+
     border-collapse: collapse;
     table-layout: auto;
+
     color: #31445d;
     background: #ffffff;
+
     border: 0;
 }
 
@@ -618,25 +871,31 @@
    ========================================================= */
 
 .portal-record-table thead th {
-    padding: 0.75rem 0.85rem;
-    color: #061d3d;
-    background: #f5f7fa;
-    border-bottom: 1px solid #dce5ef;
-    font-size: 0.72rem;
-    font-weight: 600;
+    padding: 0.78rem 0.85rem;
+
+    color: var(--milltrack-navy);
+    background: #f4f8fc;
+
+    border-bottom: 1px solid #d8e2ee;
+
+    font-size: 0.7rem;
+    font-weight: 700;
     line-height: 1.35;
+
     text-align: left;
     vertical-align: middle;
+
     white-space: nowrap;
 }
 
 .portal-record-table thead th + th {
-    border-left: 1px solid #edf1f5;
+    border-left: 1px solid #e7edf3;
 }
 
 .portal-column-label {
-    color: #061d3d;
-    font-weight: 600;
+    color: var(--milltrack-navy);
+
+    font-weight: 700;
 }
 
 /* =========================================================
@@ -644,33 +903,43 @@
    ========================================================= */
 
 .portal-sort-button {
+    appearance: none;
+
     display: inline-flex;
     align-items: center;
     justify-content: flex-start;
+
     gap: 0.35rem;
+
     width: 100%;
+
     padding: 0;
-    color: #061d3d;
+
+    color: var(--milltrack-navy);
     background: transparent;
+
     border: 0;
+
     font: inherit;
-    font-weight: 600;
+    font-weight: 700;
     text-align: left;
+
     cursor: pointer;
 }
 
 .portal-sort-button:hover {
-    color: #1268b3;
+    color: #0b5cab;
 }
 
 .portal-sort-button:focus-visible {
-    outline: 2px solid #1683ff;
+    outline: 2px solid #0b5cab;
     outline-offset: 3px;
+
     border-radius: 0.15rem;
 }
 
 .portal-sort-icon {
-    --slds-c-icon-color-foreground-default: #1268b3;
+    --slds-c-icon-color-foreground-default: #0b5cab;
 }
 
 /* =========================================================
@@ -678,14 +947,21 @@
    ========================================================= */
 
 .portal-table-row td {
-    padding: 0.78rem 0.85rem;
+    padding: 0.82rem 0.85rem;
+
     color: #31445d;
     background: #ffffff;
-    border-bottom: 1px solid #e3eaf2;
-    font-size: 0.78rem;
+
+    border-bottom: 1px solid #e7edf3;
+
+    font-size: 0.76rem;
     font-weight: 400;
-    line-height: 1.45;
+    line-height: 1.48;
+
     vertical-align: middle;
+
+    transition:
+        background-color 110ms ease;
 }
 
 .portal-table-row td + td {
@@ -693,7 +969,7 @@
 }
 
 .portal-table-row:hover td {
-    background: #edf4fb;
+    background: #f3f8fd;
 }
 
 .portal-table-row:last-child td {
@@ -702,35 +978,43 @@
 
 .portal-table-cell_text {
     min-width: 8rem;
+
     white-space: normal;
     overflow-wrap: anywhere;
 }
 
 .portal-table-cell_number {
     width: 5rem;
+
     text-align: center;
+
     white-space: nowrap;
 }
 
 .portal-table-cell_partSource {
     min-width: 8.75rem;
+
     white-space: nowrap;
 }
 
 .portal-table-cell_date {
     min-width: 10rem;
+
     white-space: nowrap;
 }
 
 .portal-table-cell_record,
+.portal-table-cell_wop,
 .portal-table-cell_workOrder,
 .portal-table-cell_workOrderGroup {
     min-width: 8rem;
+
     white-space: nowrap;
 }
 
 .portal-table-cell_action {
     min-width: 11rem;
+
     white-space: nowrap;
 }
 
@@ -741,64 +1025,79 @@
 .part-source-badge {
     display: inline-flex;
     align-items: center;
-    gap: 0.28rem;
-    min-height: 1.45rem;
-    padding: 0.16rem 0.42rem;
+
+    gap: 0.3rem;
+
+    min-height: 1.5rem;
+
+    padding: 0.17rem 0.46rem;
+
     border: 1px solid;
     border-radius: 999px;
-    font-size: 0.68rem;
+
+    font-size: 0.66rem;
     font-weight: 700;
     line-height: 1.15;
+
     white-space: nowrap;
 }
 
 .part-source-badge__marker {
     width: 0.38rem;
     height: 0.38rem;
+
     flex-shrink: 0;
+
     background: currentColor;
+
     border-radius: 50%;
 }
 
 .part-source-badge_technician {
-    color: #1268b3;
-    background: #edf5fc;
+    color: #0b5cab;
+    background: #eef6ff;
+
     border-color: #a9c8e5;
 }
 
 .part-source-badge_required {
     color: #526579;
     background: #f5f7fa;
+
     border-color: #d6dee7;
 }
 
 .part-source-badge_workorder {
     color: #174d7c;
     background: #f1f5f9;
+
     border-color: #b9c9d8;
 }
 
 /* =========================================================
-   Waiting on Parts - Grouped Work Order Column
+   Grouped Work Order Column
    ========================================================= */
 
 .portal-table-cell_workOrderGroup {
     vertical-align: middle;
+
     background: #fbfdff;
+
     border-right: 1px solid #dce5ef;
 }
 
 .portal-table-row:hover .portal-table-cell_workOrderGroup {
-    background: #edf4fb;
+    background: #f3f8fd;
 }
 
 .portal-table-cell_group-hovered {
-    background: #edf4fb !important;
+    background: #f3f8fd !important;
 }
 
 .portal-work-order-group-link {
-    color: #1268b3;
-    font-weight: 600;
+    color: #0b5cab;
+
+    font-weight: 700;
 }
 
 /* =========================================================
@@ -806,29 +1105,38 @@
    ========================================================= */
 
 .portal-record-link {
+    appearance: none;
+
     padding: 0;
-    color: #1268b3;
+
+    color: #0b5cab;
     background: transparent;
+
     border: 0;
+
     font: inherit;
-    font-weight: 500;
+    font-weight: 600;
     text-align: left;
+
     cursor: pointer;
 }
 
 .portal-record-link:hover {
-    color: #0d5796;
+    color: #074f91;
+
     text-decoration: underline;
 }
 
 .portal-record-link:focus-visible {
-    outline: 2px solid #1683ff;
+    outline: 2px solid #0b5cab;
     outline-offset: 2px;
+
     border-radius: 0.15rem;
 }
 
 .portal-record-link:disabled {
     color: #7f8d9d;
+
     cursor: default;
     text-decoration: none;
 }
@@ -838,40 +1146,64 @@
    ========================================================= */
 
 .portal-action-button {
-    min-height: 2rem;
-    padding: 0.25rem 0.7rem;
-    color: #1268b3;
+    appearance: none;
+
+    min-height: 2.05rem;
+
+    padding: 0.3rem 0.7rem;
+
+    color: #0b5cab;
     background: #ffffff;
-    border: 1px solid #1268b3;
-    border-radius: 0.4rem;
-    font-size: 0.74rem;
-    font-weight: 600;
+
+    border: 1px solid #0b5cab;
+    border-radius: 0.45rem;
+
+    font-size: 0.72rem;
+    font-weight: 700;
     line-height: 1.2;
+
     white-space: nowrap;
+
     cursor: pointer;
+
+    box-shadow:
+        0 1px 2px rgba(6, 29, 61, 0.035);
+
     transition:
         color 120ms ease,
         background-color 120ms ease,
         border-color 120ms ease,
-        box-shadow 120ms ease;
+        box-shadow 120ms ease,
+        transform 120ms ease;
 }
 
 .portal-action-button:hover {
-    color: #ffffff;
-    background: #1268b3;
-    border-color: #1268b3;
+    color: #074f91;
+    background: #eef6ff;
+
+    border-color: #8fb7da;
+
+    box-shadow:
+        0 2px 6px rgba(11, 92, 171, 0.10);
+
+    transform: translateY(-1px);
 }
 
 .portal-action-button:focus-visible {
-    outline: 2px solid #1683ff;
+    outline: 2px solid #0b5cab;
     outline-offset: 2px;
 }
 
 .portal-action-button:disabled {
     color: #8998a8;
     background: #f7f9fb;
+
     border-color: #cbd8e6;
+
     cursor: default;
+
+    box-shadow: none;
+    transform: none;
 }
 
 /* =========================================================
@@ -879,6 +1211,7 @@
    ========================================================= */
 
 .portal-table-header_record,
+.portal-table-header_wop,
 .portal-table-header_workOrder,
 .portal-table-header_workOrderGroup {
     min-width: 8rem;
@@ -886,6 +1219,7 @@
 
 .portal-table-header_number {
     width: 5rem;
+
     text-align: center;
 }
 
@@ -908,39 +1242,40 @@
     justify-content: center;
 
     min-height: 13rem;
+
+    margin: 1rem;
     padding: 2rem 1rem;
+
+    color: #60758a;
+    background: #f8fafc;
 
     text-align: center;
 
-    color:
-        var(--lwc-colorTextWeak, #706e6b);
-
-    background: #f8fafc;
-
-    border: 1px dashed #cbd8e6;
-
-    border-radius: 0.5rem;
+    border: 1px dashed #bfd0df;
+    border-radius: 0.65rem;
 }
 
 .empty-state-icon {
     margin-bottom: 0.75rem;
+
+    --slds-c-icon-color-foreground-default: #7f9bb5;
 }
 
 .empty-state-title {
     margin: 0;
 
-    color:
-        var(--lwc-colorTextDefault, #181818);
+    color: var(--milltrack-navy);
 
     font-size: 1rem;
-    font-weight: 700;
+    font-weight: 800;
 }
 
 .empty-state-message {
     max-width: 30rem;
+
     margin: 0.35rem 0 0;
 
-    font-size: 0.8125rem;
+    font-size: 0.78rem;
     line-height: 1.5;
 }
 
@@ -971,9 +1306,8 @@
     overscroll-behavior: contain;
 }
 
-
 /* =========================================================
-   Review Work Order Wizard Modal
+   Review / Manager Wizard Modal
    ========================================================= */
 
 .manager-review-backdrop {
@@ -1037,6 +1371,7 @@
 
     width: 2.35rem;
     height: 2.35rem;
+
     padding: 0;
 
     color: #ffffff;
@@ -1045,7 +1380,8 @@
     border: 2px solid #ffffff;
     border-radius: 50%;
 
-    box-shadow: 0 4px 12px rgba(6, 37, 74, 0.24);
+    box-shadow:
+        0 4px 12px rgba(6, 37, 74, 0.24);
 
     cursor: pointer;
 }
@@ -1059,50 +1395,35 @@
     outline-offset: 2px;
 }
 
-@media screen and (max-width: 48rem) {
-    .manager-review-modal {
-        padding: 0.75rem;
-        align-items: flex-start;
-    }
-
-    .manager-review-modal__container {
-        width: 100%;
-        max-height: calc(100vh - 1.5rem);
-    }
-
-    .manager-review-modal__content {
-        max-height: calc(100vh - 1.5rem);
-    }
-
-    .manager-review-close {
-        top: 0.4rem;
-        right: 0.4rem;
-    }
-}
-
 /* =========================================================
    Medium Screens
    ========================================================= */
 
 @media screen and (max-width: 64rem) {
     .queue-grid {
-        grid-template-columns: repeat(
-            auto-fit,
-            minmax(9.5rem, 1fr)
-        );
+        grid-template-columns:
+            repeat(
+                auto-fit,
+                minmax(9.5rem, 1fr)
+            );
     }
 
     .open-cases-summary {
-        grid-template-columns: auto minmax(0, 1fr) auto;
+        grid-template-columns:
+            auto
+            minmax(0, 1fr)
+            auto;
     }
 
     .open-cases-action {
         grid-column: 2 / -1;
+
         justify-self: end;
     }
 
     .queue-card {
         min-height: 8rem;
+
         padding: 0.875rem;
     }
 
@@ -1120,12 +1441,52 @@
    ========================================================= */
 
 @media screen and (max-width: 48rem) {
+    .manager-component-header {
+        align-items: flex-start;
+        flex-direction: column;
+
+        gap: 0.8rem;
+
+        padding: 1rem;
+    }
+
+    .manager-refresh-button {
+        align-self: flex-end;
+    }
+
+    .manager-review-modal {
+        align-items: flex-start;
+
+        padding: 0.75rem;
+    }
+
+    .manager-review-modal__container {
+        width: 100%;
+        max-height: calc(100vh - 1.5rem);
+    }
+
+    .manager-review-modal__content {
+        max-height: calc(100vh - 1.5rem);
+    }
+
+    .manager-review-close {
+        top: 0.4rem;
+        right: 0.4rem;
+    }
+
     .operations-center {
         padding: 0 0.75rem 0.75rem;
     }
 
+    .work-order-overview {
+        padding: 0.9rem;
+    }
+
     .open-cases-summary {
-        grid-template-columns: auto minmax(0, 1fr);
+        grid-template-columns:
+            auto
+            minmax(0, 1fr);
+
         align-items: start;
     }
 
@@ -1149,6 +1510,7 @@
         gap: 0.35rem;
 
         min-width: 0;
+
         padding-left: 0;
 
         border-left: 0;
@@ -1183,6 +1545,7 @@
     .section-heading,
     .table-heading {
         flex-direction: column;
+
         gap: 0.5rem;
     }
 
@@ -1197,12 +1560,14 @@
     .manager-flow-modal .slds-modal__container {
         width: 96%;
         max-height: calc(100vh - 2rem);
+
         margin: 1rem auto;
     }
 
     .flow-modal-content {
         min-height: 16rem;
         max-height: 78vh;
+
         padding: 0.75rem;
     }
 }
@@ -1217,8 +1582,8 @@
     }
 
     .manager-title-icon {
-        width: 1.8rem;
-        height: 1.8rem;
+        width: 1.9rem;
+        height: 1.9rem;
     }
 
     .manager-title-text {
@@ -1230,7 +1595,7 @@
     }
 
     .case-summary-section {
-        margin-bottom: 1.25rem;
+        margin-bottom: 0.8rem;
     }
 
     .open-cases-summary {
@@ -1244,8 +1609,8 @@
     }
 
     .open-cases-summary__icon {
-        width: 2.6rem;
-        height: 2.6rem;
+        width: 2.65rem;
+        height: 2.65rem;
     }
 
     .open-cases-summary__title-row {
@@ -1276,12 +1641,17 @@
         align-self: flex-start;
     }
 
+    .work-order-overview {
+        padding: 0.8rem;
+    }
+
     .queue-grid {
         grid-template-columns: 1fr;
     }
 
     .queue-card {
         min-height: auto;
+
         padding: 0.875rem;
     }
 
@@ -1294,12 +1664,13 @@
     }
 
     .queue-table-section {
-        margin-top: 1rem;
-        padding-top: 1rem;
+        margin-top: 0.8rem;
+
+        border-radius: 0.65rem;
     }
 
-    .portal-table-container {
-        border-radius: 0.4rem;
+    .table-heading {
+        padding: 0.8rem;
     }
 
     .portal-record-table {
@@ -1308,17 +1679,21 @@
 
     .empty-state {
         min-height: 11rem;
+
+        margin: 0.75rem;
         padding: 1.5rem 0.75rem;
     }
 
     .manager-flow-modal .slds-modal__container {
         width: calc(100% - 1rem);
         max-height: calc(100vh - 1rem);
+
         margin: 0.5rem auto;
     }
 
     .flow-modal-content {
         max-height: 80vh;
+
         padding: 0.5rem;
     }
 }
@@ -1330,6 +1705,7 @@
 @media screen and (max-height: 42rem) {
     .manager-flow-modal .slds-modal__container {
         max-height: calc(100vh - 1rem);
+
         margin-top: 0.5rem;
         margin-bottom: 0.5rem;
     }
@@ -1347,12 +1723,15 @@
 @media (prefers-reduced-motion: reduce) {
     .queue-card,
     .open-cases-summary,
-    .open-cases-action {
+    .open-cases-action,
+    .portal-action-button {
         transition: none;
     }
 
     .queue-card:hover,
-    .queue-card_selected {
+    .queue-card_selected,
+    .open-cases-action:hover,
+    .portal-action-button:hover {
         transform: none;
     }
 }

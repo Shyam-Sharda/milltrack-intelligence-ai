@@ -1,0 +1,153 @@
+<template>
+
+    <!-- LOADING -->
+    <template if:true={isLoading}>
+        <div class="wizard">
+            <div class="loading-state">
+                <lightning-spinner alternative-text="Loading Complete Work Order" size="medium"></lightning-spinner>
+                <p>Preparing the Work Order...</p>
+            </div>
+        </div>
+    </template>
+
+    <!-- INITIAL ERROR -->
+    <template if:true={isInitialError}>
+        <div class="state-shell">
+            <div class="state-card error-state">
+                <div class="state-icon"><lightning-icon icon-name="utility:warning" size="small" variant="inverse"></lightning-icon></div>
+                <h2>Completion Unavailable</h2>
+                <p>{errorMessage}</p>
+                <button class="white-button error-button" onclick={handleClose}>Close</button>
+            </div>
+        </div>
+    </template>
+
+    <!-- FORM -->
+    <template if:true={showForm}>
+        <div class="wizard">
+
+            <!-- HEADER -->
+            <div class="wizard-header">
+                <div>
+                    <p class="eyebrow">TECHNICIAN SERVICE</p>
+                    <h1>Complete Work Order</h1>
+                    <p class="header-subtitle">Record the completed repair and close the service lifecycle.</p>
+                </div>
+                <div class="completion-badge">Final Completion</div>
+            </div>
+
+            <!-- CONTEXT -->
+            <div class="context-card">
+                <div class="context-icon"><lightning-icon icon-name="standard:work_order" size="small"></lightning-icon></div>
+
+                <div class="context-main">
+                    <span class="context-label">WORK ORDER</span>
+                    <strong>{context.workOrderNumber}</strong>
+                    <span class="context-subject">{context.subject}</span>
+                </div>
+
+                <div class="machine-context">
+                    <span class="context-label">MACHINE</span>
+                    <strong>{context.assetName}</strong>
+                    <span>{machineDetails}</span>
+                </div>
+
+                <div class="labor-context">
+                    <span class="context-label">CURRENT WO LABOR</span>
+                    <strong>{currentLaborLabel}</strong>
+                    <span>Before this visit</span>
+                </div>
+            </div>
+
+            <!-- FORM CONTENT -->
+            <section class="form-content">
+
+                <div class="section-heading">
+                    <div class="heading-icon"><lightning-icon icon-name="utility:check" size="x-small" variant="inverse"></lightning-icon></div>
+                    <div>
+                        <h2>Record Completed Repair</h2>
+                        <p>Document the final repair, verified cause, and labor for this visit.</p>
+                    </div>
+                </div>
+
+                <!-- REPAIR SUMMARY -->
+                <lightning-textarea class="form-input summary-input" label="Repair Summary" value={repairSummary} required maxlength="32768" placeholder="Summarize what you found, the repair performed, testing completed, and the machine condition after repair." onchange={handleRepairSummaryChange}></lightning-textarea>
+                <div class="field-help">Include the work performed, verification or testing completed, and the machine condition after repair.</div>
+
+                <!-- ROOT CAUSE -->
+                <lightning-textarea class="form-input root-cause-input" label="Root Cause" value={rootCause} required maxlength="32768" placeholder="Describe the underlying cause of the failure, not the repair that was performed." onchange={handleRootCauseChange}></lightning-textarea>
+                <div class="field-help">Root Cause is required because this visit records the issue as resolved.</div>
+
+                <!-- PARTS USED -->
+                <lightning-textarea class="form-input parts-input" label="Parts Used (Optional)" value={partsUsed} maxlength="32768" placeholder="List any parts actually installed or consumed during this repair." onchange={handlePartsUsedChange}></lightning-textarea>
+
+                <!-- LABOR -->
+                <div class="labor-section">
+                    <lightning-input class="form-input labor-input" type="number" label="Labor Hours for This Visit" min="0.25" step="0.25" value={laborHours} required onchange={handleLaborChange}></lightning-input>
+                    <div class="field-help">Enter labor for this visit only. It will be added to the Work Order's cumulative labor.</div>
+                </div>
+
+                <!-- NEXT STEP -->
+                <div class="next-step-card">
+                    <div class="next-icon"><lightning-icon icon-name="utility:success" size="x-small" variant="inverse"></lightning-icon></div>
+                    <div>
+                        <strong>What happens next?</strong>
+                        <p>The repair will be recorded as resolved. The machine will return to <strong>Active</strong>, the related Case will be <strong>Closed</strong>, and the Work Order will be marked <strong>Completed</strong> and returned to Service Manager ownership.</p>
+                    </div>
+                </div>
+
+                <template if:true={inlineError}><div class="inline-error">{inlineError}</div></template>
+
+            </section>
+
+            <!-- FOOTER -->
+            <footer class="wizard-footer">
+                <button class="secondary-button" onclick={handleClose} disabled={isSubmitting}>Cancel</button>
+
+                <button class="primary-button submit-button" onclick={handleSubmit} disabled={isSubmitting}>
+                    <template if:true={isSubmitting}>Completing...</template>
+                    <template if:false={isSubmitting}>Complete Work Order</template>
+                </button>
+            </footer>
+
+        </div>
+    </template>
+
+    <!-- SUCCESS -->
+    <template if:true={isSuccess}>
+        <div class="state-shell">
+            <div class="state-card success-state">
+                <div class="state-icon"><lightning-icon icon-name="utility:success" size="small" variant="inverse"></lightning-icon></div>
+
+                <h2>Work Order Completed</h2>
+                <div class="status-pill">Completed</div>
+
+                <p class="success-main">The repair and service visit have been recorded successfully.</p>
+                <p class="success-sub">The machine has been returned to active service and the Case has been closed.</p>
+
+                <div class="opening-log-message">
+                    <lightning-spinner alternative-text="Opening Maintenance Log" size="small"></lightning-spinner>
+                    <span>Opening Maintenance Log...</span>
+                </div>
+
+                <button class="white-outline-button open-log-button" onclick={handleOpenMaintenanceLog}>Open Maintenance Log Now</button>
+            </div>
+        </div>
+    </template>
+
+    <!-- SUBMIT ERROR -->
+    <template if:true={isSubmitError}>
+        <div class="state-shell">
+            <div class="state-card error-state">
+                <div class="state-icon"><lightning-icon icon-name="utility:warning" size="small" variant="inverse"></lightning-icon></div>
+
+                <h2>Work Order Not Completed</h2>
+                <p>{errorMessage}</p>
+                <p class="error-subtext">No completion changes were saved. You can return to the repair and try again.</p>
+
+                <button class="white-button error-button" onclick={handleReturnToForm}>Return to Repair</button>
+            </div>
+        </div>
+    </template>
+
+</template>

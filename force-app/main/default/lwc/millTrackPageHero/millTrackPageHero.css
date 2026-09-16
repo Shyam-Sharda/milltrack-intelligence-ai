@@ -1,11 +1,11 @@
-/* =========================================
-   MillTrack Page Hero
+/* =========================================================
+   MILLTRACK CUSTOMER PAGE HERO
    Used on:
    - Asset Detail
    - Case Detail
    - Work Order Detail
    - Report an Issue
-   ========================================= */
+   ========================================================= */
 
 :host {
     display: block;
@@ -14,201 +14,480 @@
     max-width: 100vw;
 
     margin-left: calc(50% - 50vw);
+
+    --hero-navy: #041a36;
+    --hero-mid-blue: #07355f;
+    --hero-blue: #0c4f79;
+    --hero-light-blue: #8eb6d0;
 }
 
 
-/* =========================================
-   Hero Container
-   ========================================= */
+/* =========================================================
+   OUTER SHELL
+   ========================================================= */
 
-.page-hero {
-    position: relative;
-    overflow: hidden;
-
+.hero-shell {
     width: 100%;
-    min-height: 170px;
-
-    padding: 2.75rem 2rem 2.4rem;
 
     box-sizing: border-box;
 
-    text-align: center;
+    padding: 1rem 1rem 0;
+}
 
-    background: #f8fbff;
+
+/* =========================================================
+   HERO
+   ========================================================= */
+
+.page-hero {
+    position: relative;
+
+    overflow: hidden;
+
+    width: min(100%, 116rem);
+    min-height: 13.5rem;
+
+    margin: 0 auto;
+
+    box-sizing: border-box;
+
+    color: #ffffff;
+
+    background:
+        linear-gradient(
+            110deg,
+            #03182f 0%,
+            #062a50 48%,
+            #0b416c 78%,
+            #124f78 100%
+        );
+
+    border-radius: 1rem;
+
+    box-shadow:
+        0 8px 22px rgba(7, 29, 63, 0.16);
 
     isolation: isolate;
 }
 
 
-/* =========================================
-   Decorative Background Waves
-   Match the Welcome hero
-   ========================================= */
+/* =========================================================
+   CONTENT
+   ========================================================= */
 
-.wave {
+.hero-content {
+    position: relative;
+
+    z-index: 4;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 3rem;
+
+    min-height: 13.5rem;
+
+    padding:
+        2.25rem
+        2.4rem
+        3.15rem;
+
+    box-sizing: border-box;
+}
+
+
+/* =========================================================
+   LEFT CONTENT
+   ========================================================= */
+
+.hero-main {
+    min-width: 0;
+    max-width: 62rem;
+}
+
+.hero-main h1 {
+    margin: 0;
+
+    color: #ffffff;
+
+    font-size: 2.25rem;
+    font-weight: 800;
+    line-height: 1.15;
+
+    letter-spacing: -0.035rem;
+}
+
+.portal-label {
+    margin: 0.65rem 0 0;
+
+    color: #d9eaf6;
+
+    font-size: 0.82rem;
+    font-weight: 800;
+
+    letter-spacing: 0.095em;
+
+    text-transform: uppercase;
+}
+
+.page-subtitle {
+    max-width: 58rem;
+
+    margin: 0.7rem 0 0;
+
+    color: #e6eff7;
+
+    font-size: 1rem;
+    font-weight: 400;
+    line-height: 1.55;
+}
+
+
+/* =========================================================
+   CONTEXT PANEL
+   ========================================================= */
+
+.context-panel {
+    position: relative;
+
+    z-index: 5;
+
+    display: flex;
+    align-items: center;
+
+    gap: 0.85rem;
+
+    flex: 0 0 auto;
+
+    max-width: 24rem;
+
+    padding: 1rem 1.15rem;
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(255, 255, 255, 0.13),
+            rgba(255, 255, 255, 0.08)
+        );
+
+    border: 1px solid rgba(219, 235, 247, 0.38);
+    border-radius: 0.85rem;
+
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.08),
+        0 6px 18px rgba(0, 0, 0, 0.08);
+
+    backdrop-filter: blur(4px);
+}
+
+.context-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    flex: 0 0 2.8rem;
+
+    width: 2.8rem;
+    height: 2.8rem;
+
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.12);
+
+    border: 1px solid rgba(255, 255, 255, 0.17);
+    border-radius: 0.7rem;
+}
+
+.context-icon svg {
+    width: 1.55rem;
+    height: 1.55rem;
+
+    fill: none;
+
+    stroke: currentColor;
+    stroke-width: 1.7;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.context-copy {
+    display: flex;
+    flex-direction: column;
+
+    min-width: 0;
+}
+
+.context-eyebrow {
+    margin-bottom: 0.2rem;
+
+    color: #c3dced;
+
+    font-size: 0.67rem;
+    font-weight: 800;
+
+    letter-spacing: 0.08em;
+
+    text-transform: uppercase;
+}
+
+.context-copy strong {
+    color: #ffffff;
+
+    font-size: 1rem;
+    font-weight: 800;
+    line-height: 1.25;
+}
+
+.context-subtitle {
+    margin-top: 0.22rem;
+
+    color: #d7e6f1;
+
+    font-size: 0.7rem;
+    font-weight: 500;
+    line-height: 1.4;
+}
+
+
+/* =========================================================
+   BACKGROUND ORBS
+   ========================================================= */
+
+.hero-orb {
     position: absolute;
 
-    z-index: -1;
+    z-index: 1;
 
     border-radius: 50%;
 
     pointer-events: none;
 }
 
-.wave-one {
-    width: 85rem;
-    height: 22rem;
-
-    left: 18%;
-    top: -12rem;
-
-    background: rgba(219, 228, 239, 0.38);
-
-    transform: rotate(-4deg);
-}
-
-.wave-two {
-    width: 70rem;
+.hero-orb-one {
+    width: 18rem;
     height: 18rem;
 
-    right: 15%;
-    bottom: -13rem;
+    right: 3rem;
+    top: -9rem;
 
-    background: rgba(230, 237, 246, 0.5);
+    background:
+        rgba(64, 126, 169, 0.24);
+}
 
-    transform: rotate(4deg);
+.hero-orb-two {
+    width: 15rem;
+    height: 15rem;
+
+    right: -3.5rem;
+    top: 2.5rem;
+
+    background:
+        rgba(101, 160, 196, 0.16);
+}
+
+.hero-orb-three {
+    width: 10rem;
+    height: 10rem;
+
+    right: 15rem;
+    top: -4rem;
+
+    background:
+        rgba(110, 168, 203, 0.09);
 }
 
 
-/* =========================================
-   Hero Content
-   ========================================= */
+/* =========================================================
+   BOTTOM WAVES
+   ========================================================= */
 
-.page-hero-content {
-    position: relative;
+.hero-wave {
+    position: absolute;
 
-    z-index: 1;
+    z-index: 2;
 
-    max-width: 72rem;
+    left: -3%;
+    bottom: -4.5rem;
 
-    margin: 0 auto;
+    width: 106%;
+    height: 7rem;
+
+    border-radius: 50% 50% 0 0;
+
+    pointer-events: none;
+}
+
+.hero-wave-back {
+    bottom: -4.05rem;
+
+    background: #6d9cba;
+
+    transform:
+        rotate(-0.7deg)
+        scaleX(1.02);
+}
+
+.hero-wave-front {
+    bottom: -4.55rem;
+
+    background: #eef4f8;
+
+    transform:
+        rotate(0.75deg)
+        scaleX(1.025);
 }
 
 
-/* =========================================
-   Page Title
-   ========================================= */
+/* =========================================================
+   DESKTOP / NARROWER
+   ========================================================= */
 
-.page-hero-content h1 {
-    margin: 0;
+@media only screen and (max-width: 1100px) {
 
-    color: #061d3d;
+    .hero-content {
+        gap: 1.75rem;
 
-    font-size: 2.2rem;
-    font-weight: 700;
-    line-height: 1.2;
-
-    letter-spacing: -0.035rem;
-}
-
-
-/* =========================================
-   Page Subtitle
-   ========================================= */
-
-.page-subtitle {
-    max-width: 70rem;
-
-    margin: 0.8rem auto 0;
-
-    color: #45566f;
-
-    font-size: 1.05rem;
-    font-weight: 400;
-    line-height: 1.5;
-}
-
-
-/* =========================================
-   Tablet
-   ========================================= */
-
-@media only screen and (max-width: 900px) {
-
-    .page-hero {
-        min-height: 155px;
-
-        padding: 2.4rem 1.5rem 2.1rem;
+        padding:
+            2rem
+            2rem
+            3rem;
     }
 
-    .page-hero-content h1 {
-        font-size: 2rem;
+    .hero-main h1 {
+        font-size: 1.95rem;
     }
 
-    .page-subtitle {
-        font-size: 1rem;
+    .context-panel {
+        max-width: 20rem;
     }
 }
 
 
-/* =========================================
-   Mobile
-   ========================================= */
+/* =========================================================
+   TABLET
+   ========================================================= */
 
-@media only screen and (max-width: 700px) {
+@media only screen and (max-width: 850px) {
 
-    .page-hero {
+    .hero-content {
+        align-items: flex-start;
+        flex-direction: column;
+
+        gap: 1.3rem;
+
         min-height: auto;
 
-        padding: 2rem 1.25rem 1.8rem;
+        padding:
+            1.9rem
+            1.6rem
+            3.1rem;
     }
 
-    .page-hero-content h1 {
-        font-size: 1.7rem;
+    .hero-main {
+        max-width: 100%;
+    }
+
+    .context-panel {
+        width: auto;
+        max-width: 100%;
+    }
+
+    .hero-orb-one {
+        right: -5rem;
+    }
+
+    .hero-orb-two {
+        right: -8rem;
+    }
+}
+
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media only screen and (max-width: 600px) {
+
+    :host {
+        width: 100%;
+        max-width: 100%;
+
+        margin-left: 0;
+    }
+
+    .hero-shell {
+        padding:
+            0.7rem
+            0.65rem
+            0;
+    }
+
+    .page-hero {
+        border-radius: 0.8rem;
+    }
+
+    .hero-content {
+        padding:
+            1.55rem
+            1.15rem
+            2.8rem;
+    }
+
+    .hero-main h1 {
+        font-size: 1.55rem;
 
         letter-spacing: -0.02rem;
     }
 
+    .portal-label {
+        margin-top: 0.5rem;
+
+        font-size: 0.7rem;
+    }
+
     .page-subtitle {
-        margin-top: 0.65rem;
+        margin-top: 0.55rem;
 
-        font-size: 0.94rem;
-        line-height: 1.45;
+        font-size: 0.9rem;
+        line-height: 1.5;
     }
 
-    .wave-one {
-        width: 45rem;
-        height: 14rem;
+    .context-panel {
+        width: 100%;
 
-        left: -5rem;
-        top: -8rem;
+        box-sizing: border-box;
     }
 
-    .wave-two {
-        width: 40rem;
-        height: 12rem;
+    .hero-wave {
+        bottom: -4.85rem;
 
-        right: -8rem;
-        bottom: -9rem;
+        height: 6.5rem;
     }
 }
 
 
-/* =========================================
-   Small Mobile
-   ========================================= */
+/* =========================================================
+   SMALL MOBILE
+   ========================================================= */
 
 @media only screen and (max-width: 430px) {
 
-    .page-hero {
-        padding: 1.75rem 1rem 1.6rem;
+    .hero-content {
+        padding:
+            1.4rem
+            1rem
+            2.65rem;
     }
 
-    .page-hero-content h1 {
-        font-size: 1.5rem;
+    .hero-main h1 {
+        font-size: 1.4rem;
     }
 
-    .page-subtitle {
-        font-size: 0.9rem;
+    .context-copy strong {
+        font-size: 0.92rem;
+    }
+
+    .context-subtitle {
+        font-size: 0.66rem;
     }
 }

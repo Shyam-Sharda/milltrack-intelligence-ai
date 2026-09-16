@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>67.0</apiVersion>
+    <isExposed>false</isExposed>
+    <masterLabel>Manager Follow-Up Work Order Wizard</masterLabel>
+    <description>Internal MillTrack manager wizard for reviewing technician follow-up evidence and approving the next Work Order repair plan. Intended for use only as a child component of managerOperationsCenter.</description>
+</LightningComponentBundle>

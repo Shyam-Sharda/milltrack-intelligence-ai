@@ -5,27 +5,16 @@ import USER_ID from '@salesforce/user/Id';
 import FIRST_NAME_FIELD from '@salesforce/schema/User.FirstName';
 import { getRecord, getFieldValue } from 'lightning/uiRecordApi';
 
-import MILLTRACK_LOGO from '@salesforce/resourceUrl/MillTrackLogo';
-
-
 export default class MillTrackHeader extends NavigationMixin(LightningElement) {
-
     userId = USER_ID;
     isProfileMenuOpen = false;
 
     currentPageReference;
 
 
-    // ================================
-    // Logo
-    // ================================
-
-    logoUrl = MILLTRACK_LOGO;
-
-
-    // ================================
+    // =========================================================
     // Current User
-    // ================================
+    // =========================================================
 
     @wire(getRecord, {
         recordId: '$userId',
@@ -33,21 +22,19 @@ export default class MillTrackHeader extends NavigationMixin(LightningElement) {
     })
     user;
 
-
     get customerName() {
         return getFieldValue(this.user.data, FIRST_NAME_FIELD) || 'Customer';
     }
 
 
-    // ================================
+    // =========================================================
     // Current Page
-    // ================================
+    // =========================================================
 
     @wire(CurrentPageReference)
     setCurrentPageReference(pageReference) {
         this.currentPageReference = pageReference;
     }
-
 
     get currentPageName() {
         return (
@@ -56,7 +43,6 @@ export default class MillTrackHeader extends NavigationMixin(LightningElement) {
             ''
         );
     }
-
 
     get isHomePage() {
         const pageName = this.currentPageName.toLowerCase();
@@ -67,7 +53,6 @@ export default class MillTrackHeader extends NavigationMixin(LightningElement) {
         );
     }
 
-
     get isReportIssuePage() {
         const pageName = this.currentPageName
             .toLowerCase()
@@ -77,13 +62,11 @@ export default class MillTrackHeader extends NavigationMixin(LightningElement) {
         return pageName.includes('report an issue');
     }
 
-
     get homeNavClass() {
         return this.isHomePage
             ? 'nav-item nav-item-active'
             : 'nav-item';
     }
-
 
     get reportIssueNavClass() {
         return this.isReportIssuePage
@@ -92,9 +75,9 @@ export default class MillTrackHeader extends NavigationMixin(LightningElement) {
     }
 
 
-    // ================================
+    // =========================================================
     // Navigation
-    // ================================
+    // =========================================================
 
     handleHomeClick() {
         this.closeProfileMenu();
@@ -106,7 +89,6 @@ export default class MillTrackHeader extends NavigationMixin(LightningElement) {
             }
         });
     }
-
 
     handleReportIssueClick() {
         this.closeProfileMenu();
@@ -120,48 +102,35 @@ export default class MillTrackHeader extends NavigationMixin(LightningElement) {
     }
 
 
-    // ================================
+    // =========================================================
     // Help
-    // ================================
+    // =========================================================
 
     handleHelpClick() {
-        /*
-         * For version 1, Help sends the customer to
-         * the Report an Issue page.
-         *
-         * We can later change this to open MillTrack AI
-         * or display a dedicated Help menu.
-         */
         this.handleReportIssueClick();
     }
 
 
-    // ================================
+    // =========================================================
     // Profile Menu
-    // ================================
+    // =========================================================
 
     toggleProfileMenu() {
         this.isProfileMenuOpen = !this.isProfileMenuOpen;
     }
 
-
     closeProfileMenu() {
         this.isProfileMenuOpen = false;
     }
 
-
     handleProfileClick() {
-        /*
-         * Decorative for version 1.
-         * Keep the menu item visible without navigating.
-         */
         this.closeProfileMenu();
     }
 
 
-    // ================================
+    // =========================================================
     // Logout
-    // ================================
+    // =========================================================
 
     handleLogout() {
         this.closeProfileMenu();

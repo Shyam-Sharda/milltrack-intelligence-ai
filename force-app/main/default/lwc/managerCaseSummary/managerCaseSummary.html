@@ -1,0 +1,591 @@
+<template>
+    <div class="page-shell">
+        <template if:true={isLoading}>
+            <div class="loading-state">
+                <lightning-spinner
+                    alternative-text="Loading Case"
+                    size="medium">
+                </lightning-spinner>
+            </div>
+        </template>
+
+        <template if:true={errorMessage}>
+            <div class="error-panel">
+                <lightning-icon
+                    icon-name="utility:error"
+                    size="small"
+                    variant="inverse">
+                </lightning-icon>
+
+                <div>
+                    <strong>Unable to load Case</strong>
+                    <p>{errorMessage}</p>
+                </div>
+            </div>
+        </template>
+
+        <template if:true={hasRecord}>
+            <div class="record-layout">
+                <!-- =================================================
+                     MAIN CASE EXPERIENCE
+                     ================================================= -->
+                <main class="primary-column">
+                    <!-- HERO -->
+                    <section class="hero">
+                        <div class="hero-decoration hero-decoration-one"></div>
+                        <div class="hero-decoration hero-decoration-two"></div>
+
+                        <div class="hero-content">
+                            <div class="eyebrow">SERVICE CASE</div>
+
+                            <div class="title-row">
+                                <h1>{caseNumber}</h1>
+                                <span class={statusClass}>{status}</span>
+                                <span class={priorityClass}>{priorityLabel}</span>
+                                <span class={slaHeroClass}>{slaHeroLabel}</span>
+                            </div>
+
+                            <p class="hero-subject">{subject}</p>
+
+                            <div class="hero-meta">
+                                <template if:true={accountId}>
+                                    <a href={accountUrl} class="hero-link">
+                                        {accountName}
+                                    </a>
+                                </template>
+
+                                <template if:false={accountId}>
+                                    <span>{accountName}</span>
+                                </template>
+
+                                <span class="dot">•</span>
+
+                                <template if:true={contactId}>
+                                    <a href={contactUrl} class="hero-link">
+                                        {contactName}
+                                    </a>
+                                </template>
+
+                                <template if:false={contactId}>
+                                    <span>{contactName}</span>
+                                </template>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- =================================================
+                         CUSTOMER + MACHINE
+                         ================================================= -->
+                    <section class="context-grid">
+                        <!-- CUSTOMER -->
+                        <article class="context-card">
+                            <div class="card-heading">
+                                <span class="icon-wrap">
+                                    <lightning-icon
+                                        icon-name="standard:account"
+                                        size="small">
+                                    </lightning-icon>
+                                </span>
+
+                                <div>
+                                    <span class="card-kicker">CUSTOMER</span>
+                                    <h2>Customer &amp; Contact</h2>
+                                </div>
+                            </div>
+
+                            <div class="field-row">
+                                <span class="field-label">Account</span>
+
+                                <template if:true={accountId}>
+                                    <a href={accountUrl}>{accountName}</a>
+                                </template>
+
+                                <template if:false={accountId}>
+                                    <span class="field-value">{accountName}</span>
+                                </template>
+                            </div>
+
+                            <div class="field-row">
+                                <span class="field-label">Contact</span>
+
+                                <template if:true={contactId}>
+                                    <a href={contactUrl}>{contactName}</a>
+                                </template>
+
+                                <template if:false={contactId}>
+                                    <span class="field-value">{contactName}</span>
+                                </template>
+                            </div>
+
+                            <div class="field-row">
+                                <span class="field-label">Phone</span>
+                                <span class="field-value">{contactPhone}</span>
+                            </div>
+
+                            <div class="field-row">
+                                <span class="field-label">Email</span>
+                                <span class="field-value">{contactEmail}</span>
+                            </div>
+
+                            <div class="field-row field-row-last">
+                                <span class="field-label">Case Origin</span>
+                                <span class="field-value">{origin}</span>
+                            </div>
+                        </article>
+
+                        <!-- MACHINE -->
+                        <article class="context-card">
+                            <div class="card-heading">
+                                <span class="icon-wrap">
+                                    <lightning-icon
+                                        icon-name="standard:asset_object"
+                                        size="small">
+                                    </lightning-icon>
+                                </span>
+
+                                <div>
+                                    <span class="card-kicker">MACHINE</span>
+                                    <h2>Machine Context</h2>
+                                </div>
+                            </div>
+
+                            <div class="field-row">
+                                <span class="field-label">Machine</span>
+
+                                <template if:true={assetId}>
+                                    <a href={assetUrl}>{assetName}</a>
+                                </template>
+
+                                <template if:false={assetId}>
+                                    <span class="field-value">{assetName}</span>
+                                </template>
+                            </div>
+
+                            <div class="field-row">
+                                <span class="field-label">Manufacturer / Model</span>
+                                <span class="field-value">{machineLabel}</span>
+                            </div>
+
+                            <div class="field-row">
+                                <span class="field-label">Serial Number</span>
+                                <span class="field-value">{serialNumber}</span>
+                            </div>
+
+                            <div class="field-row">
+                                <span class="field-label">Machine Status</span>
+                                <span class={machineStatusClass}>{machineStatus}</span>
+                            </div>
+
+                            <div class="field-row">
+                                <span class="field-label">Warranty Start</span>
+                                <span class="field-value">{warrantyStart}</span>
+                            </div>
+
+                            <div class="field-row field-row-last">
+                                <span class="field-label">Warranty End</span>
+                                <span class="field-value">{warrantyEnd}</span>
+                            </div>
+                        </article>
+                    </section>
+
+                    <!-- =================================================
+                         SERVICE REQUEST
+                         ================================================= -->
+                    <section class="section-card request-card">
+                        <div class="section-header">
+                            <div class="section-title">
+                                <span class="section-icon request-icon">
+                                    <lightning-icon
+                                        icon-name="utility:warning"
+                                        size="x-small"
+                                        variant="inverse">
+                                    </lightning-icon>
+                                </span>
+
+                                <div>
+                                    <span class="section-kicker">CUSTOMER REQUEST</span>
+                                    <h2>Service Request</h2>
+                                </div>
+                            </div>
+
+                            <div class="error-code-chip">
+                                <span>Error Code</span>
+                                <strong>{errorCode}</strong>
+                            </div>
+                        </div>
+
+                        <div class="content-block">
+                            <div class="content-label">Customer-Reported Issue</div>
+                            <div class="long-text">{description}</div>
+                        </div>
+
+                        <div class="divider"></div>
+
+                        <div class="content-block">
+                            <div class="content-label">AI Troubleshooting Summary</div>
+                            <div class="long-text">{aiTroubleshootingSummary}</div>
+                        </div>
+                    </section>
+
+                    <!-- =================================================
+                         SERVICE RECOMMENDATION
+                         ================================================= -->
+                    <section class="section-card recommendation-card">
+                        <div class="section-header">
+                            <div class="section-title">
+                                <span class="section-icon blue-icon">
+                                    <lightning-icon
+                                        icon-name="utility:knowledge_base"
+                                        size="x-small"
+                                        variant="inverse">
+                                    </lightning-icon>
+                                </span>
+
+                                <div>
+                                    <span class="section-kicker">MILLTRACK INTELLIGENCE</span>
+                                    <h2>Service Recommendation</h2>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="content-block">
+                            <div class="content-label">Recommended Solution</div>
+                            <div class="long-text">{recommendedSolution}</div>
+                        </div>
+
+                        <div class="divider"></div>
+
+                        <div class="content-block">
+                            <div class="content-label">Recommended Parts</div>
+                            <div class="long-text">{recommendedParts}</div>
+                        </div>
+                    </section>
+
+                    <!-- =================================================
+                         CASE MANAGEMENT + SLA
+                         ================================================= -->
+                    <section class="section-card management-card">
+                        <div class="section-header">
+                            <div class="section-title">
+                                <span class="section-icon blue-icon">
+                                    <lightning-icon
+                                        icon-name="utility:clock"
+                                        size="x-small"
+                                        variant="inverse">
+                                    </lightning-icon>
+                                </span>
+
+                                <div>
+                                    <span class="section-kicker">SERVICE MANAGEMENT</span>
+                                    <h2>Case Management &amp; SLA</h2>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="management-grid">
+                            <div class="management-item">
+                                <span class="management-label">Case Owner</span>
+                                <strong>{ownerName}</strong>
+                            </div>
+
+                            <div class="management-item">
+                                <span class="management-label">Status</span>
+                                <strong>{status}</strong>
+                            </div>
+
+                            <div class="management-item">
+                                <span class="management-label">Date Opened</span>
+                                <strong>{createdDate}</strong>
+                            </div>
+
+                            <div class="management-item">
+                                <span class="management-label">Last Updated</span>
+                                <strong>{lastModifiedDate}</strong>
+                            </div>
+
+                            <div class="management-item">
+                                <span class="management-label">Date Closed</span>
+                                <strong>{closedDate}</strong>
+                            </div>
+
+                            <div class="management-item sla-item">
+                                <span class="management-label">SLA Due</span>
+                                <strong>{slaDueDate}</strong>
+                            </div>
+                        </div>
+
+                        <div class="sla-summary">
+                            <div>
+                                <span class="sla-summary-label">SLA Health</span>
+                                <span class={slaHealthClass}>{slaHealthLabel}</span>
+                            </div>
+
+                            <strong class="sla-time">{slaTimeLabel}</strong>
+                        </div>
+                    </section>
+
+                    <!-- =================================================
+                         UNIFIED CASE ACTIVITY
+                         ================================================= -->
+                    <section class="section-card activity-card">
+                        <div class="section-header">
+                            <div class="section-title">
+                                <span class="section-icon blue-icon">
+                                    <lightning-icon
+                                        icon-name="utility:activity"
+                                        size="x-small"
+                                        variant="inverse">
+                                    </lightning-icon>
+                                </span>
+
+                                <div>
+                                    <span class="section-kicker">SERVICE HISTORY</span>
+                                    <h2>Case Activity</h2>
+                                </div>
+                            </div>
+
+                            <div class="activity-header-actions">
+                                <span class="activity-source">
+                                    Case • Comments • Email • Work Orders
+                                </span>
+
+                                <button
+                                    type="button"
+                                    class="activity-toggle"
+                                    title={activityToggleTitle}
+                                    aria-label={activityToggleTitle}
+                                    aria-expanded={isActivityExpanded}
+                                    onclick={toggleCaseActivity}>
+
+                                    <lightning-icon
+                                        icon-name={activityChevronIcon}
+                                        size="xx-small">
+                                    </lightning-icon>
+                                </button>
+                            </div>
+                        </div>
+
+                        <template if:true={isActivityExpanded}>
+                            <template if:true={hasCaseActivity}>
+                                <div class="activity-timeline">
+                                    <template
+                                        for:each={caseActivities}
+                                        for:item="activity">
+
+                                        <article
+                                            key={activity.id}
+                                            class="activity-entry">
+
+                                            <div class="activity-line">
+                                                <span class={activity.markerClass}>
+                                                    <lightning-icon
+                                                        icon-name={activity.icon}
+                                                        size="xx-small"
+                                                        variant="inverse">
+                                                    </lightning-icon>
+                                                </span>
+                                            </div>
+
+                                            <div class="activity-content">
+                                                <div class="activity-top">
+                                                    <div>
+                                                        <span class="activity-type">
+                                                            {activity.typeLabel}
+                                                        </span>
+
+                                                        <h3>{activity.title}</h3>
+                                                    </div>
+
+                                                    <time>
+                                                        {activity.dateLabel}
+                                                    </time>
+                                                </div>
+
+                                                <template if:true={activity.detail}>
+                                                    <p>{activity.detail}</p>
+                                                </template>
+
+                                                <span class="activity-author">
+                                                    {activity.author}
+                                                </span>
+                                            </div>
+                                        </article>
+                                    </template>
+                                </div>
+                            </template>
+
+                            <template if:false={hasCaseActivity}>
+                                <div class="empty-activity">
+                                    <lightning-icon
+                                        icon-name="utility:activity"
+                                        size="small">
+                                    </lightning-icon>
+
+                                    <span>
+                                        No Case activity has been recorded yet.
+                                    </span>
+                                </div>
+                            </template>
+                        </template>
+                    </section>
+                </main>
+
+                <!-- =================================================
+                     RIGHT RAIL
+                     ================================================= -->
+                <aside class="related-rail">
+                    <div class="rail-header">
+                        <span class="rail-header-icon">
+                            <lightning-icon
+                                icon-name="utility:link"
+                                size="small"
+                                variant="inverse">
+                            </lightning-icon>
+                        </span>
+
+                        <div>
+                            <span class="rail-kicker">SERVICE CASE</span>
+                            <h2>Related Service</h2>
+                        </div>
+                    </div>
+
+                    <!-- WORK ORDERS -->
+                    <section class="related-card">
+                        <div class="related-card-header">
+                            <div class="related-card-title">
+                                <span class="related-icon">
+                                    <lightning-icon
+                                        icon-name="standard:work_order"
+                                        size="small">
+                                    </lightning-icon>
+                                </span>
+
+                                <div>
+                                    <h3>Work Orders</h3>
+                                    <span>{workOrderCountLabel}</span>
+                                </div>
+                            </div>
+
+                            <template if:true={workOrdersRelatedListId}>
+                                <button
+                                    class="view-all-button"
+                                    onclick={viewAllWorkOrders}>
+                                    View All
+                                </button>
+                            </template>
+                        </div>
+
+                        <template if:true={hasWorkOrders}>
+                            <div class="related-items">
+                                <template
+                                    for:each={workOrders}
+                                    for:item="workOrder">
+
+                                    <a
+                                        key={workOrder.id}
+                                        href={workOrder.url}
+                                        class="related-item">
+
+                                        <div class="related-item-top">
+                                            <strong>{workOrder.number}</strong>
+
+                                            <span class={workOrder.statusClass}>
+                                                {workOrder.status}
+                                            </span>
+                                        </div>
+
+                                        <div class="related-item-name">
+                                            {workOrder.subject}
+                                        </div>
+
+                                        <div class="related-item-meta">
+                                            Priority: {workOrder.priority}
+                                        </div>
+                                    </a>
+                                </template>
+                            </div>
+                        </template>
+
+                        <template if:false={hasWorkOrders}>
+                            <div class="empty-related">
+                                <lightning-icon
+                                    icon-name="utility:work_order_type"
+                                    size="small">
+                                </lightning-icon>
+
+                                <span>No Work Orders</span>
+                            </div>
+                        </template>
+                    </section>
+
+                    <!-- SLA STATUS -->
+                    <section class="sla-rail-card">
+                        <div class="sla-rail-heading">
+                            <span class="sla-rail-icon">
+                                <lightning-icon
+                                    icon-name="utility:clock"
+                                    size="x-small"
+                                    variant="inverse">
+                                </lightning-icon>
+                            </span>
+
+                            <div>
+                                <span>SLA STATUS</span>
+                                <h3>{slaHealthLabel}</h3>
+                            </div>
+                        </div>
+
+                        <div class="sla-rail-body">
+                            <span>Due</span>
+                            <strong>{slaDueDate}</strong>
+
+                            <div class="sla-rail-divider"></div>
+
+                            <span>Time</span>
+                            <strong>{slaTimeLabel}</strong>
+                        </div>
+                    </section>
+
+                    <!-- FILES -->
+                    <section class="related-card">
+                        <div class="related-card-header">
+                            <div class="related-card-title">
+                                <span class="related-icon">
+                                    <lightning-icon
+                                        icon-name="standard:file"
+                                        size="small">
+                                    </lightning-icon>
+                                </span>
+
+                                <div>
+                                    <h3>Files</h3>
+                                    <span>Case documents</span>
+                                </div>
+                            </div>
+
+                            <button
+                                class="view-all-button"
+                                onclick={viewFiles}>
+                                View Files
+                            </button>
+                        </div>
+
+                        <div class="files-body">
+                            <p>
+                                Upload customer documents, service photos,
+                                or supporting files for this Case.
+                            </p>
+
+                            <lightning-file-upload
+                                label="Upload Files"
+                                record-id={recordId}
+                                multiple
+                                onuploadfinished={handleUploadFinished}>
+                            </lightning-file-upload>
+                        </div>
+                    </section>
+                </aside>
+            </div>
+        </template>
+    </div>
+</template>

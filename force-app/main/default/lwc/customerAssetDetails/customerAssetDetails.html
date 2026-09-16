@@ -1,0 +1,1071 @@
+<template>
+    <div class="asset-page-shell">
+
+        <!-- =====================================================
+             LOADING
+             ===================================================== -->
+
+        <template if:true={isLoading}>
+            <div class="loading-state">
+                <lightning-spinner
+                    alternative-text="Loading machine details"
+                    size="medium">
+                </lightning-spinner>
+            </div>
+        </template>
+
+
+        <!-- =====================================================
+             LOADED
+             ===================================================== -->
+
+        <template if:false={isLoading}>
+
+            <!-- =================================================
+                 NO RECORD CONTEXT
+                 ================================================= -->
+
+            <template if:false={hasRecordId}>
+                <section class="state-card">
+
+                    <div class="state-icon info-icon">
+                        i
+                    </div>
+
+                    <h2>
+                        Machine information is unavailable
+                    </h2>
+
+                    <p>
+                        Machine details will appear when a customer opens
+                        a machine record.
+                    </p>
+
+                </section>
+            </template>
+
+
+            <!-- =================================================
+                 LOAD ERROR
+                 ================================================= -->
+
+            <template if:true={hasRecordId}>
+
+                <template if:true={hasLoadError}>
+                    <section class="state-card state-card-error">
+
+                        <div class="state-icon error-icon">
+                            !
+                        </div>
+
+                        <h2>
+                            We couldn't load this machine
+                        </h2>
+
+                        <p>
+                            {loadError}
+                        </p>
+
+                        <button
+                            type="button"
+                            class="primary-button"
+                            onclick={handleRetryLoad}>
+                            Try Again
+                        </button>
+
+                    </section>
+                </template>
+
+
+                <!-- =============================================
+                     MAIN ASSET EXPERIENCE
+                     ============================================= -->
+
+                <template if:false={hasLoadError}>
+
+                    <template if:true={hasAsset}>
+
+                        <!-- =====================================
+                             MACHINE OVERVIEW
+                             ===================================== -->
+
+                        <section class="machine-overview-card">
+
+                            <div class="machine-overview-layout">
+
+                                <!-- IMAGE -->
+
+                                <div class="machine-image-column">
+
+                                    <template if:true={hasMachineImage}>
+
+                                        <div class="machine-image-frame">
+
+                                            <img
+                                                src={machineImageUrl}
+                                                alt={assetName}
+                                                class="machine-image" />
+
+                                        </div>
+
+                                    </template>
+
+
+                                    <template if:false={hasMachineImage}>
+
+                                        <div class="machine-image-frame machine-image-empty">
+
+                                            <div class="machine-empty-icon">
+
+                                                <svg
+                                                    viewBox="0 0 24 24"
+                                                    aria-hidden="true">
+
+                                                    <circle
+                                                        cx="12"
+                                                        cy="12"
+                                                        r="3">
+                                                    </circle>
+
+                                                    <circle
+                                                        cx="12"
+                                                        cy="12"
+                                                        r="7">
+                                                    </circle>
+
+                                                    <path
+                                                        d="M12 2.5v2M12 19.5v2M21.5 12h-2M4.5 12h-2">
+                                                    </path>
+
+                                                </svg>
+
+                                            </div>
+
+                                            <span>
+                                                Machine image not available
+                                            </span>
+
+                                        </div>
+
+                                    </template>
+
+                                </div>
+
+
+                                <!-- DETAILS -->
+
+                                <div class="machine-overview-content">
+
+                                    <div class="machine-title-row">
+
+                                        <div>
+
+                                            <p class="section-kicker">
+                                                Milling Machine
+                                            </p>
+
+                                            <h2>
+                                                {asset.name}
+                                            </h2>
+
+                                            <p class="machine-model">
+                                                {asset.manufacturerDisplay}
+                                                <span aria-hidden="true">
+                                                    •
+                                                </span>
+                                                {asset.modelDisplay}
+                                            </p>
+
+                                        </div>
+
+
+                                        <span class={asset.statusClass}>
+                                            {asset.statusDisplay}
+                                        </span>
+
+                                    </div>
+
+
+                                    <div class="machine-detail-grid">
+
+                                        <div class="machine-detail">
+
+                                            <span class="detail-label">
+                                                Manufacturer
+                                            </span>
+
+                                            <strong>
+                                                {asset.manufacturerDisplay}
+                                            </strong>
+
+                                        </div>
+
+
+                                        <div class="machine-detail">
+
+                                            <span class="detail-label">
+                                                Model
+                                            </span>
+
+                                            <strong>
+                                                {asset.modelDisplay}
+                                            </strong>
+
+                                        </div>
+
+
+                                        <div class="machine-detail">
+
+                                            <span class="detail-label">
+                                                Serial Number
+                                            </span>
+
+                                            <strong class="serial-value">
+                                                {asset.serialDisplay}
+                                            </strong>
+
+                                        </div>
+
+
+                                        <div class="machine-detail">
+
+                                            <span class="detail-label">
+                                                Install Date
+                                            </span>
+
+                                            <template if:true={asset.installDate}>
+
+                                                <strong>
+                                                    <lightning-formatted-date-time
+                                                        value={asset.installDate}
+                                                        year="numeric"
+                                                        month="short"
+                                                        day="2-digit"
+                                                        time-zone="UTC">
+                                                    </lightning-formatted-date-time>
+                                                </strong>
+
+                                            </template>
+
+                                            <template if:false={asset.installDate}>
+                                                <strong>
+                                                    Not available
+                                                </strong>
+                                            </template>
+
+                                        </div>
+
+
+                                        <div class="machine-detail">
+
+                                            <span class="detail-label">
+                                                Last Service
+                                            </span>
+
+                                            <template if:true={asset.lastServiceDate}>
+
+                                                <strong>
+                                                    <lightning-formatted-date-time
+                                                        value={asset.lastServiceDate}
+                                                        year="numeric"
+                                                        month="short"
+                                                        day="2-digit"
+                                                        time-zone="UTC">
+                                                    </lightning-formatted-date-time>
+                                                </strong>
+
+                                            </template>
+
+                                            <template if:false={asset.lastServiceDate}>
+                                                <strong>
+                                                    No service recorded
+                                                </strong>
+                                            </template>
+
+                                        </div>
+
+
+                                        <div class="machine-detail">
+
+                                            <span class="detail-label">
+                                                Machine Status
+                                            </span>
+
+                                            <strong>
+                                                {asset.statusDisplay}
+                                            </strong>
+
+                                        </div>
+
+                                    </div>
+
+
+                                    <!-- WARRANTY -->
+
+                                    <div class="warranty-panel">
+
+                                        <div class="warranty-icon">
+                                            ✓
+                                        </div>
+
+                                        <div class="warranty-copy">
+
+                                            <p class="warranty-label">
+                                                Warranty Coverage
+                                            </p>
+
+                                            <div class="warranty-dates">
+
+                                                <div>
+
+                                                    <span>
+                                                        Start
+                                                    </span>
+
+                                                    <template if:true={asset.warrantyStartDate}>
+
+                                                        <strong>
+                                                            <lightning-formatted-date-time
+                                                                value={asset.warrantyStartDate}
+                                                                year="numeric"
+                                                                month="short"
+                                                                day="2-digit"
+                                                                time-zone="UTC">
+                                                            </lightning-formatted-date-time>
+                                                        </strong>
+
+                                                    </template>
+
+                                                    <template if:false={asset.warrantyStartDate}>
+                                                        <strong>
+                                                            Not available
+                                                        </strong>
+                                                    </template>
+
+                                                </div>
+
+
+                                                <div class="warranty-arrow">
+                                                    →
+                                                </div>
+
+
+                                                <div>
+
+                                                    <span>
+                                                        End
+                                                    </span>
+
+                                                    <template if:true={asset.warrantyEndDate}>
+
+                                                        <strong>
+                                                            <lightning-formatted-date-time
+                                                                value={asset.warrantyEndDate}
+                                                                year="numeric"
+                                                                month="short"
+                                                                day="2-digit"
+                                                                time-zone="UTC">
+                                                            </lightning-formatted-date-time>
+                                                        </strong>
+
+                                                    </template>
+
+                                                    <template if:false={asset.warrantyEndDate}>
+                                                        <strong>
+                                                            Not available
+                                                        </strong>
+                                                    </template>
+
+                                                </div>
+
+                                            </div>
+
+                                        </div>
+
+                                    </div>
+
+
+                                    <!-- DESCRIPTION -->
+
+                                    <div class="machine-description">
+
+                                        <span class="detail-label">
+                                            Machine Description
+                                        </span>
+
+                                        <p>
+                                            {asset.descriptionDisplay}
+                                        </p>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                        </section>
+
+
+                        <!-- =====================================
+                             RESOURCES GRID
+                             ===================================== -->
+
+                        <div class="resources-grid">
+
+                            <!-- =================================
+                                 MANUAL
+                                 ================================= -->
+
+                            <section class="resource-card manual-card">
+
+                                <header class="resource-card-header">
+
+                                    <div class="resource-heading">
+
+                                        <div class="resource-icon manual-icon">
+
+                                            <svg
+                                                viewBox="0 0 24 24"
+                                                aria-hidden="true">
+
+                                                <path
+                                                    d="M6.5 3.5h8l3 3v14h-11z">
+                                                </path>
+
+                                                <path
+                                                    d="M14.5 3.5v3h3M9 11h6M9 14h6M9 17h4">
+                                                </path>
+
+                                            </svg>
+
+                                        </div>
+
+
+                                        <div>
+
+                                            <p class="section-kicker manual-kicker">
+                                                Machine Resources
+                                            </p>
+
+                                            <h3>
+                                                User Manual
+                                            </h3>
+
+                                            <p>
+                                                View the machine manual without leaving
+                                                your MillTrack portal.
+                                            </p>
+
+                                        </div>
+
+                                    </div>
+
+                                </header>
+
+
+                                <template if:true={hasManual}>
+
+                                    <div class="manual-viewer-shell">
+
+                                        <iframe
+                                            src={manualUrl}
+                                            title="Machine user manual"
+                                            class="manual-viewer">
+                                        </iframe>
+
+                                    </div>
+
+
+                                    <div class="manual-footer">
+
+                                        <span class="manual-hint">
+                                            Scroll inside the manual to browse pages.
+                                        </span>
+
+                                        <a
+                                            href={manualUrl}
+                                            target="_blank"
+                                            rel="noopener"
+                                            class="resource-link">
+                                            Open Full Manual
+                                            <span aria-hidden="true">
+                                                ↗
+                                            </span>
+                                        </a>
+
+                                    </div>
+
+                                </template>
+
+
+                                <template if:false={hasManual}>
+
+                                    <div class="resource-empty-state">
+
+                                        <div class="resource-empty-icon">
+
+                                            <svg
+                                                viewBox="0 0 24 24"
+                                                aria-hidden="true">
+
+                                                <path
+                                                    d="M6.5 3.5h8l3 3v14h-11z">
+                                                </path>
+
+                                                <path
+                                                    d="M14.5 3.5v3h3M9 11h6M9 14h6">
+                                                </path>
+
+                                            </svg>
+
+                                        </div>
+
+                                        <h4>
+                                            Digital manual not available
+                                        </h4>
+
+                                        <p>
+                                            A digital user manual has not been added
+                                            for this machine yet.
+                                        </p>
+
+                                    </div>
+
+                                </template>
+
+                            </section>
+
+
+                            <!-- =================================
+                                 MAINTENANCE LIST
+                                 ================================= -->
+
+                            <section class="resource-card maintenance-card">
+
+                                <header class="resource-card-header">
+
+                                    <div class="resource-heading">
+
+                                        <div class="resource-icon maintenance-icon">
+
+                                            <svg
+                                                viewBox="0 0 24 24"
+                                                aria-hidden="true">
+
+                                                <path
+                                                    d="M7 4.5h10v15H7z">
+                                                </path>
+
+                                                <path
+                                                    d="M9.5 8h5M9.5 11.5h5M9.5 15h3">
+                                                </path>
+
+                                            </svg>
+
+                                        </div>
+
+
+                                        <div>
+
+                                            <p class="section-kicker maintenance-kicker">
+                                                Machine Care
+                                            </p>
+
+                                            <h3>
+                                                Maintenance Plan
+                                            </h3>
+
+                                            <p>
+                                                Keep your regular machine-care
+                                                instructions in one easy place.
+                                            </p>
+
+                                        </div>
+
+                                    </div>
+
+
+                                    <template if:false={isEditingMaintenance}>
+
+                                        <button
+                                            type="button"
+                                            class="edit-button"
+                                            onclick={handleEditMaintenance}>
+                                            Edit List
+                                        </button>
+
+                                    </template>
+
+                                </header>
+
+
+                                <!-- VIEW MODE -->
+
+                                <template if:false={isEditingMaintenance}>
+
+                                    <template if:true={hasMaintenanceList}>
+
+                                        <div class="maintenance-paper">
+
+                                            <div class="maintenance-paper-rule">
+                                            </div>
+
+                                            <div class="maintenance-content">
+                                                {maintenanceDisplay}
+                                            </div>
+
+                                        </div>
+
+                                    </template>
+
+
+                                    <template if:false={hasMaintenanceList}>
+
+                                        <div class="maintenance-empty">
+
+                                            <div class="maintenance-empty-icon">
+                                                +
+                                            </div>
+
+                                            <h4>
+                                                No maintenance plan has been added
+                                            </h4>
+
+                                            <p>
+                                                Add daily, weekly, monthly, or other
+                                                machine-care reminders for this machine.
+                                            </p>
+
+                                            <button
+                                                type="button"
+                                                class="secondary-button"
+                                                onclick={handleEditMaintenance}>
+                                                Create Maintenance List
+                                            </button>
+
+                                        </div>
+
+                                    </template>
+
+
+                                    <template if:true={hasMaintenanceSaveMessage}>
+
+                                        <div
+                                            class="save-message"
+                                            role="status">
+
+                                            <span class="save-message-icon">
+                                                ✓
+                                            </span>
+
+                                            <span>
+                                                {maintenanceSaveMessage}
+                                            </span>
+
+                                        </div>
+
+                                    </template>
+
+                                </template>
+
+
+                                <!-- EDIT MODE -->
+
+                                <template if:true={isEditingMaintenance}>
+
+                                    <div class="maintenance-editor">
+
+                                        <div class="maintenance-editor-note">
+
+                                            <span class="maintenance-editor-note-icon">
+                                                i
+                                            </span>
+
+                                            <p>
+                                                Organize the list however it is most useful
+                                                for the machine — for example Daily, Weekly,
+                                                Biweekly, Monthly, or As Needed.
+                                            </p>
+
+                                        </div>
+
+
+                                        <label
+                                            class="maintenance-editor-label"
+                                            for="maintenanceList">
+                                            Maintenance Instructions
+                                        </label>
+
+
+                                        <textarea
+                                            id="maintenanceList"
+                                            class="maintenance-textarea"
+                                            maxlength="32768"
+                                            value={maintenanceDraft}
+                                            placeholder="DAILY&#10;&#10;• Clean milling chamber&#10;• Check coolant level&#10;&#10;WEEKLY&#10;&#10;• Clean filters&#10;• Inspect collet"
+                                            oninput={handleMaintenanceInput}>
+                                        </textarea>
+
+
+                                        <div class="maintenance-editor-meta">
+
+                                            <span>
+                                                Changes are saved directly to this machine.
+                                            </span>
+
+                                            <span>
+                                                {maintenanceCharacterLabel}
+                                            </span>
+
+                                        </div>
+
+
+                                        <template if:true={hasMaintenanceSaveError}>
+
+                                            <div
+                                                class="inline-error"
+                                                role="alert">
+
+                                                <span class="inline-error-icon">
+                                                    !
+                                                </span>
+
+                                                <span>
+                                                    {maintenanceSaveError}
+                                                </span>
+
+                                            </div>
+
+                                        </template>
+
+
+                                        <div class="maintenance-actions">
+
+                                            <button
+                                                type="button"
+                                                class="secondary-button"
+                                                onclick={handleCancelMaintenance}
+                                                disabled={isSavingMaintenance}>
+                                                Cancel
+                                            </button>
+
+                                            <button
+                                                type="button"
+                                                class="primary-button save-button"
+                                                onclick={handleSaveMaintenance}
+                                                disabled={isMaintenanceSaveDisabled}>
+
+                                                <template if:true={isSavingMaintenance}>
+                                                    <span class="button-spinner">
+                                                    </span>
+                                                </template>
+
+                                                {maintenanceSaveButtonLabel}
+
+                                            </button>
+
+                                        </div>
+
+                                    </div>
+
+                                </template>
+
+                            </section>
+
+                        </div>
+
+
+                        <!-- =====================================
+                             SERVICE HISTORY
+                             ===================================== -->
+
+                        <section class="service-history-card">
+
+                            <header class="service-history-header">
+
+                                <div class="resource-heading">
+
+                                    <div class="resource-icon history-icon">
+
+                                        <svg
+                                            viewBox="0 0 24 24"
+                                            aria-hidden="true">
+
+                                            <path
+                                                d="M12 5a7 7 0 1 1-5.4 2.55">
+                                            </path>
+
+                                            <path
+                                                d="M5.5 4.5v4h4M12 8v4l3 2">
+                                            </path>
+
+                                        </svg>
+
+                                    </div>
+
+
+                                    <div>
+
+                                        <p class="section-kicker history-kicker">
+                                            Service Activity
+                                        </p>
+
+                                        <h3>
+                                            Service History
+                                        </h3>
+
+                                        <p>
+                                            Review previous maintenance and repair
+                                            visits recorded for this machine.
+                                        </p>
+
+                                    </div>
+
+                                </div>
+
+
+                                <template if:true={hasServiceHistory}>
+
+                                    <div class="history-count">
+                                        {serviceHistoryCount}
+                                        <span>
+                                            Visits
+                                        </span>
+                                    </div>
+
+                                </template>
+
+                            </header>
+
+
+                            <template if:true={hasServiceHistory}>
+
+                                <div class="history-list">
+
+                                    <template
+                                        for:each={serviceHistory}
+                                        for:item="entry">
+
+                                        <article
+                                            key={entry.id}
+                                            class="history-entry">
+
+                                            <div class="history-entry-summary">
+
+                                                <div class="history-date-box">
+
+                                                    <span class="history-date-label">
+                                                        Service Date
+                                                    </span>
+
+                                                    <template if:true={entry.maintenanceDate}>
+
+                                                        <strong>
+                                                            <lightning-formatted-date-time
+                                                                value={entry.maintenanceDate}
+                                                                year="numeric"
+                                                                month="short"
+                                                                day="2-digit"
+                                                                time-zone="UTC">
+                                                            </lightning-formatted-date-time>
+                                                        </strong>
+
+                                                    </template>
+
+                                                    <template if:false={entry.maintenanceDate}>
+                                                        <strong>
+                                                            Date unavailable
+                                                        </strong>
+                                                    </template>
+
+                                                </div>
+
+
+                                                <div class="history-summary-meta">
+
+                                                    <div class="history-summary-stat">
+
+                                                        <span>
+                                                            Work Order
+                                                        </span>
+
+                                                        <strong class="serial-value">
+                                                            {entry.workOrderNumberDisplay}
+                                                        </strong>
+
+                                                    </div>
+
+
+                                                    <div class="history-summary-stat">
+
+                                                        <span>
+                                                            Labor Hours
+                                                        </span>
+
+                                                        <strong>
+                                                            {entry.laborHoursDisplay}
+                                                        </strong>
+
+                                                    </div>
+
+
+                                                    <div class="history-summary-stat">
+
+                                                        <span>
+                                                            Service Type
+                                                        </span>
+
+                                                        <strong>
+                                                            {entry.maintenanceTypeDisplay}
+                                                        </strong>
+
+                                                    </div>
+
+                                                </div>
+
+
+                                                <div class="history-summary-actions">
+
+                                                    <span class={entry.statusClass}>
+                                                        {entry.status}
+                                                    </span>
+
+                                                    <button
+                                                        type="button"
+                                                        class="history-toggle"
+                                                        data-id={entry.id}
+                                                        aria-expanded={entry.ariaExpanded}
+                                                        onclick={handleToggleHistory}>
+                                                        {entry.toggleLabel}
+                                                    </button>
+
+                                                </div>
+
+                                            </div>
+
+
+                                            <template if:true={entry.expanded}>
+
+                                                <div class="history-entry-details">
+
+                                                    <div class="history-detail-grid">
+
+                                                        <div class="history-detail-card history-problem-card">
+
+                                                            <span class="detail-label">
+                                                                Problem Summary
+                                                            </span>
+
+                                                            <p>
+                                                                {entry.problemSummaryDisplay}
+                                                            </p>
+
+                                                        </div>
+
+
+                                                        <div class="history-detail-card history-root-cause-card">
+
+                                                            <span class="detail-label">
+                                                                Root Cause
+                                                            </span>
+
+                                                            <p>
+                                                                {entry.rootCauseDisplay}
+                                                            </p>
+
+                                                        </div>
+
+
+                                                        <div class="history-detail-card history-repair-card">
+
+                                                            <span class="detail-label">
+                                                                Repair Summary
+                                                            </span>
+
+                                                            <p class="pre-line">
+                                                                {entry.repairSummaryDisplay}
+                                                            </p>
+
+                                                        </div>
+
+
+                                                        <div class="history-detail-card history-parts-card">
+
+                                                            <span class="detail-label">
+                                                                Parts Used
+                                                            </span>
+
+                                                            <p class="pre-line">
+                                                                {entry.partsUsedDisplay}
+                                                            </p>
+
+                                                        </div>
+
+                                                    </div>
+
+
+                                                    <template if:true={entry.workOrderId}>
+
+                                                        <div class="history-actions">
+
+                                                            <button
+                                                                type="button"
+                                                                class="history-work-order-button"
+                                                                data-id={entry.workOrderId}
+                                                                onclick={handleViewWorkOrder}>
+                                                                View Work Order
+                                                                <span aria-hidden="true">
+                                                                    →
+                                                                </span>
+                                                            </button>
+
+                                                        </div>
+
+                                                    </template>
+
+                                                </div>
+
+                                            </template>
+
+                                        </article>
+
+                                    </template>
+
+                                </div>
+
+                            </template>
+
+
+                            <template if:false={hasServiceHistory}>
+
+                                <div class="history-empty">
+
+                                    <div class="history-empty-icon">
+                                        ✓
+                                    </div>
+
+                                    <h4>
+                                        No service history yet
+                                    </h4>
+
+                                    <p>
+                                        Completed maintenance and service visits
+                                        will appear here as they are recorded.
+                                    </p>
+
+                                </div>
+
+                            </template>
+
+                        </section>
+
+                    </template>
+
+                </template>
+
+            </template>
+
+        </template>
+
+    </div>
+</template>

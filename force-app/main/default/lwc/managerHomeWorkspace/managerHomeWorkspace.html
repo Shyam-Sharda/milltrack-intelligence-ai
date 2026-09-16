@@ -1,0 +1,131 @@
+<template>
+
+    <div class="manager-workspace">
+
+
+        <!-- =====================================================
+             MANAGER HERO
+             ===================================================== -->
+        <section class="hero">
+
+            <div class="hero-orb hero-orb-one"></div>
+            <div class="hero-orb hero-orb-two"></div>
+            <div class="hero-grid-glow"></div>
+
+
+            <div class="hero-content">
+
+                <div class="hero-left">
+
+                    <div class="hero-copy">
+
+                        <div class="hero-brand-row">
+
+                            <img
+                                src={millTrackLogoUrl}
+                                alt="MillTrack Intelligence"
+                                class="hero-brand-logo"
+                            />
+
+                        </div>
+
+
+                        <h1>
+                            MillTrack Service Manager
+                        </h1>
+
+
+                        <p class="hero-welcome">
+                            Welcome Back, {managerFirstName}
+                        </p>
+
+
+                        <p class="hero-subtitle">
+                            Coordinate service operations, technician activity,
+                            and machine performance from one workspace.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="hero-manager-panel">
+
+                    <div class="hero-manager-panel__icon">
+
+                        <lightning-icon
+                            icon-name="utility:settings"
+                            size="small"
+                            alternative-text="">
+                        </lightning-icon>
+
+                    </div>
+
+
+                    <div>
+
+                        <span class="hero-manager-panel__eyebrow">
+                            MANAGER COMMAND CENTER
+                        </span>
+
+                        <strong>
+                            Service Operations
+                        </strong>
+
+                        <span class="hero-manager-panel__description">
+                            Cases · Field Service · Intelligence
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="hero-wave hero-wave-back"></div>
+            <div class="hero-wave hero-wave-front"></div>
+
+        </section>
+
+
+
+        <!-- =====================================================
+             MANAGER WORKSPACE
+             ===================================================== -->
+        <div class="workspace-content">
+
+
+            <!-- MANAGER OPERATIONS -->
+            <section class="workspace-section">
+
+                <c-manager-operations-center>
+                </c-manager-operations-center>
+
+            </section>
+
+
+            <!-- TECHNICIAN SERVICE CALENDAR -->
+            <section class="workspace-section">
+
+                <c-manager-service-calendar>
+                </c-manager-service-calendar>
+
+            </section>
+
+
+            <!-- MACHINE SERVICE INTELLIGENCE -->
+            <section class="workspace-section">
+
+                <c-manager-service-intelligence>
+                </c-manager-service-intelligence>
+
+            </section>
+
+
+        </div>
+
+    </div>
+
+</template>

@@ -1,0 +1,1305 @@
+:host {
+    display: block;
+
+    --mt-navy: #061d3d;
+    --mt-blue: #0b5cab;
+    --mt-blue-dark: #074f91;
+
+    --mt-text: #263b50;
+    --mt-body: #53697c;
+    --mt-muted: #718494;
+
+    --mt-border: #d8e2ee;
+    --mt-border-soft: #e7edf3;
+    --mt-surface: #ffffff;
+    --mt-surface-soft: #f7f9fc;
+
+    --scheduled: #0b5cab;
+    --scheduled-soft: #eaf4ff;
+
+    --progress: #087f6b;
+    --progress-soft: #e8f8f4;
+
+    --completed: #2e844a;
+    --completed-soft: #edf8f0;
+
+    --follow-up: #c96f1a;
+    --follow-up-soft: #fff4e7;
+
+    --temporary: #a65300;
+    --temporary-soft: #fff0dc;
+
+    --past-due: #ba0517;
+    --past-due-soft: #fff0f1;
+
+    --service: #687d89;
+    --service-soft: #eef2f4;
+}
+
+
+/* =========================================================
+   MAIN PANEL
+   ========================================================= */
+
+.calendar-panel {
+    overflow: hidden;
+
+    border: 2px solid #bdd2e3;
+    border-top: 4px solid var(--mt-blue);
+    border-radius: 16px;
+
+    background: var(--mt-surface);
+
+    box-shadow:
+        0 7px 20px rgba(6, 29, 61, 0.07),
+        0 1px 4px rgba(11, 92, 171, 0.05);
+}
+
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+
+.calendar-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 20px 22px;
+    border-bottom: 1px solid var(--mt-border-soft);
+    background: linear-gradient(135deg, #f8fbff 0%, #f3f8fc 100%);
+}
+
+.calendar-title-wrap {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+}
+
+.calendar-title-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    flex: 0 0 42px;
+    border: 1px solid #c8dcef;
+    border-radius: 11px;
+    background: #e8f3fd;
+    color: var(--mt-blue);
+}
+
+.calendar-title-icon lightning-icon {
+    --slds-c-icon-color-foreground-default: currentColor;
+}
+
+.section-eyebrow {
+    margin: 0 0 3px;
+    color: #718494;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 1.05px;
+}
+
+.calendar-header h2 {
+    margin: 0;
+    color: var(--mt-navy);
+    font-size: 21px;
+    font-weight: 800;
+    line-height: 1.3;
+}
+
+.calendar-subtitle {
+    margin: 4px 0 0;
+    color: var(--mt-muted);
+    font-size: 13px;
+    line-height: 1.45;
+}
+
+.calendar-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.month-event-count {
+    color: #60758a;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.refresh-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-height: 34px;
+    padding: 7px 11px;
+    border: 1px solid #a9c8e5;
+    border-radius: 8px;
+    background: #ffffff;
+    color: var(--mt-blue);
+    font: inherit;
+    font-size: 12px;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.refresh-button:hover {
+    background: #eef6ff;
+}
+
+.refresh-button:disabled {
+    opacity: 0.55;
+    cursor: default;
+}
+
+.refresh-button lightning-icon {
+    --slds-c-icon-color-foreground-default: currentColor;
+}
+
+
+/* =========================================================
+   BODY
+   ========================================================= */
+
+.calendar-body {
+    padding: 18px;
+}
+
+
+/* =========================================================
+   MONTH TOOLBAR
+   ========================================================= */
+
+.month-toolbar {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 38px;
+    margin-bottom: 12px;
+}
+
+.month-navigation {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+}
+
+.month-navigation h3 {
+    min-width: 190px;
+    margin: 0;
+    color: var(--mt-navy);
+    font-size: 20px;
+    font-weight: 800;
+    text-align: center;
+}
+
+.month-nav-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 35px;
+    height: 35px;
+    border: 1px solid var(--mt-border);
+    border-radius: 8px;
+    background: #ffffff;
+    color: var(--mt-blue);
+    cursor: pointer;
+}
+
+.month-nav-button:hover {
+    border-color: #a9c8e5;
+    background: #eef6ff;
+}
+
+.month-nav-button lightning-icon {
+    --slds-c-icon-color-foreground-default: currentColor;
+}
+
+.today-button {
+    position: absolute;
+    right: 0;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+
+    min-height: 35px;
+    padding: 7px 13px;
+
+    border: 1px solid #a9c8e5;
+    border-radius: 8px;
+
+    background: #f7f9fc;
+    color: var(--mt-blue);
+
+    font: inherit;
+    font-size: 12px;
+    font-weight: 800;
+
+    cursor: pointer;
+}
+
+.today-button:hover {
+    border-color: var(--mt-blue);
+    background: #eef6ff;
+}
+
+.today-button lightning-icon {
+    --slds-c-icon-color-foreground-default: currentColor;
+}
+
+
+/* =========================================================
+   LEGEND
+   ========================================================= */
+
+.calendar-legend {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    margin-bottom: 14px;
+    padding: 10px 12px;
+    border: 1px solid #dce6ef;
+    border-radius: 10px;
+    background: #f8fafc;
+}
+
+.legend-title {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex: 0 0 auto;
+    color: #4e6678;
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.legend-title lightning-icon {
+    --slds-c-icon-color-foreground-default: #60758a;
+}
+
+.legend-items {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px 16px;
+}
+
+.legend-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: #53697c;
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.legend-marker {
+    width: 10px;
+    height: 10px;
+    flex: 0 0 10px;
+    border-radius: 50%;
+}
+
+.legend-scheduled {
+    background: var(--scheduled);
+}
+
+.legend-progress {
+    background: var(--progress);
+}
+
+.legend-completed {
+    background: var(--completed);
+}
+
+.legend-follow-up {
+    background: var(--follow-up);
+}
+
+.legend-temporary {
+    background: var(--temporary);
+}
+
+.legend-past-due {
+    background: var(--past-due);
+}
+
+.legend-service {
+    background: var(--service);
+}
+
+
+/* =========================================================
+   WEEKDAYS
+   ========================================================= */
+
+.weekday-grid {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    border: 1px solid var(--mt-border);
+    border-bottom: 0;
+    border-radius: 10px 10px 0 0;
+    overflow: hidden;
+}
+
+.weekday-label {
+    padding: 9px 5px;
+    border-right: 1px solid var(--mt-border);
+    background: #f2f6fa;
+    color: #60758a;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.7px;
+    text-align: center;
+}
+
+.weekday-label:last-child {
+    border-right: 0;
+}
+
+
+/* =========================================================
+   MONTH GRID
+   ========================================================= */
+
+.month-grid {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    border-top: 1px solid var(--mt-border);
+    border-left: 1px solid var(--mt-border);
+    border-radius: 0 0 10px 10px;
+    overflow: hidden;
+}
+
+.calendar-day {
+    appearance: none;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 112px;
+    padding: 8px;
+    border: 0;
+    border-right: 1px solid var(--mt-border);
+    border-bottom: 1px solid var(--mt-border);
+    background: #ffffff;
+    color: var(--mt-text);
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+    transition: background 130ms ease, box-shadow 130ms ease;
+}
+
+.calendar-day:hover {
+    z-index: 2;
+    background: #f8fbfe;
+    box-shadow: inset 0 0 0 1px #b8d3ea;
+}
+
+.calendar-day_blank {
+    min-height: 112px;
+    border-right: 1px solid var(--mt-border);
+    border-bottom: 1px solid var(--mt-border);
+    background: #f8fafc;
+}
+
+.calendar-day_today {
+    background: #f5faff;
+}
+
+.calendar-day_today::before {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    content: '';
+    background: var(--mt-blue);
+}
+
+.calendar-day_selected {
+    z-index: 3;
+    background: #eef6ff;
+    box-shadow: inset 0 0 0 2px var(--mt-blue);
+}
+
+.day-number-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 5px;
+}
+
+.day-number {
+    color: #334b5e;
+    font-size: 15px;
+    font-weight: 800;
+}
+
+.today-indicator {
+    padding: 2px 6px;
+    border-radius: 5px;
+    background: var(--mt-blue);
+    color: #ffffff;
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 0.4px;
+}
+
+.day-events {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+    margin-top: 8px;
+}
+
+.calendar-event-chip {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    min-width: 0;
+    padding: 4px 6px;
+    border-radius: 6px;
+    font-size: 10px;
+    font-weight: 800;
+    line-height: 1.25;
+}
+
+.calendar-event-dot {
+    width: 6px;
+    height: 6px;
+    flex: 0 0 6px;
+    border-radius: 50%;
+    background: currentColor;
+}
+
+.calendar-event-label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.more-events {
+    margin: 2px 0 0 3px;
+    color: #687d89;
+    font-size: 10px;
+    font-weight: 800;
+}
+
+
+/* =========================================================
+   OUTCOME COLORS / BADGES
+   ========================================================= */
+
+.outcome-scheduled {
+    background: var(--scheduled-soft);
+    color: var(--scheduled);
+}
+
+.outcome-progress {
+    background: var(--progress-soft);
+    color: var(--progress);
+}
+
+.outcome-completed {
+    background: var(--completed-soft);
+    color: var(--completed);
+}
+
+.outcome-follow-up {
+    background: var(--follow-up-soft);
+    color: var(--follow-up);
+}
+
+.outcome-temporary {
+    background: var(--temporary-soft);
+    color: var(--temporary);
+}
+
+.outcome-past-due {
+    background: var(--past-due-soft);
+    color: var(--past-due);
+}
+
+.outcome-service {
+    background: var(--service-soft);
+    color: var(--service);
+}
+
+.outcome-badge,
+.priority-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    font-weight: 800;
+}
+
+.outcome-badge {
+    max-width: 180px;
+    padding: 5px 9px;
+    font-size: 10px;
+    line-height: 1.3;
+    text-align: center;
+}
+
+.priority-badge {
+    padding: 3px 7px;
+    font-size: 10px;
+    line-height: 1.2;
+    white-space: nowrap;
+}
+
+.priority-critical {
+    background: #ba0517;
+    color: #ffffff;
+}
+
+.priority-high {
+    background: #fde8e8;
+    color: #b42318;
+}
+
+.priority-medium {
+    background: #fff1dc;
+    color: #a65300;
+}
+
+.priority-low {
+    background: #fff8d6;
+    color: #806b00;
+}
+
+.priority-default {
+    background: #edf2f5;
+    color: #60758a;
+}
+
+
+/* =========================================================
+   LOADING / ERROR
+   ========================================================= */
+
+.loading-state {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 280px;
+}
+
+.loading-state p {
+    margin-top: 80px;
+    color: #718494;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.error-state {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 16px;
+    padding: 13px 14px;
+    border: 1px solid #f0b7bd;
+    border-radius: 10px;
+    background: #fff5f6;
+    color: #a61a27;
+}
+
+.error-state lightning-icon {
+    --slds-c-icon-color-foreground-default: currentColor;
+}
+
+.error-state strong {
+    display: block;
+    margin-bottom: 2px;
+    font-size: 13px;
+}
+
+.error-state p {
+    margin: 0;
+    font-size: 12px;
+}
+
+
+/* =========================================================
+   POPUP BACKDROP
+   ========================================================= */
+
+.event-popup-backdrop {
+    position: fixed;
+    top: 88px;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 9000;
+
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+
+    padding: 24px 34px;
+
+    background: rgba(6, 29, 61, 0.035);
+}
+
+
+/* =========================================================
+   SWING POPUP SHELL
+   ========================================================= */
+
+.swing-popup {
+    width: min(420px, calc(100vw - 40px));
+    max-height: calc(100vh - 145px);
+
+    overflow-y: auto;
+    overflow-x: hidden;
+
+    border: 1px solid #bfd3e3;
+    border-radius: 16px;
+
+    background: #f6f9fc;
+
+    box-shadow:
+        0 20px 50px rgba(6, 29, 61, 0.22),
+        0 5px 15px rgba(6, 29, 61, 0.09);
+
+    animation: popup-enter 180ms ease-out;
+}
+
+@keyframes popup-enter {
+
+    from {
+        opacity: 0;
+        transform: translateX(14px) scale(0.985);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0) scale(1);
+    }
+}
+
+
+/* =========================================================
+   POPUP HEADER
+   ========================================================= */
+
+.swing-popup-header {
+    position: sticky;
+    top: 0;
+    z-index: 8;
+
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+
+    gap: 12px;
+
+    padding: 14px 15px;
+
+    border-bottom: 1px solid #d7e3ec;
+
+    background: linear-gradient(135deg, #edf6fd 0%, #f8fbfd 100%);
+}
+
+.swing-eyebrow {
+    margin: 0 0 3px;
+    color: #718494;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.9px;
+}
+
+.swing-popup-header h3 {
+    margin: 0;
+    color: var(--mt-navy);
+    font-size: 16px;
+    font-weight: 800;
+    line-height: 1.35;
+}
+
+.swing-count {
+    margin: 3px 0 0;
+    color: #60758a;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.swing-close {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 30px;
+    height: 30px;
+
+    flex: 0 0 30px;
+
+    border: 1px solid #cbdbe8;
+    border-radius: 8px;
+
+    background: #ffffff;
+    color: #60758a;
+
+    cursor: pointer;
+}
+
+.swing-close:hover {
+    color: var(--mt-blue);
+    background: #eef6ff;
+}
+
+.swing-close lightning-icon {
+    --slds-c-icon-color-foreground-default: currentColor;
+}
+
+
+/* =========================================================
+   SWING / POSTER RACK
+   ========================================================= */
+
+.swing-rack {
+    position: relative;
+    margin: 17px 17px 10px;
+    padding: 0 13px 12px 0;
+    perspective: 1200px;
+}
+
+.swing-stack {
+    position: absolute;
+    top: 0;
+    right: 13px;
+    bottom: 12px;
+    left: 0;
+
+    border: 1px solid #cad8e3;
+    border-radius: 13px;
+
+    background: #ffffff;
+
+    box-shadow: 0 5px 13px rgba(6, 29, 61, 0.06);
+
+    pointer-events: none;
+}
+
+.swing-stack-back {
+    transform: translate(13px, 10px) rotate(1.15deg);
+    opacity: 0.42;
+}
+
+.swing-stack-middle {
+    transform: translate(7px, 5px) rotate(0.55deg);
+    opacity: 0.70;
+}
+
+
+/* =========================================================
+   ACTIVE SWING CARD
+   ========================================================= */
+
+.swing-card {
+    position: relative;
+    z-index: 3;
+
+    padding: 15px;
+
+    border: 1px solid #cbdbe8;
+    border-left-width: 4px;
+    border-radius: 13px;
+
+    background: #ffffff;
+
+    box-shadow:
+        0 9px 24px rgba(6, 29, 61, 0.11);
+
+    transform-origin: left center;
+
+    animation:
+        swing-card-in 260ms
+        cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+.swing-card_scheduled {
+    border-left-color: var(--scheduled);
+}
+
+.swing-card_progress {
+    border-left-color: var(--progress);
+}
+
+.swing-card_completed {
+    border-left-color: var(--completed);
+}
+
+.swing-card_follow-up {
+    border-left-color: var(--follow-up);
+}
+
+.swing-card_temporary {
+    border-left-color: var(--temporary);
+}
+
+.swing-card_past-due {
+    border-left-color: var(--past-due);
+}
+
+.swing-card_service {
+    border-left-color: var(--service);
+}
+
+@keyframes swing-card-in {
+
+    0% {
+        opacity: 0.12;
+        transform: rotateY(-20deg) translateX(-10px);
+    }
+
+    65% {
+        opacity: 1;
+        transform: rotateY(3deg) translateX(2px);
+    }
+
+    100% {
+        opacity: 1;
+        transform: rotateY(0deg) translateX(0);
+    }
+}
+
+
+/* =========================================================
+   CARD TOP
+   ========================================================= */
+
+.swing-card-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+
+    gap: 10px;
+
+    padding-bottom: 11px;
+
+    border-bottom: 1px solid #e6edf2;
+}
+
+.swing-work-order {
+    min-width: 0;
+}
+
+.swing-record-label,
+.swing-info-label {
+    display: block;
+
+    color: #718494;
+
+    font-size: 9px;
+    font-weight: 800;
+
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+.swing-work-order-row {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+
+    gap: 7px;
+
+    margin-top: 3px;
+}
+
+.swing-work-order-row strong {
+    color: var(--mt-navy);
+    font-size: 18px;
+    font-weight: 800;
+}
+
+
+/* =========================================================
+   CONTEXT GRID
+   ========================================================= */
+
+.swing-info-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+
+    gap: 8px;
+
+    margin-top: 11px;
+}
+
+.swing-info-block {
+    display: flex;
+    flex-direction: column;
+
+    min-width: 0;
+
+    padding: 9px 10px;
+
+    border: 1px solid #e0e8ef;
+    border-radius: 8px;
+
+    background: #f9fbfc;
+}
+
+.swing-info-block strong {
+    margin-top: 3px;
+
+    overflow: hidden;
+
+    color: #30495b;
+
+    font-size: 12px;
+    font-weight: 800;
+    line-height: 1.35;
+
+    text-overflow: ellipsis;
+}
+
+.swing-info-secondary {
+    margin-top: 2px;
+
+    overflow: hidden;
+
+    color: #718494;
+
+    font-size: 10px;
+
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+
+/* =========================================================
+   CASE SUBJECT
+   ========================================================= */
+
+.swing-case-subject {
+    margin-top: 9px;
+    padding: 10px 11px;
+
+    border: 1px solid #d4e2ed;
+    border-radius: 8px;
+
+    background: #f4f8fb;
+}
+
+.swing-case-subject p {
+    margin: 4px 0 0;
+
+    color: #415b6d;
+
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1.45;
+}
+
+
+/* =========================================================
+   ACTION
+   ========================================================= */
+
+.swing-card-actions {
+    display: flex;
+    justify-content: center;
+
+    margin-top: 12px;
+    padding-top: 11px;
+
+    border-top: 1px solid #e8edf1;
+}
+
+.swing-primary-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    gap: 7px;
+
+    min-height: 35px;
+
+    padding: 7px 14px;
+
+    border: 1px solid var(--mt-blue);
+    border-radius: 8px;
+
+    background: var(--mt-blue);
+    color: #ffffff;
+
+    font: inherit;
+    font-size: 11px;
+    font-weight: 800;
+
+    cursor: pointer;
+}
+
+.swing-primary-button:hover {
+    border-color: var(--mt-blue-dark);
+    background: var(--mt-blue-dark);
+}
+
+.swing-primary-button lightning-icon {
+    --slds-c-icon-color-foreground-default: #ffffff;
+}
+
+
+/* =========================================================
+   SWING NAVIGATION
+   ========================================================= */
+
+.swing-navigation {
+    display: grid;
+
+    grid-template-columns:
+        minmax(0, 1fr)
+        auto
+        minmax(0, 1fr);
+
+    align-items: center;
+
+    gap: 9px;
+
+    padding: 4px 17px 16px;
+}
+
+.swing-nav-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    gap: 6px;
+
+    min-height: 33px;
+
+    padding: 7px 9px;
+
+    border: 1px solid #a9c8e5;
+    border-radius: 8px;
+
+    background: #ffffff;
+    color: var(--mt-blue);
+
+    font: inherit;
+    font-size: 11px;
+    font-weight: 800;
+
+    cursor: pointer;
+}
+
+.swing-nav-button:hover:not(:disabled) {
+    background: #eef6ff;
+}
+
+.swing-nav-button:disabled {
+    opacity: 0.36;
+    cursor: default;
+}
+
+.swing-nav-button lightning-icon {
+    --slds-c-icon-color-foreground-default: currentColor;
+}
+
+.swing-position {
+    min-width: 54px;
+
+    color: #53697c;
+
+    font-size: 12px;
+    font-weight: 800;
+
+    text-align: center;
+}
+
+
+/* =========================================================
+   EMPTY POPUP
+   ========================================================= */
+
+.swing-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    padding: 34px 24px;
+
+    text-align: center;
+}
+
+.swing-empty-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 42px;
+    height: 42px;
+
+    margin-bottom: 10px;
+
+    border-radius: 10px;
+
+    background: #eaf2f8;
+}
+
+.swing-empty-icon lightning-icon {
+    --slds-c-icon-color-foreground-default: #60758a;
+}
+
+.swing-empty strong {
+    color: var(--mt-navy);
+    font-size: 14px;
+}
+
+.swing-empty p {
+    max-width: 270px;
+
+    margin: 5px 0 0;
+
+    color: #718494;
+
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+
+/* =========================================================
+   FOCUS
+   ========================================================= */
+
+.calendar-day:focus-visible,
+.month-nav-button:focus-visible,
+.today-button:focus-visible,
+.refresh-button:focus-visible,
+.swing-close:focus-visible,
+.swing-nav-button:focus-visible,
+.swing-primary-button:focus-visible {
+    outline: 2px solid #1589ee;
+    outline-offset: 2px;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 1100px) {
+
+    .calendar-day,
+    .calendar-day_blank {
+        min-height: 100px;
+    }
+
+    .event-popup-backdrop {
+        padding-right: 22px;
+    }
+}
+
+
+@media (max-width: 850px) {
+
+    .calendar-header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .calendar-header-actions {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .calendar-legend {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .calendar-day,
+    .calendar-day_blank {
+        min-height: 88px;
+        padding: 6px;
+    }
+
+    .calendar-event-chip {
+        padding: 3px 4px;
+        font-size: 9px;
+    }
+
+    .event-popup-backdrop {
+        justify-content: center;
+        padding: 18px;
+    }
+}
+
+
+@media (max-width: 650px) {
+
+    .calendar-body {
+        padding: 12px;
+    }
+
+    .month-toolbar {
+        align-items: center;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .month-navigation {
+        justify-content: center;
+    }
+
+    .today-button {
+        position: static;
+    }
+
+    .weekday-label {
+        padding: 7px 2px;
+        font-size: 9px;
+    }
+
+    .calendar-day,
+    .calendar-day_blank {
+        min-height: 72px;
+        padding: 4px;
+    }
+
+    .today-indicator {
+        display: none;
+    }
+
+    .calendar-event-label {
+        font-size: 8px;
+    }
+
+    .event-popup-backdrop {
+        top: 60px;
+        padding: 12px;
+    }
+
+    .swing-popup {
+        width: 100%;
+        max-height: calc(100vh - 85px);
+    }
+
+    .swing-info-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .swing-card-top {
+        flex-direction: column;
+    }
+
+    .outcome-badge {
+        max-width: 100%;
+    }
+}

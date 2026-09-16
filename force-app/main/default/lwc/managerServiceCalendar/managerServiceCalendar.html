@@ -1,0 +1,654 @@
+<template>
+
+    <section class="calendar-panel">
+
+        <!-- =====================================================
+             HEADER
+             ===================================================== -->
+        <div class="calendar-header">
+
+            <div class="calendar-title-wrap">
+
+                <div class="calendar-title-icon">
+                    <lightning-icon
+                        icon-name="utility:event"
+                        size="small"
+                        alternative-text="">
+                    </lightning-icon>
+                </div>
+
+                <div>
+                    <p class="section-eyebrow">FIELD SERVICE SCHEDULE</p>
+                    <h2>Technician Service Calendar</h2>
+                    <p class="calendar-subtitle">
+                        Scheduled visits, active repairs, completed service, and follow-up activity.
+                    </p>
+                </div>
+
+            </div>
+
+            <div class="calendar-header-actions">
+
+                <span class="month-event-count">
+                    {totalMonthEventsLabel}
+                </span>
+
+                <button
+                    type="button"
+                    class="refresh-button"
+                    disabled={isLoading}
+                    onclick={handleRefresh}>
+
+                    <lightning-icon
+                        icon-name="utility:refresh"
+                        size="xx-small"
+                        alternative-text="">
+                    </lightning-icon>
+
+                    <span>Refresh</span>
+
+                </button>
+
+            </div>
+
+        </div>
+
+
+        <!-- =====================================================
+             LOADING
+             ===================================================== -->
+        <template lwc:if={isLoading}>
+
+            <div class="loading-state">
+
+                <lightning-spinner
+                    alternative-text="Loading technician service calendar"
+                    size="medium">
+                </lightning-spinner>
+
+                <p>Loading technician service schedule...</p>
+
+            </div>
+
+        </template>
+
+
+        <!-- =====================================================
+             ERROR
+             ===================================================== -->
+        <template lwc:if={hasError}>
+
+            <div class="error-state">
+
+                <lightning-icon
+                    icon-name="utility:error"
+                    size="small"
+                    alternative-text="Error">
+                </lightning-icon>
+
+                <div>
+                    <strong>Unable to load the Technician Service Calendar</strong>
+                    <p>{errorMessage}</p>
+                </div>
+
+            </div>
+
+        </template>
+
+
+        <!-- =====================================================
+             CALENDAR
+             ===================================================== -->
+        <template lwc:if={calendarData}>
+
+            <div class="calendar-body">
+
+                <!-- =================================================
+                     MONTH CONTROLS
+                     ================================================= -->
+                <div class="month-toolbar">
+
+                    <div class="month-navigation">
+
+                        <button
+                            type="button"
+                            class="month-nav-button"
+                            title="Previous month"
+                            onclick={handlePreviousMonth}>
+
+                            <lightning-icon
+                                icon-name="utility:chevronleft"
+                                size="x-small"
+                                alternative-text="Previous month">
+                            </lightning-icon>
+
+                        </button>
+
+                        <h3>{monthLabel}</h3>
+
+                        <button
+                            type="button"
+                            class="month-nav-button"
+                            title="Next month"
+                            onclick={handleNextMonth}>
+
+                            <lightning-icon
+                                icon-name="utility:chevronright"
+                                size="x-small"
+                                alternative-text="Next month">
+                            </lightning-icon>
+
+                        </button>
+
+                    </div>
+
+
+                    <template lwc:if={showGoToTodayButton}>
+
+                        <button
+                            type="button"
+                            class="today-button"
+                            onclick={handleToday}>
+
+                            <lightning-icon
+                                icon-name="utility:date_input"
+                                size="xx-small"
+                                alternative-text="">
+                            </lightning-icon>
+
+                            <span>Go to Today's Date</span>
+
+                        </button>
+
+                    </template>
+
+                </div>
+
+
+                <!-- =================================================
+                     COLOR LEGEND
+                     ================================================= -->
+                <div class="calendar-legend" aria-label="Calendar color legend">
+
+                    <div class="legend-title">
+
+                        <lightning-icon
+                            icon-name="utility:info"
+                            size="xx-small"
+                            alternative-text="">
+                        </lightning-icon>
+
+                        <span>Calendar Key</span>
+
+                    </div>
+
+                    <div class="legend-items">
+
+                        <span class="legend-item">
+                            <span class="legend-marker legend-scheduled"></span>
+                            Scheduled
+                        </span>
+
+                        <span class="legend-item">
+                            <span class="legend-marker legend-progress"></span>
+                            In Progress
+                        </span>
+
+                        <span class="legend-item">
+                            <span class="legend-marker legend-completed"></span>
+                            Completed
+                        </span>
+
+                        <span class="legend-item">
+                            <span class="legend-marker legend-follow-up"></span>
+                            Follow-Up
+                        </span>
+
+                        <span class="legend-item">
+                            <span class="legend-marker legend-temporary"></span>
+                            Temporary Repair
+                        </span>
+
+                        <span class="legend-item">
+                            <span class="legend-marker legend-past-due"></span>
+                            Past Due
+                        </span>
+
+                        <span class="legend-item">
+                            <span class="legend-marker legend-service"></span>
+                            Other Visit
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+                <!-- =================================================
+                     WEEKDAY LABELS
+                     ================================================= -->
+                <div class="weekday-grid">
+
+                    <template for:each={weekdayLabels} for:item="weekday">
+
+                        <div
+                            key={weekday.key}
+                            class="weekday-label">
+                            {weekday.label}
+                        </div>
+
+                    </template>
+
+                </div>
+
+
+                <!-- =================================================
+                     MONTH GRID
+                     ================================================= -->
+                <div class="month-grid">
+
+                    <template for:each={calendarDays} for:item="day">
+
+                        <template lwc:if={day.isBlank}>
+
+                            <div
+                                key={day.key}
+                                class="calendar-day calendar-day_blank">
+                            </div>
+
+                        </template>
+
+                        <template lwc:else>
+
+                            <button
+                                key={day.key}
+                                type="button"
+                                class={day.dayClass}
+                                data-date={day.dateKey}
+                                aria-pressed={day.isSelected}
+                                onclick={handleDaySelect}>
+
+                                <div class="day-number-row">
+
+                                    <span class="day-number">
+                                        {day.dayNumber}
+                                    </span>
+
+                                    <template lwc:if={day.isToday}>
+                                        <span class="today-indicator">
+                                            TODAY
+                                        </span>
+                                    </template>
+
+                                </div>
+
+
+                                <template lwc:if={day.hasEvents}>
+
+                                    <div class="day-events">
+
+                                        <template
+                                            for:each={day.visibleEvents}
+                                            for:item="calendarEvent">
+
+                                            <span
+                                                key={calendarEvent.eventKey}
+                                                class={calendarEvent.chipClass}>
+
+                                                <span class="calendar-event-dot"></span>
+
+                                                <span class="calendar-event-label">
+                                                    {calendarEvent.calendarLabel}
+                                                </span>
+
+                                            </span>
+
+                                        </template>
+
+
+                                        <template lwc:if={day.hasMoreEvents}>
+
+                                            <span class="more-events">
+                                                +{day.moreCount} more
+                                            </span>
+
+                                        </template>
+
+                                    </div>
+
+                                </template>
+
+                            </button>
+
+                        </template>
+
+                    </template>
+
+                </div>
+
+            </div>
+
+        </template>
+
+    </section>
+
+
+    <!-- =========================================================
+         FLOATING SELECTED-DATE SWING RACK
+         ========================================================= -->
+    <template lwc:if={hasSelectedDay}>
+
+        <div
+            class="event-popup-backdrop"
+            onclick={handleCloseSelectedDay}>
+
+            <section
+                class="swing-popup"
+                role="dialog"
+                aria-label="Selected date service activity"
+                onclick={handlePopupClick}>
+
+                <!-- =================================================
+                     POPUP HEADER
+                     ================================================= -->
+                <div class="swing-popup-header">
+
+                    <div>
+                        <p class="swing-eyebrow">SERVICE ACTIVITY</p>
+                        <h3>{selectedDateLabel}</h3>
+                        <p class="swing-count">{selectedDayEventCountLabel}</p>
+                    </div>
+
+                    <button
+                        type="button"
+                        class="swing-close"
+                        title="Close"
+                        onclick={handleCloseSelectedDay}>
+
+                        <lightning-icon
+                            icon-name="utility:close"
+                            size="x-small"
+                            alternative-text="Close">
+                        </lightning-icon>
+
+                    </button>
+
+                </div>
+
+
+                <!-- =================================================
+                     EVENTS
+                     ================================================= -->
+                <template lwc:if={selectedDayHasEvents}>
+
+                    <div class="swing-rack">
+
+                        <div class="swing-stack swing-stack-back"></div>
+                        <div class="swing-stack swing-stack-middle"></div>
+
+
+                        <template
+                            for:each={currentSelectedEventList}
+                            for:item="serviceEvent">
+
+                            <article
+                                key={serviceEvent.eventKey}
+                                class={serviceEvent.swingCardClass}>
+
+                                <!-- =====================================
+                                     WORK ORDER + STATUS
+                                     ===================================== -->
+                                <div class="swing-card-top">
+
+                                    <div class="swing-work-order">
+
+                                        <span class="swing-record-label">
+                                            WORK ORDER
+                                        </span>
+
+                                        <div class="swing-work-order-row">
+
+                                            <strong>
+                                                {serviceEvent.workOrderNumberDisplay}
+                                            </strong>
+
+                                            <template lwc:if={serviceEvent.priority}>
+
+                                                <span class={serviceEvent.priorityClass}>
+                                                    {serviceEvent.priority}
+                                                </span>
+
+                                            </template>
+
+                                        </div>
+
+                                    </div>
+
+
+                                    <span class={serviceEvent.outcomeClass}>
+                                        {serviceEvent.statusDisplay}
+                                    </span>
+
+                                </div>
+
+
+                                <!-- =====================================
+                                     CONTEXT
+                                     ===================================== -->
+                                <div class="swing-info-grid">
+
+                                    <div class="swing-info-block">
+
+                                        <span class="swing-info-label">
+                                            Account
+                                        </span>
+
+                                        <strong>
+                                            {serviceEvent.accountNameDisplay}
+                                        </strong>
+
+                                    </div>
+
+
+                                    <div class="swing-info-block">
+
+                                        <span class="swing-info-label">
+                                            Technician
+                                        </span>
+
+                                        <strong>
+                                            {serviceEvent.technicianNameDisplay}
+                                        </strong>
+
+                                    </div>
+
+
+                                    <div class="swing-info-block">
+
+                                        <span class="swing-info-label">
+                                            Machine
+                                        </span>
+
+                                        <strong>
+                                            {serviceEvent.machineLabelDisplay}
+                                        </strong>
+
+                                        <span class="swing-info-secondary">
+                                            {serviceEvent.serialNumberDisplay}
+                                        </span>
+
+                                    </div>
+
+
+                                    <div class="swing-info-block">
+
+                                        <span class="swing-info-label">
+                                            Service Case
+                                        </span>
+
+                                        <strong>
+                                            {serviceEvent.caseNumberDisplay}
+                                        </strong>
+
+                                    </div>
+
+                                </div>
+
+
+                                <!-- =====================================
+                                     CASE SUBJECT
+                                     ===================================== -->
+                                <div class="swing-case-subject">
+
+                                    <span class="swing-info-label">
+                                        Case Subject
+                                    </span>
+
+                                    <p>
+                                        {serviceEvent.caseSubjectDisplay}
+                                    </p>
+
+                                </div>
+
+
+                                <!-- =====================================
+                                     ACTION
+                                     ===================================== -->
+                                <div class="swing-card-actions">
+
+                                    <template lwc:if={serviceEvent.showWorkOrderAction}>
+
+                                        <button
+                                            type="button"
+                                            class="swing-primary-button"
+                                            data-id={serviceEvent.workOrderId}
+                                            onclick={handleOpenWorkOrder}>
+
+                                            View Work Order
+
+                                            <lightning-icon
+                                                icon-name="utility:chevronright"
+                                                size="xx-small"
+                                                alternative-text="">
+                                            </lightning-icon>
+
+                                        </button>
+
+                                    </template>
+
+
+                                    <template lwc:if={serviceEvent.showMaintenanceAction}>
+
+                                        <button
+                                            type="button"
+                                            class="swing-primary-button"
+                                            data-id={serviceEvent.maintenanceLogId}
+                                            onclick={handleOpenMaintenanceLog}>
+
+                                            View Maintenance Log
+
+                                            <lightning-icon
+                                                icon-name="utility:chevronright"
+                                                size="xx-small"
+                                                alternative-text="">
+                                            </lightning-icon>
+
+                                        </button>
+
+                                    </template>
+
+                                </div>
+
+                            </article>
+
+                        </template>
+
+                    </div>
+
+
+                    <!-- =================================================
+                         FLIP NAVIGATION
+                         ================================================= -->
+                    <template lwc:if={hasMultipleSelectedEvents}>
+
+                        <div class="swing-navigation">
+
+                            <button
+                                type="button"
+                                class="swing-nav-button"
+                                disabled={previousEventDisabled}
+                                onclick={handlePreviousSelectedEvent}>
+
+                                <lightning-icon
+                                    icon-name="utility:chevronleft"
+                                    size="x-small"
+                                    alternative-text="Previous">
+                                </lightning-icon>
+
+                                <span>Previous</span>
+
+                            </button>
+
+
+                            <div class="swing-position">
+                                {selectedEventPositionLabel}
+                            </div>
+
+
+                            <button
+                                type="button"
+                                class="swing-nav-button"
+                                disabled={nextEventDisabled}
+                                onclick={handleNextSelectedEvent}>
+
+                                <span>Next</span>
+
+                                <lightning-icon
+                                    icon-name="utility:chevronright"
+                                    size="x-small"
+                                    alternative-text="Next">
+                                </lightning-icon>
+
+                            </button>
+
+                        </div>
+
+                    </template>
+
+                </template>
+
+
+                <!-- =================================================
+                     EMPTY DATE
+                     ================================================= -->
+                <template lwc:else>
+
+                    <div class="swing-empty">
+
+                        <div class="swing-empty-icon">
+
+                            <lightning-icon
+                                icon-name="utility:event"
+                                size="small"
+                                alternative-text="">
+                            </lightning-icon>
+
+                        </div>
+
+                        <strong>No service activity</strong>
+
+                        <p>
+                            No scheduled or completed technician visits are recorded for this date.
+                        </p>
+
+                    </div>
+
+                </template>
+
+            </section>
+
+        </div>
+
+    </template>
+
+</template>

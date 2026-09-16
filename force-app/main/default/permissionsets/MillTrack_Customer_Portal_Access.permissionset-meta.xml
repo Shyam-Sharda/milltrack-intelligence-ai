@@ -1,11 +1,7 @@
-<?xml version="1.0" encoding="UTF-8"?>
+﻿<?xml version="1.0" encoding="UTF-8"?>
 <PermissionSet xmlns="http://soap.sforce.com/2006/04/metadata">
     <classAccesses>
         <apexClass>CustomerAssetServiceHistoryController</apexClass>
-        <enabled>true</enabled>
-    </classAccesses>
-    <classAccesses>
-        <apexClass>CustomerProgressTrackerController</apexClass>
         <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
@@ -288,10 +284,6 @@
         <enabled>true</enabled>
         <flow>CUST_06_Resolve_Authorized_Customer_Case</flow>
     </flowAccesses>
-    <flowAccesses>
-        <enabled>true</enabled>
-        <flow>Customer_Report_an_Issue</flow>
-    </flowAccesses>
     <hasActivationRequired>false</hasActivationRequired>
     <label>MillTrack Customer Portal Access</label>
     <license>Customer Community Login</license>
@@ -370,3 +362,5 @@
         <name>CanAccessCE</name>
     </userPermissions>
 </PermissionSet>
+
+

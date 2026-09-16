@@ -1,122 +1,69 @@
 <template>
-    <lightning-card>
+    <section class="chat-shell">
         <div class="chat-container">
-
-            <!-- =================================================
-                 Technician AI Header
-                 ================================================= -->
+            <!-- HEADER -->
             <header class="chat-header">
                 <div class="ai-avatar">
-                    <img
-                        src={technicianAiLogo}
-                        alt="MillTrack Technician AI"
-                        class="ai-avatar-image"
-                    />
+                    <img src={technicianAiLogo} alt="MillTrack Technician AI" class="ai-avatar-image" />
                 </div>
 
                 <div class="header-copy">
-                    <h2 class="chat-title">
-                        Technician AI
-                    </h2>
+                    <span class="header-kicker">MILLTRACK INTELLIGENCE</span>
+                    <h2 class="chat-title">Technician AI</h2>
+                    <p class="chat-subtitle">Ask about this Work Order</p>
+                </div>
 
-                    <p class="chat-subtitle">
-                        Ask about this Work Order
-                    </p>
+                <div class="online-state">
+                    <span class="online-dot"></span>
+                    Ready
                 </div>
             </header>
 
-            <!-- =================================================
-                 Suggested Questions
-                 ================================================= -->
+            <!-- SUGGESTIONS -->
             <section class="suggested-prompts">
-                <p class="section-label">
-                    Suggested Questions
-                </p>
+                <p class="section-label">Suggested Questions</p>
 
                 <div class="prompt-list">
-                    <button
-                        class="prompt-button"
-                        data-message="Give me a briefing on this work order."
-                        onclick={handleSuggestedPrompt}
-                    >
+                    <button class="prompt-button" data-message="Give me a briefing on this work order." onclick={handleSuggestedPrompt}>
                         Give me a briefing
                     </button>
 
-                    <button
-                        class="prompt-button"
-                        data-message="What tools do I need for this repair?"
-                        onclick={handleSuggestedPrompt}
-                    >
+                    <button class="prompt-button" data-message="What tools do I need for this repair?" onclick={handleSuggestedPrompt}>
                         What tools do I need?
                     </button>
 
-                    <button
-                        class="prompt-button"
-                        data-message="What parts have already been requested or ordered?"
-                        onclick={handleSuggestedPrompt}
-                    >
+                    <button class="prompt-button" data-message="What parts have already been requested or ordered?" onclick={handleSuggestedPrompt}>
                         Check ordered parts
                     </button>
 
-                    <button
-                        class="prompt-button"
-                        data-message="Has this machine had similar failures before?"
-                        onclick={handleSuggestedPrompt}
-                    >
+                    <button class="prompt-button" data-message="Has this machine had similar failures before?" onclick={handleSuggestedPrompt}>
                         Review machine history
                     </button>
                 </div>
             </section>
 
-            <!-- =================================================
-                 Message History
-                 ================================================= -->
-            <section
-                class="message-history"
-                data-id="messageHistory"
-                aria-live="polite"
-            >
-                <template
-                    for:each={messages}
-                    for:item="message"
-                >
-                    <div
-                        key={message.id}
-                        class={message.wrapperClass}
-                    >
+            <!-- MESSAGE HISTORY -->
+            <section class="message-history" data-id="messageHistory" aria-live="polite">
+                <template for:each={messages} for:item="message">
+                    <div key={message.id} class={message.wrapperClass}>
                         <div class={message.bubbleClass}>
-                            <p class="message-label">
-                                {message.senderLabel}
-                            </p>
-
-                            <p class="message-text">
-                                {message.text}
-                            </p>
+                            <p class="message-label">{message.senderLabel}</p>
+                            <p class="message-text">{message.text}</p>
                         </div>
                     </div>
                 </template>
 
-                <!-- AI Loading -->
                 <template if:true={isLoading}>
                     <div class="assistant-message">
                         <div class="assistant-bubble loading-bubble">
-                            <lightning-spinner
-                                alternative-text="Technician AI is responding"
-                                size="small"
-                            >
-                            </lightning-spinner>
-
-                            <span class="loading-text">
-                                Reviewing Work Order context…
-                            </span>
+                            <lightning-spinner alternative-text="Technician AI is responding" size="small"></lightning-spinner>
+                            <span class="loading-text">Reviewing Work Order context…</span>
                         </div>
                     </div>
                 </template>
             </section>
 
-            <!-- =================================================
-                 Composer
-                 ================================================= -->
+            <!-- COMPOSER -->
             <section class="composer">
                 <div class="composer-inner">
                     <lightning-textarea
@@ -127,41 +74,33 @@
                         value={draftMessage}
                         onchange={handleMessageChange}
                         disabled={isLoading}
-                        class="message-input"
-                    >
+                        class="message-input">
                     </lightning-textarea>
 
-                    <lightning-button
-                        label="Send"
-                        variant="brand"
-                        icon-name="utility:send"
-                        icon-position="right"
-                        onclick={handleSend}
-                        disabled={isSendDisabled}
-                        class="send-button"
-                    >
-                    </lightning-button>
+                    <div class="composer-actions">
+                        <span class="composer-hint">Ask about repairs, parts, tools, or history.</span>
+
+                        <lightning-button
+                            label="Send"
+                            variant="brand"
+                            icon-name="utility:send"
+                            icon-position="right"
+                            onclick={handleSend}
+                            disabled={isSendDisabled}
+                            class="send-button">
+                        </lightning-button>
+                    </div>
                 </div>
             </section>
 
-            <!-- =================================================
-                 Grounding Notice
-                 ================================================= -->
+            <!-- FOOTER -->
             <footer class="chat-footer">
                 <span class="footer-icon">
-                    <lightning-icon
-                        icon-name="utility:lock"
-                        size="xx-small"
-                        alternative-text="Grounded response"
-                    >
-                    </lightning-icon>
+                    <lightning-icon icon-name="utility:lock" size="xx-small" alternative-text="Grounded response"></lightning-icon>
                 </span>
 
-                <span>
-                    Responses use the current Work Order and related records.
-                </span>
+                <span>Responses use the current Work Order and related records.</span>
             </footer>
-
         </div>
-    </lightning-card>
+    </section>
 </template>

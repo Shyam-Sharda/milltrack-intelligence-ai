@@ -1,0 +1,416 @@
+<template>
+    <section class="admin-workspace">
+
+        <!-- =====================================================
+             LOADING
+             ===================================================== -->
+
+        <template lwc:if={isLoading}>
+
+            <div class="state-card">
+
+                <lightning-spinner
+                    alternative-text="Loading Admin workspace"
+                    size="medium">
+                </lightning-spinner>
+
+                <p>
+                    Loading your Admin workspace...
+                </p>
+
+            </div>
+
+        </template>
+
+
+        <!-- =====================================================
+             ERROR
+             ===================================================== -->
+
+        <template lwc:elseif={errorMessage}>
+
+            <div class="error-card">
+
+                <div class="error-icon">
+                    !
+                </div>
+
+                <div>
+
+                    <h2>
+                        We couldn't load the Admin workspace
+                    </h2>
+
+                    <p>
+                        {errorMessage}
+                    </p>
+
+                </div>
+
+            </div>
+
+        </template>
+
+
+        <!-- =====================================================
+             MAIN WORKSPACE
+             ===================================================== -->
+
+        <template lwc:else>
+
+            <!-- =================================================
+                 RECENTLY VIEWED
+                 ================================================= -->
+
+            <section class="recent-section">
+
+                <div class="recent-heading">
+
+                    <div>
+
+                        <span class="section-eyebrow">
+                            Your Workspace
+                        </span>
+
+                        <h2>
+                            Recently Viewed
+                        </h2>
+
+                        <p>
+                            Pick up where you left off.
+                        </p>
+
+                    </div>
+
+
+                    <button
+                        class="refresh-button"
+                        type="button"
+                        onclick={handleRefresh}
+                        disabled={isRefreshing}>
+
+                        <lightning-icon
+                            icon-name="utility:refresh"
+                            size="xx-small"
+                            alternative-text="">
+                        </lightning-icon>
+
+                        <span>
+                            Refresh
+                        </span>
+
+                    </button>
+
+                </div>
+
+
+                <template lwc:if={hasRecentlyViewed}>
+
+                    <div class="recent-grid">
+
+                        <template
+                            for:each={recentlyViewed}
+                            for:item="item">
+
+                            <button
+                                key={item.id}
+                                class="recent-tile"
+                                type="button"
+                                data-id={item.id}
+                                data-object={item.objectApiName}
+                                onclick={handleRecordOpen}>
+
+                                <div class={item.iconClass}>
+
+                                    <lightning-icon
+                                        icon-name={item.iconName}
+                                        size="small"
+                                        alternative-text="">
+                                    </lightning-icon>
+
+                                </div>
+
+
+                                <div class="recent-copy">
+
+                                    <strong>
+                                        {item.name}
+                                    </strong>
+
+                                    <span>
+                                        {item.objectLabel}
+                                    </span>
+
+                                    <small>
+
+                                        Viewed
+
+                                        <lightning-formatted-date-time
+                                            value={item.lastViewedDate}
+                                            month="short"
+                                            day="2-digit"
+                                            hour="numeric"
+                                            minute="2-digit">
+                                        </lightning-formatted-date-time>
+
+                                    </small>
+
+                                </div>
+
+
+                                <span
+                                    class="recent-arrow"
+                                    aria-hidden="true">
+                                    →
+                                </span>
+
+                            </button>
+
+                        </template>
+
+                    </div>
+
+                </template>
+
+
+                <template lwc:else>
+
+                    <div class="recent-empty">
+
+                        <lightning-icon
+                            icon-name="utility:clock"
+                            size="small"
+                            alternative-text="">
+                        </lightning-icon>
+
+                        <span>
+                            Recently viewed MillTrack records will appear here as you work.
+                        </span>
+
+                    </div>
+
+                </template>
+
+            </section>
+
+
+            <!-- =================================================
+                 WORKSPACE SECTIONS
+                 ================================================= -->
+
+            <template
+                for:each={sections}
+                for:item="section">
+
+                <section
+                    key={section.key}
+                    class={section.sectionClass}>
+
+                    <!-- =========================================
+                         SECTION HEADING
+                         ========================================= -->
+
+                    <div class="workspace-section-heading">
+
+                        <span class="section-eyebrow">
+                            {section.eyebrow}
+                        </span>
+
+                        <div class="section-title-row">
+
+                            <h2>
+                                {section.title}
+                            </h2>
+
+                            <span class="section-rule">
+                            </span>
+
+                        </div>
+
+                        <p>
+                            {section.subtitle}
+                        </p>
+
+                    </div>
+
+
+                    <!-- =========================================
+                         THREE CARDS
+                         ========================================= -->
+
+                    <div class="workspace-card-grid">
+
+                        <template
+                            for:each={section.cards}
+                            for:item="card">
+
+                            <article
+                                key={card.key}
+                                class="workspace-card">
+
+                                <!-- =============================
+                                     CARD HEADER
+                                     ============================= -->
+
+                                <header class="workspace-card-header">
+
+                                    <div class="card-title">
+
+                                        <div class="card-icon">
+
+                                            <lightning-icon
+                                                icon-name={card.iconName}
+                                                size="small"
+                                                alternative-text="">
+                                            </lightning-icon>
+
+                                        </div>
+
+
+                                        <h3>
+                                            {card.title}
+                                        </h3>
+
+                                    </div>
+
+
+                                    <button
+                                        class="view-all-button"
+                                        type="button"
+                                        data-object={card.objectApiName}
+                                        onclick={handleViewAll}>
+
+                                        View All
+
+                                        <span aria-hidden="true">
+                                            →
+                                        </span>
+
+                                    </button>
+
+                                </header>
+
+
+                                <!-- =============================
+                                     RECORDS
+                                     ============================= -->
+
+                                <template lwc:if={card.hasRecords}>
+
+                                    <div class="record-list">
+
+                                        <template
+                                            for:each={card.records}
+                                            for:item="record">
+
+                                            <button
+                                                key={record.id}
+                                                class="record-row"
+                                                type="button"
+                                                data-id={record.id}
+                                                data-object={record.objectApiName}
+                                                onclick={handleRecordOpen}>
+
+                                                <div class="record-main">
+
+                                                    <div class="record-title-row">
+
+                                                        <strong class="record-title">
+                                                            {record.primaryText}
+                                                        </strong>
+
+
+                                                        <template lwc:if={record.hasBadge}>
+
+                                                            <span class={record.badgeClass}>
+                                                                {record.badge}
+                                                            </span>
+
+                                                        </template>
+
+                                                    </div>
+
+
+                                                    <template lwc:if={record.hasSecondary}>
+
+                                                        <span class="record-secondary">
+                                                            {record.secondaryText}
+                                                        </span>
+
+                                                    </template>
+
+
+                                                    <template lwc:if={record.hasTertiary}>
+
+                                                        <span class="record-tertiary">
+                                                            {record.tertiaryText}
+                                                        </span>
+
+                                                    </template>
+
+                                                </div>
+
+
+                                                <div class="record-date">
+
+                                                    <span>
+                                                        {record.dateLabel}
+                                                    </span>
+
+                                                    <strong>
+
+                                                        <lightning-formatted-date-time
+                                                            value={record.dateValue}
+                                                            month="short"
+                                                            day="2-digit">
+                                                        </lightning-formatted-date-time>
+
+                                                    </strong>
+
+                                                </div>
+
+                                            </button>
+
+                                        </template>
+
+                                    </div>
+
+                                </template>
+
+
+                                <!-- =============================
+                                     EMPTY CARD
+                                     ============================= -->
+
+                                <template lwc:else>
+
+                                    <div class="empty-card-state">
+
+                                        <lightning-icon
+                                            icon-name={card.iconName}
+                                            size="small"
+                                            alternative-text="">
+                                        </lightning-icon>
+
+                                        <span>
+                                            No recent records yet.
+                                        </span>
+
+                                    </div>
+
+                                </template>
+
+                            </article>
+
+                        </template>
+
+                    </div>
+
+                </section>
+
+            </template>
+
+        </template>
+
+    </section>
+</template>

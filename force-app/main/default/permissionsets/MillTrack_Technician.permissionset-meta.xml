@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <PermissionSet xmlns="http://soap.sforce.com/2006/04/metadata">
   <applicationVisibilities>
     <application>MillTrack_Intelligence</application>
@@ -422,22 +422,6 @@
     <field>Work_Order_Part__c.Supplier_Phone__c</field>
     <readable>true</readable>
   </fieldPermissions>
-  <flowAccesses>
-    <enabled>true</enabled>
-    <flow>Complete_Work_Order</flow>
-  </flowAccesses>
-  <flowAccesses>
-    <enabled>true</enabled>
-    <flow>Request_Parts</flow>
-  </flowAccesses>
-  <flowAccesses>
-    <enabled>true</enabled>
-    <flow>Start_Work</flow>
-  </flowAccesses>
-  <flowAccesses>
-    <enabled>true</enabled>
-    <flow>Temporary_Fix_From_Work_Order</flow>
-  </flowAccesses>
   <hasActivationRequired>false</hasActivationRequired>
   <label>MillTrack Technician</label>
   <objectPermissions>

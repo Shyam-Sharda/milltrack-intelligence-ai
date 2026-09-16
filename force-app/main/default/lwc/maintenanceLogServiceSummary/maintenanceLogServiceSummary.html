@@ -1,0 +1,709 @@
+<template>
+
+    <!-- =====================================================
+         LOADING
+         ===================================================== -->
+    <template if:true={isLoading}>
+        <div class="loading-state">
+            <lightning-spinner
+                alternative-text="Loading Maintenance Log"
+                size="medium">
+            </lightning-spinner>
+
+            <p>Preparing service history...</p>
+        </div>
+    </template>
+
+
+    <!-- =====================================================
+         ERROR
+         ===================================================== -->
+    <template if:true={hasError}>
+        <div class="error-state">
+
+            <lightning-icon
+                icon-name="utility:warning"
+                size="small"
+                variant="inverse">
+            </lightning-icon>
+
+            <div>
+                <strong>Maintenance Log Unavailable</strong>
+                <p>{errorMessage}</p>
+            </div>
+
+        </div>
+    </template>
+
+
+    <template if:true={logRecord.data}>
+        <div class="summary-shell">
+
+
+            <!-- =================================================
+                 HERO
+                 ================================================= -->
+            <section class={heroClass}>
+
+                <div class="hero-main">
+
+                    <div class="hero-icon">
+                        <lightning-icon
+                            icon-name={typeIcon}
+                            size="small"
+                            variant="inverse">
+                        </lightning-icon>
+                    </div>
+
+
+                    <div class="hero-copy">
+
+                        <p class="eyebrow">
+                            SERVICE HISTORY
+                        </p>
+
+
+                        <div class="hero-title-row">
+
+                            <h1>{logName}</h1>
+
+                            <span class="type-pill">
+                                {maintenanceTypeLabel}
+                            </span>
+
+                        </div>
+
+
+                        <template if:true={assetName}>
+                            <p class="machine-name">
+                                {assetName}
+                            </p>
+                        </template>
+
+
+                        <template if:true={machineDetails}>
+                            <p class="machine-details">
+                                {machineDetails}
+                            </p>
+                        </template>
+
+                    </div>
+                </div>
+
+
+                <div class="hero-status">
+
+                    <span class="status-main">
+                        {primaryStatusLabel}
+                    </span>
+
+
+                    <template if:true={secondaryStatusLabel}>
+                        <span class="status-sub">
+                            {secondaryStatusLabel}
+                        </span>
+                    </template>
+
+                </div>
+
+            </section>
+
+
+            <!-- =================================================
+                 VISIT META
+                 ================================================= -->
+            <section class="visit-meta">
+
+                <div class="meta-item">
+
+                    <span class="meta-label">
+                        MAINTENANCE DATE
+                    </span>
+
+                    <strong>
+                        {formattedDate}
+                    </strong>
+
+                </div>
+
+
+                <div class="meta-item">
+
+                    <span class="meta-label">
+                        PERFORMED BY
+                    </span>
+
+                    <strong>
+                        {performedByName}
+                    </strong>
+
+                </div>
+
+
+                <div class="meta-item">
+
+                    <span class="meta-label">
+                        LABOR
+                    </span>
+
+                    <strong>
+                        {laborLabel}
+                    </strong>
+
+                </div>
+
+
+                <template if:true={hasWorkOrder}>
+
+                    <button
+                        class="meta-link"
+                        onclick={handleWorkOrderOpen}>
+
+                        <span class="meta-label">
+                            WORK ORDER
+                        </span>
+
+                        <strong>
+                            {workOrderNumber}
+                        </strong>
+
+                        <span>
+                            {dispatchStatus}
+                        </span>
+
+                    </button>
+
+                </template>
+
+            </section>
+
+
+            <!-- =================================================
+                 SERVICE OUTCOME
+                 ================================================= -->
+            <section class="outcome-card">
+
+                <div class="section-heading">
+
+                    <div class="heading-icon">
+                        <lightning-icon
+                            icon-name="utility:note"
+                            size="x-small"
+                            variant="inverse">
+                        </lightning-icon>
+                    </div>
+
+
+                    <div class="section-heading-copy">
+
+                        <h2>
+                            Service Outcome
+                        </h2>
+
+                        <p>
+                            The authoritative record of this service visit.
+                        </p>
+
+                    </div>
+
+
+                    <template if:true={enableServiceOutcomeEditing}>
+
+                        <button
+                            class="section-edit-button"
+                            onclick={handleEditOutcome}>
+
+                            <lightning-icon
+                                icon-name="utility:edit"
+                                size="xx-small"
+                                variant="inverse">
+                            </lightning-icon>
+
+                            <span>
+                                Edit Service Outcome
+                            </span>
+
+                        </button>
+
+                    </template>
+
+                </div>
+
+
+                <div class="outcome-grid">
+
+                    <div class="outcome-main">
+
+
+                        <!-- PROBLEM SUMMARY -->
+                        <template if:true={hasProblemSummary}>
+
+                            <div class="content-block problem-summary-block">
+
+                                <span class="content-label">
+                                    Problem Summary
+                                </span>
+
+                                <p>
+                                    {problemSummary}
+                                </p>
+
+                            </div>
+
+                        </template>
+
+
+                        <!-- ROOT CAUSE -->
+                        <template if:true={hasRootCause}>
+
+                            <div class="content-block root-cause-block">
+
+                                <span class="content-label">
+                                    Root Cause
+                                </span>
+
+                                <p>
+                                    {rootCause}
+                                </p>
+
+                            </div>
+
+                        </template>
+
+
+                        <!-- REPAIR / VISIT SUMMARY -->
+                        <div class="content-block repair-summary-block">
+
+                            <span class="content-label">
+                                {summaryLabel}
+                            </span>
+
+                            <p>
+                                {summary}
+                            </p>
+
+                        </div>
+
+
+                        <!-- PARTS USED -->
+                        <template if:true={hasPartsUsed}>
+
+                            <div class="content-block parts-used-block">
+
+                                <span class="content-label">
+                                    Parts Used
+                                </span>
+
+                                <p>
+                                    {partsUsed}
+                                </p>
+
+                            </div>
+
+                        </template>
+
+                    </div>
+
+
+                    <!-- =========================================
+                         STATUS
+                         ========================================= -->
+                    <div class="outcome-status">
+
+
+                        <!-- ISSUE RESOLVED -->
+                        <div class="status-detail">
+
+                            <template if:true={issueResolved}>
+
+                                <span class="status-detail-icon positive-icon">
+
+                                    <lightning-icon
+                                        icon-name="utility:success"
+                                        size="xx-small"
+                                        variant="inverse">
+                                    </lightning-icon>
+
+                                </span>
+
+                            </template>
+
+
+                            <template if:false={issueResolved}>
+
+                                <span class="status-detail-icon negative-icon">
+
+                                    <lightning-icon
+                                        icon-name="utility:close"
+                                        size="xx-small"
+                                        variant="inverse">
+                                    </lightning-icon>
+
+                                </span>
+
+                            </template>
+
+
+                            <div>
+
+                                <span class="content-label">
+                                    ISSUE RESOLVED
+                                </span>
+
+                                <strong>
+
+                                    <template if:true={issueResolved}>
+                                        Yes
+                                    </template>
+
+                                    <template if:false={issueResolved}>
+                                        No
+                                    </template>
+
+                                </strong>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- FOLLOW-UP -->
+                        <div class="status-detail">
+
+                            <template if:true={followUpRequired}>
+
+                                <span class="status-detail-icon positive-icon">
+
+                                    <lightning-icon
+                                        icon-name="utility:success"
+                                        size="xx-small"
+                                        variant="inverse">
+                                    </lightning-icon>
+
+                                </span>
+
+                            </template>
+
+
+                            <template if:false={followUpRequired}>
+
+                                <span class="status-detail-icon negative-icon">
+
+                                    <lightning-icon
+                                        icon-name="utility:close"
+                                        size="xx-small"
+                                        variant="inverse">
+                                    </lightning-icon>
+
+                                </span>
+
+                            </template>
+
+
+                            <div>
+
+                                <span class="content-label">
+                                    FOLLOW-UP REQUIRED
+                                </span>
+
+                                <strong>
+
+                                    <template if:true={followUpRequired}>
+                                        Yes
+                                    </template>
+
+                                    <template if:false={followUpRequired}>
+                                        No
+                                    </template>
+
+                                </strong>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- LABOR -->
+                        <div class="status-detail labor-detail">
+
+                            <span class="status-detail-icon labor-icon">
+
+                                <lightning-icon
+                                    icon-name="utility:clock"
+                                    size="xx-small"
+                                    variant="inverse">
+                                </lightning-icon>
+
+                            </span>
+
+
+                            <div>
+
+                                <span class="content-label">
+                                    VISIT LABOR
+                                </span>
+
+                                <strong>
+                                    {laborLabel}
+                                </strong>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- =================================================
+                 RELATED CONTEXT
+                 ================================================= -->
+            <template if:true={showRelatedContext}>
+
+                <section class="context-grid">
+
+
+                    <!-- WORK ORDER -->
+                    <template if:true={hasWorkOrder}>
+
+                        <button
+                            class="context-card"
+                            onclick={handleWorkOrderOpen}>
+
+                            <div class="context-top">
+
+                                <div class="context-icon">
+
+                                    <lightning-icon
+                                        icon-name="standard:work_order"
+                                        size="small">
+                                    </lightning-icon>
+
+                                </div>
+
+
+                                <span class="context-label">
+                                    WORK ORDER
+                                </span>
+
+                            </div>
+
+
+                            <strong>
+                                {workOrderNumber}
+                            </strong>
+
+
+                            <template if:true={dispatchStatus}>
+
+                                <span class="context-status">
+                                    {dispatchStatus}
+                                </span>
+
+                            </template>
+
+                        </button>
+
+                    </template>
+
+
+                    <!-- MACHINE -->
+                    <template if:true={hasAsset}>
+
+                        <button
+                            class="context-card"
+                            onclick={handleAssetOpen}>
+
+                            <div class="context-top">
+
+                                <div class="context-icon">
+
+                                    <lightning-icon
+                                        icon-name="standard:asset_object"
+                                        size="small">
+                                    </lightning-icon>
+
+                                </div>
+
+
+                                <span class="context-label">
+                                    MACHINE
+                                </span>
+
+                            </div>
+
+
+                            <strong>
+                                {assetName}
+                            </strong>
+
+
+                            <template if:true={serialNumber}>
+
+                                <p>
+                                    Serial: {serialNumber}
+                                </p>
+
+                            </template>
+
+
+                            <template if:true={machineDetails}>
+
+                                <p>
+                                    {machineDetails}
+                                </p>
+
+                            </template>
+
+
+                            <template if:true={machineStatus}>
+
+                                <span class="context-status">
+                                    {machineStatus}
+                                </span>
+
+                            </template>
+
+                        </button>
+
+                    </template>
+
+                </section>
+
+            </template>
+
+
+        </div>
+    </template>
+
+
+    <!-- =====================================================
+         EDIT SERVICE OUTCOME MODAL
+         ===================================================== -->
+    <template if:true={isEditOpen}>
+
+        <section class="modal-backdrop">
+
+            <div class="edit-modal">
+
+
+                <div class="modal-header">
+
+                    <div>
+
+                        <p class="modal-eyebrow">
+                            SERVICE HISTORY UPDATE
+                        </p>
+
+                        <h2>
+                            Edit Service Outcome
+                        </h2>
+
+                        <p>
+                            Update the documented findings from this service visit.
+                        </p>
+
+                    </div>
+
+
+                    <button
+                        class="close-button"
+                        onclick={handleCloseEdit}
+                        title="Close">
+
+                        <lightning-icon
+                            icon-name="utility:close"
+                            size="small">
+                        </lightning-icon>
+
+                    </button>
+
+                </div>
+
+
+                <lightning-record-edit-form
+                    record-id={recordId}
+                    object-api-name="Maintenance_Log__c"
+                    onsuccess={handleSaveSuccess}
+                    onerror={handleSaveError}>
+
+
+                    <div class="modal-body">
+
+
+                        <div class="edit-field">
+
+                            <span class="edit-field-label">
+                                {editSummaryLabel}
+                            </span>
+
+                            <lightning-input-field
+                                field-name={summaryField}
+                                variant="label-hidden">
+                            </lightning-input-field>
+
+                        </div>
+
+
+                        <div class="edit-field">
+
+                            <span class="edit-field-label">
+                                Root Cause
+                            </span>
+
+                            <lightning-input-field
+                                field-name={rootCauseField}
+                                variant="label-hidden">
+                            </lightning-input-field>
+
+                        </div>
+
+
+                        <div class="edit-field">
+
+                            <span class="edit-field-label">
+                                Parts Used
+                            </span>
+
+                            <lightning-input-field
+                                field-name={partsUsedField}
+                                variant="label-hidden">
+                            </lightning-input-field>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="modal-footer">
+
+                        <button
+                            type="button"
+                            class="secondary-button"
+                            onclick={handleCloseEdit}>
+
+                            Cancel
+
+                        </button>
+
+
+                        <lightning-button
+                            type="submit"
+                            variant="brand"
+                            label="Save Changes">
+                        </lightning-button>
+
+                    </div>
+
+                </lightning-record-edit-form>
+
+            </div>
+
+        </section>
+
+    </template>
+
+</template>

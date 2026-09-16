@@ -1,0 +1,511 @@
+:host {
+    --milltrack-navy: #061d3d;
+    --milltrack-blue: #0b5cab;
+    --milltrack-blue-hover: #084b8a;
+    --milltrack-light-blue: #eaf4ff;
+    --success-green: #2e844a;
+    --error-red: #ba0517;
+    --border: #d8dde6;
+    --text: #181818;
+    --muted: #5f6b7a;
+    display: block;
+}
+
+/* =========================================================
+   SHELL
+   ========================================================= */
+
+.wizard {
+    width: 100%;
+    box-sizing: border-box;
+    background: #ffffff;
+}
+
+.loading-state {
+    position: relative;
+    min-height: 300px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+
+.loading-state p {
+    margin-top: 5rem;
+    color: var(--muted);
+}
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+
+.wizard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1.5rem 1.75rem 1.25rem;
+    border-bottom: 1px solid #eef1f5;
+    background: linear-gradient(135deg, #ffffff 0%, #f8fbff 70%, #eef6fd 100%);
+}
+
+.eyebrow {
+    margin: 0 0 0.25rem;
+    color: var(--milltrack-blue);
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+}
+
+.wizard-header h1 {
+    margin: 0;
+    color: var(--milltrack-navy);
+    font-size: 1.45rem;
+    font-weight: 750;
+}
+
+.header-subtitle {
+    max-width: 560px;
+    margin: 0.35rem 0 0;
+    color: var(--muted);
+    font-size: 0.87rem;
+    line-height: 1.45;
+}
+
+.follow-up-badge {
+    height: fit-content;
+    padding: 0.35rem 0.75rem;
+    border: 1px solid #b9d9f2;
+    border-radius: 999px;
+    background: var(--milltrack-light-blue);
+    color: var(--milltrack-blue);
+    font-size: 0.72rem;
+    font-weight: 750;
+    white-space: nowrap;
+}
+
+/* =========================================================
+   WORK ORDER CONTEXT
+   ========================================================= */
+
+.context-card {
+    margin: 1.25rem 1.75rem 0;
+    padding: 0.9rem 1rem;
+    display: grid;
+    grid-template-columns: auto 1.2fr 1fr auto;
+    align-items: center;
+    gap: 1rem;
+    border: 1px solid #dce6f1;
+    border-radius: 10px;
+    background: #f7fbff;
+}
+
+.context-icon {
+    width: 38px;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.context-main,
+.machine-context,
+.labor-context {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.labor-context {
+    min-width: 105px;
+    padding-left: 1rem;
+    border-left: 1px solid #dce6f1;
+}
+
+.context-label {
+    color: #68788c;
+    font-size: 0.65rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+}
+
+.context-main strong,
+.machine-context strong,
+.labor-context strong {
+    margin-top: 0.1rem;
+    color: var(--milltrack-navy);
+}
+
+.context-subject,
+.machine-context span:last-child,
+.labor-context span:last-child {
+    margin-top: 0.15rem;
+    color: var(--muted);
+    font-size: 0.77rem;
+}
+
+/* =========================================================
+   FORM
+   ========================================================= */
+
+.form-content {
+    max-width: 920px;
+    margin: 0 auto;
+    padding: 1.4rem 1.75rem 1.6rem;
+}
+
+.section-heading {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.15rem;
+}
+
+.heading-icon {
+    width: 34px;
+    height: 34px;
+    flex: 0 0 34px;
+    border-radius: 8px;
+    background: var(--milltrack-blue);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.section-heading h2 {
+    margin: 0;
+    color: var(--milltrack-navy);
+    font-size: 1rem;
+    font-weight: 750;
+}
+
+.section-heading p {
+    margin: 0.15rem 0 0;
+    color: var(--muted);
+    font-size: 0.78rem;
+}
+
+.form-input {
+    display: block;
+}
+
+.summary-input {
+    --slds-c-textarea-sizing-min-height: 135px;
+}
+
+.summary-help,
+.labor-help {
+    margin-top: 0.4rem;
+    color: var(--muted);
+    font-size: 0.72rem;
+    line-height: 1.4;
+}
+
+.labor-section {
+    margin-top: 1.15rem;
+}
+
+.labor-input {
+    max-width: 220px;
+}
+
+/* =========================================================
+   NEXT STEP
+   ========================================================= */
+
+.next-step-card {
+    margin-top: 1.25rem;
+    padding: 0.9rem 1rem;
+    display: flex;
+    gap: 0.75rem;
+    border: 1px solid #c8e2d0;
+    border-radius: 8px;
+    background: #edf7f0;
+}
+
+.next-icon {
+    width: 28px;
+    height: 28px;
+    flex: 0 0 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: var(--success-green);
+}
+
+.next-step-card strong {
+    color: #1f5f36;
+}
+
+.next-step-card p {
+    margin: 0.25rem 0 0;
+    color: #3f5f49;
+    font-size: 0.76rem;
+    line-height: 1.5;
+}
+
+/* =========================================================
+   INLINE ERROR
+   ========================================================= */
+
+.inline-error {
+    margin-top: 1rem;
+    padding: 0.65rem 0.8rem;
+    border: 1px solid #f1c7c7;
+    border-radius: 6px;
+    background: #fff5f5;
+    color: var(--error-red);
+    font-size: 0.78rem;
+    font-weight: 650;
+}
+
+/* =========================================================
+   FOOTER / BUTTONS
+   ========================================================= */
+
+.wizard-footer {
+    padding: 1rem 1.75rem;
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.7rem;
+    border-top: 1px solid #eef1f5;
+    background: #fafbfc;
+}
+
+.primary-button,
+.secondary-button,
+.white-button,
+.white-outline-button {
+    min-width: 100px;
+    padding: 0.58rem 1.1rem;
+    border-radius: 7px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.primary-button {
+    border: 1px solid var(--milltrack-blue);
+    background: var(--milltrack-blue);
+    color: #ffffff;
+}
+
+.primary-button:hover {
+    border-color: var(--milltrack-blue-hover);
+    background: var(--milltrack-blue-hover);
+}
+
+.secondary-button {
+    border: 1px solid #b8c1cc;
+    background: #ffffff;
+    color: #334155;
+}
+
+.secondary-button:hover {
+    background: #f7f8fa;
+}
+
+.submit-button {
+    min-width: 165px;
+}
+
+button:disabled {
+    opacity: 0.55;
+    cursor: default;
+}
+
+/* =========================================================
+   SUCCESS / ERROR STATES
+   ========================================================= */
+
+.state-shell {
+    width: 100%;
+    padding: 0;
+    margin: 0;
+    background: transparent;
+    box-sizing: border-box;
+}
+
+.state-card {
+    width: 100%;
+    max-width: none;
+    min-height: 260px;
+    margin: 0;
+    padding: 1.8rem 2rem;
+    box-sizing: border-box;
+    border-radius: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.success-state {
+    background: var(--success-green);
+    color: #ffffff;
+}
+
+.error-state {
+    background: var(--error-red);
+    color: #ffffff;
+}
+
+.state-icon {
+    width: 42px;
+    height: 42px;
+    margin-bottom: 0.8rem;
+    border: 2px solid rgba(255, 255, 255, 0.82);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.state-card h2 {
+    margin: 0;
+    color: #ffffff;
+    font-size: 1.28rem;
+}
+
+.state-card > p {
+    max-width: 440px;
+    color: #ffffff;
+    line-height: 1.45;
+}
+
+.status-pill {
+    margin-top: 0.7rem;
+    padding: 0.25rem 0.75rem;
+    border: 1px solid rgba(255, 255, 255, 0.7);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.12);
+    color: #ffffff;
+    font-size: 0.68rem;
+    font-weight: 750;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.success-main {
+    margin: 1rem 0 0 !important;
+    font-weight: 650;
+}
+
+.success-sub {
+    margin: 0.2rem 0 0 !important;
+    opacity: 0.92;
+    font-size: 0.82rem;
+}
+
+.error-subtext {
+    margin: 0.35rem 0 0 !important;
+    opacity: 0.9;
+    font-size: 0.78rem;
+}
+
+.notification-warning {
+    width: 100%;
+    max-width: 500px;
+    margin-top: 0.85rem;
+    padding: 0.65rem 0.75rem;
+    box-sizing: border-box;
+    border-radius: 7px;
+    background: rgba(255, 255, 255, 0.14);
+    display: flex;
+    align-items: flex-start;
+    gap: 0.55rem;
+    color: #ffffff;
+    font-size: 0.73rem;
+    text-align: left;
+}
+
+.opening-log-message {
+    position: relative;
+    min-height: 32px;
+    margin-top: 1rem;
+    padding: 0.35rem 0.7rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.55rem;
+    box-sizing: border-box;
+    color: #ffffff;
+    font-size: 0.76rem;
+    font-weight: 650;
+}
+
+.opening-log-message lightning-spinner {
+    position: relative;
+    width: 24px;
+    height: 24px;
+    flex: 0 0 24px;
+}
+
+.open-log-button {
+    margin-top: 0.7rem;
+}
+
+.white-button {
+    border: 1px solid #ffffff;
+    background: #ffffff;
+}
+
+.white-outline-button {
+    border: 1px solid #ffffff;
+    background: transparent;
+    color: #ffffff;
+}
+
+.white-outline-button:hover {
+    background: rgba(255, 255, 255, 0.12);
+}
+
+.error-button {
+    margin-top: 1rem;
+    color: var(--error-red);
+}
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 640px) {
+
+    .wizard-header {
+        flex-direction: column;
+    }
+
+    .context-card {
+        grid-template-columns: auto 1fr;
+    }
+
+    .machine-context,
+    .labor-context {
+        grid-column: 2;
+    }
+
+    .labor-context {
+        padding-left: 0;
+        padding-top: 0.65rem;
+        border-left: 0;
+        border-top: 1px solid #dce6f1;
+    }
+
+    .form-content {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+
+    .wizard-footer {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+
+    .state-card {
+        width: 100%;
+        padding: 1.5rem 1.25rem;
+    }
+}

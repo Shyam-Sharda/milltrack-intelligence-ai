@@ -1,0 +1,103 @@
+<template>
+
+    <template if:true={isLoading}>
+        <div class="loading-state">
+            <lightning-spinner alternative-text="Loading Service Manual" size="medium"></lightning-spinner>
+            <p>Preparing service resource...</p>
+        </div>
+    </template>
+
+    <template if:true={hasError}>
+        <div class="error-state">
+            <lightning-icon icon-name="utility:warning" size="small" variant="inverse"></lightning-icon>
+            <div>
+                <strong>Service Manual Unavailable</strong>
+                <p>{errorMessage}</p>
+            </div>
+        </div>
+    </template>
+
+    <template if:true={manualRecord.data}>
+        <div class="manual-shell">
+
+            <!-- HERO -->
+            <section class="manual-hero">
+                <div class="hero-main">
+                    <div class="hero-icon">
+                        <lightning-icon icon-name="utility:knowledge_base" size="small" variant="inverse"></lightning-icon>
+                    </div>
+
+                    <div class="hero-copy">
+                        <p class="eyebrow">SERVICE RESOURCE</p>
+
+                        <div class="hero-title-row">
+                            <h1>{title}</h1>
+                            <span class="type-pill">{documentType}</span>
+                        </div>
+
+                        <p class="machine-label">{machineLabel}</p>
+                    </div>
+                </div>
+
+                <div class="hero-status">
+                    <span>Technical Documentation</span>
+                    <small>MillTrack Service Library</small>
+                </div>
+            </section>
+
+            <!-- QUICK DETAILS -->
+            <section class="detail-strip">
+
+                <div class="detail-item">
+                    <span class="field-label">MANUFACTURER</span>
+                    <strong>{manufacturer}</strong>
+                </div>
+
+                <div class="detail-item">
+                    <span class="field-label">MODEL</span>
+                    <strong>{model}</strong>
+                </div>
+
+                <div class="detail-item">
+                    <span class="field-label">DOCUMENT TYPE</span>
+                    <strong>{documentType}</strong>
+                </div>
+
+                <div class="detail-item">
+                    <span class="field-label">VERSION</span>
+                    <strong>{version}</strong>
+                </div>
+
+            </section>
+
+            <!-- INFORMATION -->
+            <section class="information-card">
+                <div class="section-heading">
+                    <div class="heading-icon">
+                        <lightning-icon icon-name="utility:info" size="x-small" variant="inverse"></lightning-icon>
+                    </div>
+
+                    <div>
+                        <h2>Manual Information</h2>
+                        <p>Reference information for this service document.</p>
+                    </div>
+                </div>
+
+                <div class="machine-card">
+                    <span class="field-label">APPLICABLE MACHINE</span>
+                    <strong>{manufacturer} {model}</strong>
+                    <p>This document applies to the machine model shown above.</p>
+                </div>
+
+                <template if:true={hasNotes}>
+                    <div class="notes-card">
+                        <span class="field-label">NOTES</span>
+                        <p>{notes}</p>
+                    </div>
+                </template>
+            </section>
+
+        </div>
+    </template>
+
+</template>

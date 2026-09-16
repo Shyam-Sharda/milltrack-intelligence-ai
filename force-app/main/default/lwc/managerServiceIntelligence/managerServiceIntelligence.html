@@ -1,0 +1,697 @@
+<template>
+
+    <section class="intelligence-panel">
+
+        <!-- =====================================================
+             HEADER
+             ===================================================== -->
+        <div class="intelligence-header">
+
+            <div class="header-title-wrap">
+
+                <div class="header-icon">
+                    <lightning-icon
+                        icon-name="utility:chart"
+                        size="small"
+                        alternative-text="">
+                    </lightning-icon>
+                </div>
+
+                <div>
+                    <p class="section-eyebrow">SERVICE ANALYTICS</p>
+                    <h2>Machine Service Intelligence</h2>
+                    <p class="header-subtitle">
+                        Identify which machine models are generating the most service activity and repeat field effort.
+                    </p>
+                </div>
+
+            </div>
+
+
+            <div class="header-actions">
+
+                <div class="period-selector">
+
+                    <template
+                        for:each={periodOptions}
+                        for:item="period">
+
+                        <button
+                            key={period.days}
+                            type="button"
+                            class={period.buttonClass}
+                            data-days={period.days}
+                            onclick={handlePeriodChange}>
+
+                            {period.label}
+
+                        </button>
+
+                    </template>
+
+                </div>
+
+
+                <button
+                    type="button"
+                    class="refresh-button"
+                    disabled={isLoading}
+                    onclick={handleRefresh}>
+
+                    <lightning-icon
+                        icon-name="utility:refresh"
+                        size="xx-small"
+                        alternative-text="">
+                    </lightning-icon>
+
+                    <span>Refresh</span>
+
+                </button>
+
+            </div>
+
+        </div>
+
+
+        <!-- =====================================================
+             LOADING
+             ===================================================== -->
+        <template lwc:if={isLoading}>
+
+            <div class="loading-state">
+
+                <lightning-spinner
+                    alternative-text="Loading machine service intelligence"
+                    size="medium">
+                </lightning-spinner>
+
+                <p>Analyzing machine service activity...</p>
+
+            </div>
+
+        </template>
+
+
+        <!-- =====================================================
+             ERROR
+             ===================================================== -->
+        <template lwc:if={hasError}>
+
+            <div class="error-state">
+
+                <lightning-icon
+                    icon-name="utility:error"
+                    size="small"
+                    alternative-text="Error">
+                </lightning-icon>
+
+                <div>
+                    <strong>Unable to load Machine Service Intelligence</strong>
+                    <p>{errorMessage}</p>
+                </div>
+
+            </div>
+
+        </template>
+
+
+        <!-- =====================================================
+             CONTENT
+             ===================================================== -->
+        <template lwc:if={intelligenceData}>
+
+            <div class="intelligence-body">
+
+
+                <!-- =================================================
+                     REPORTING CONTEXT
+                     ================================================= -->
+                <div class="report-context">
+
+                    <div>
+
+                        <span class="report-context-label">
+                            REPORTING PERIOD
+                        </span>
+
+                        <strong>
+                            {periodLabel}
+                        </strong>
+
+                        <span class="report-date-range">
+                            {reportingRangeLabel}
+                        </span>
+
+                    </div>
+
+
+                    <div class="resolved-summary">
+
+                        <span class="resolved-summary-dot"></span>
+
+                        <span>
+                            {resolvedSummaryLabel}
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+                <!-- =================================================
+                     KPI CARDS
+                     ================================================= -->
+                <div class="kpi-grid">
+
+                    <article class="kpi-card kpi-visits">
+
+                        <div class="kpi-icon">
+                            <lightning-icon
+                                icon-name="utility:event"
+                                size="small"
+                                alternative-text="">
+                            </lightning-icon>
+                        </div>
+
+                        <div>
+
+                            <span class="kpi-label">
+                                Service Visits
+                            </span>
+
+                            <strong class="kpi-value">
+                                {totalServiceVisits}
+                            </strong>
+
+                            <span class="kpi-help">
+                                Maintenance records
+                            </span>
+
+                        </div>
+
+                    </article>
+
+
+                    <article class="kpi-card kpi-issues">
+
+                        <div class="kpi-icon">
+                            <lightning-icon
+                                icon-name="utility:case"
+                                size="small"
+                                alternative-text="">
+                            </lightning-icon>
+                        </div>
+
+                        <div>
+
+                            <span class="kpi-label">
+                                Unique Issues
+                            </span>
+
+                            <strong class="kpi-value">
+                                {totalIssues}
+                            </strong>
+
+                            <span class="kpi-help">
+                                Unique Work Orders
+                            </span>
+
+                        </div>
+
+                    </article>
+
+
+                    <article class="kpi-card kpi-labor">
+
+                        <div class="kpi-icon">
+                            <lightning-icon
+                                icon-name="utility:clock"
+                                size="small"
+                                alternative-text="">
+                            </lightning-icon>
+                        </div>
+
+                        <div>
+
+                            <span class="kpi-label">
+                                Labor Hours
+                            </span>
+
+                            <strong class="kpi-value">
+                                {totalLaborHours}
+                            </strong>
+
+                            <span class="kpi-help">
+                                Technician time
+                            </span>
+
+                        </div>
+
+                    </article>
+
+
+                    <article class="kpi-card kpi-follow-up">
+
+                        <div class="kpi-icon">
+                            <lightning-icon
+                                icon-name="utility:warning"
+                                size="small"
+                                alternative-text="">
+                            </lightning-icon>
+                        </div>
+
+                        <div>
+
+                            <span class="kpi-label">
+                                Follow-Ups
+                            </span>
+
+                            <strong class="kpi-value">
+                                {totalFollowUps}
+                            </strong>
+
+                            <span class="kpi-help">
+                                Additional service required
+                            </span>
+
+                        </div>
+
+                    </article>
+
+                </div>
+
+
+                <!-- =================================================
+                     RANKING HEADER
+                     ================================================= -->
+                <div class="ranking-header">
+
+                    <div>
+
+                        <p class="ranking-eyebrow">
+                            SERVICE LOAD
+                        </p>
+
+                        <h3>
+                            Most Serviced Machine Models
+                        </h3>
+
+                        <p>
+                            Ranked by technician service visits during the selected reporting period.
+                        </p>
+
+                    </div>
+
+
+                    <div class="model-count-badge">
+
+                        <span>
+                            {modelCount}
+                        </span>
+
+                        <small>
+                            Models
+                        </small>
+
+                    </div>
+
+                </div>
+
+
+                <!-- =================================================
+                     MODEL LIST
+                     ================================================= -->
+                <template lwc:if={hasModels}>
+
+                    <div class="model-list">
+
+                        <template
+                            for:each={models}
+                            for:item="modelRecord">
+
+                            <article
+                                key={modelRecord.modelKey}
+                                class="model-card">
+
+
+                                <!-- =====================================
+                                     MAIN MODEL ROW
+                                     ===================================== -->
+                                <div class="model-main-row">
+
+                                    <div class={modelRecord.rankClass}>
+                                        #{modelRecord.rank}
+                                    </div>
+
+
+                                    <div class="model-content">
+
+                                        <div class="model-heading-row">
+
+                                            <div class="model-name-wrap">
+
+                                                <h4>
+                                                    {modelRecord.machineLabel}
+                                                </h4>
+
+                                                <span class="model-visit-count">
+                                                    {modelRecord.visitLabel}
+                                                </span>
+
+                                            </div>
+
+                                        </div>
+
+
+                                        <div class="service-load-track">
+
+                                            <div
+                                                class="service-load-fill"
+                                                data-width={modelRecord.serviceLoadPercent}>
+                                            </div>
+
+                                        </div>
+
+
+                                        <div class="model-metrics">
+
+                                            <div class="model-metric">
+
+                                                <span>Issues</span>
+
+                                                <strong>
+                                                    {modelRecord.issueCount}
+                                                </strong>
+
+                                            </div>
+
+
+                                            <div class="metric-divider"></div>
+
+
+                                            <div class="model-metric">
+
+                                                <span>Labor</span>
+
+                                                <strong>
+                                                    {modelRecord.laborHoursDisplay} hrs
+                                                </strong>
+
+                                            </div>
+
+
+                                            <div class="metric-divider"></div>
+
+
+                                            <div class="model-metric metric-follow-up">
+
+                                                <span>Follow-Ups</span>
+
+                                                <strong>
+                                                    {modelRecord.followUpCount}
+                                                </strong>
+
+                                            </div>
+
+
+                                            <div class="metric-divider"></div>
+
+
+                                            <div class="model-metric metric-resolved">
+
+                                                <span>Resolved</span>
+
+                                                <strong>
+                                                    {modelRecord.resolvedCount}
+                                                </strong>
+
+                                            </div>
+
+                                        </div>
+
+                                    </div>
+
+
+                                    <div class="model-action">
+
+                                        <template lwc:if={modelRecord.hasLatestActivity}>
+
+                                            <button
+                                                type="button"
+                                                class="expand-button"
+                                                data-key={modelRecord.modelKey}
+                                                onclick={handleToggleModel}>
+
+                                                <span>
+                                                    {modelRecord.expandLabel}
+                                                </span>
+
+                                                <lightning-icon
+                                                    icon-name={modelRecord.expandIcon}
+                                                    size="xx-small"
+                                                    alternative-text="">
+                                                </lightning-icon>
+
+                                            </button>
+
+                                        </template>
+
+                                    </div>
+
+                                </div>
+
+
+                                <!-- =====================================
+                                     LATEST MAINTENANCE ACTIVITY
+                                     ===================================== -->
+                                <template lwc:if={modelRecord.isExpanded}>
+
+                                    <div class="latest-service-drawer">
+
+
+                                        <!-- =================================
+                                             MAINTENANCE LOG HEADER
+                                             ================================= -->
+                                        <div class="latest-drawer-header">
+
+                                            <div>
+
+                                                <p class="latest-eyebrow">
+                                                    LATEST MAINTENANCE ACTIVITY
+                                                </p>
+
+                                                <div class="latest-record-heading">
+
+                                                    <strong>
+                                                        {modelRecord.latestMaintenanceLogDisplay}
+                                                    </strong>
+
+                                                    <span class={modelRecord.latestOutcomeClass}>
+                                                        {modelRecord.latestOutcomeLabel}
+                                                    </span>
+
+                                                </div>
+
+                                            </div>
+
+                                        </div>
+
+
+                                        <!-- =================================
+                                             SERVICE CONTEXT
+                                             ================================= -->
+                                        <div class="latest-context-grid">
+
+                                            <div class="latest-context-item">
+
+                                                <span class="latest-label">
+                                                    Customer
+                                                </span>
+
+                                                <strong>
+                                                    {modelRecord.latestAccountDisplay}
+                                                </strong>
+
+                                            </div>
+
+
+                                            <div class="latest-context-item">
+
+                                                <span class="latest-label">
+                                                    Technician
+                                                </span>
+
+                                                <strong>
+                                                    {modelRecord.latestTechnicianDisplay}
+                                                </strong>
+
+                                            </div>
+
+
+                                            <div class="latest-context-item">
+
+                                                <span class="latest-label">
+                                                    Service Case
+                                                </span>
+
+                                                <strong>
+                                                    {modelRecord.latestCaseDisplay}
+                                                </strong>
+
+                                            </div>
+
+
+                                            <div class="latest-context-item">
+
+                                                <span class="latest-label">
+                                                    Service Date
+                                                </span>
+
+                                                <strong>
+                                                    {modelRecord.latestDateLabel}
+                                                </strong>
+
+                                            </div>
+
+                                        </div>
+
+
+                                        <!-- =================================
+                                             CASE SUBJECT
+                                             ================================= -->
+                                        <div class="latest-case-subject">
+
+                                            <span class="latest-label">
+                                                Case Subject
+                                            </span>
+
+                                            <strong>
+                                                {modelRecord.latestCaseSubjectDisplay}
+                                            </strong>
+
+                                        </div>
+
+
+                                        <!-- =================================
+                                             MAINTENANCE DETAILS
+                                             ================================= -->
+                                        <div class="latest-detail-grid">
+
+
+                                            <div class="latest-detail-card problem-card">
+
+                                                <span class="latest-label">
+                                                    Problem Summary
+                                                </span>
+
+                                                <p>
+                                                    {modelRecord.latestProblemSummaryDisplay}
+                                                </p>
+
+                                            </div>
+
+
+                                            <div class="latest-detail-card root-cause-card">
+
+                                                <span class="latest-label">
+                                                    Root Cause
+                                                </span>
+
+                                                <p>
+                                                    {modelRecord.latestRootCauseDisplay}
+                                                </p>
+
+                                            </div>
+
+
+                                            <div class="latest-detail-card service-summary-card">
+
+                                                <span class="latest-label">
+                                                    Service Summary
+                                                </span>
+
+                                                <p>
+                                                    {modelRecord.latestSummaryDisplay}
+                                                </p>
+
+                                            </div>
+
+                                        </div>
+
+
+                                        <!-- =================================
+                                             ACTION
+                                             ================================= -->
+                                        <div class="latest-actions">
+
+                                            <template lwc:if={modelRecord.showLatestMaintenanceAction}>
+
+                                                <button
+                                                    type="button"
+                                                    class="primary-action"
+                                                    data-id={modelRecord.latestMaintenanceLogId}
+                                                    onclick={handleOpenMaintenanceLog}>
+
+                                                    View Maintenance Log
+
+                                                    <lightning-icon
+                                                        icon-name="utility:chevronright"
+                                                        size="xx-small"
+                                                        alternative-text="">
+                                                    </lightning-icon>
+
+                                                </button>
+
+                                            </template>
+
+                                        </div>
+
+                                    </div>
+
+                                </template>
+
+                            </article>
+
+                        </template>
+
+                    </div>
+
+                </template>
+
+
+                <!-- =================================================
+                     EMPTY
+                     ================================================= -->
+                <template lwc:else>
+
+                    <div class="empty-state">
+
+                        <div class="empty-icon">
+
+                            <lightning-icon
+                                icon-name="utility:chart"
+                                size="medium"
+                                alternative-text="">
+                            </lightning-icon>
+
+                        </div>
+
+                        <strong>
+                            No service activity in this period
+                        </strong>
+
+                        <p>
+                            Try selecting a longer reporting period to view historical machine service activity.
+                        </p>
+
+                    </div>
+
+                </template>
+
+            </div>
+
+        </template>
+
+    </section>
+
+</template>

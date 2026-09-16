@@ -2,7 +2,7 @@
 <ValidationRule xmlns="http://soap.sforce.com/2006/04/metadata">
     <fullName>Require_Root_Cause</fullName>
     <active>true</active>
-    <errorConditionFormula>ISBLANK(Root_Cause__c)</errorConditionFormula>
+    <errorConditionFormula>AND(Issue_Resolved__c, ISBLANK(Root_Cause__c))</errorConditionFormula>
     <errorDisplayField>Root_Cause__c</errorDisplayField>
-    <errorMessage>Root Cause is required.</errorMessage>
+    <errorMessage>Root Cause is required when the issue is resolved.</errorMessage>
 </ValidationRule>

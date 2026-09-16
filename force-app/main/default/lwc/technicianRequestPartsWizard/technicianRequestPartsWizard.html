@@ -1,0 +1,321 @@
+<template>
+
+    <!-- LOADING -->
+    <template if:true={isLoading}>
+        <div class="wizard">
+            <div class="loading-state">
+                <lightning-spinner alternative-text="Loading Request Parts" size="medium"></lightning-spinner>
+                <p>Preparing the Work Order...</p>
+            </div>
+        </div>
+    </template>
+
+    <!-- INITIAL ERROR -->
+    <template if:true={isInitialError}>
+        <div class="state-shell">
+            <div class="state-card error-state">
+                <div class="state-icon"><lightning-icon icon-name="utility:warning" size="small" variant="inverse"></lightning-icon></div>
+                <h2>Request Parts Unavailable</h2>
+                <p>{errorMessage}</p>
+                <button class="white-button error-button" onclick={handleClose}>Close</button>
+            </div>
+        </div>
+    </template>
+
+    <!-- WIZARD -->
+    <template if:true={showWizard}>
+        <div class="wizard">
+
+            <!-- HEADER -->
+            <div class="wizard-header">
+                <div>
+                    <p class="eyebrow">TECHNICIAN SERVICE</p>
+                    <h1>Request Parts</h1>
+                    <p class="header-subtitle">Request the parts needed to continue the repair and record the current service visit.</p>
+                </div>
+                <div class="step-badge">Step {currentStep} of 2</div>
+            </div>
+
+            <!-- PROGRESS -->
+            <div class="progress">
+                <div class={stepOneClass}><span class="step-number">1</span><span>Parts Request</span></div>
+                <div class="progress-line"></div>
+                <div class={stepTwoClass}><span class="step-number">2</span><span>Visit Summary</span></div>
+            </div>
+
+            <!-- WORK ORDER CONTEXT -->
+            <div class="context-card">
+                <div class="context-icon"><lightning-icon icon-name="standard:work_order" size="small"></lightning-icon></div>
+
+                <div class="context-main">
+                    <span class="context-label">WORK ORDER</span>
+                    <strong>{context.workOrderNumber}</strong>
+                    <span class="context-subject">{context.subject}</span>
+                </div>
+
+                <div class="machine-context">
+                    <span class="context-label">MACHINE</span>
+                    <strong>{context.assetName}</strong>
+                    <span>{machineDetails}</span>
+                </div>
+            </div>
+
+            <!-- STEP 1 -->
+            <template if:true={isStepOne}>
+                <section class="step-content">
+
+                    <div class="section-heading">
+                        <div class="heading-icon"><lightning-icon icon-name="utility:package" size="x-small" variant="inverse"></lightning-icon></div>
+                        <div>
+                            <h2>Select Required Parts</h2>
+                            <p>Select each part required to continue this repair.</p>
+                        </div>
+                    </div>
+
+                    <!-- CATALOG HEADER -->
+                    <div class="catalog-header">
+                        <div>
+                            <span class="context-label">PART CATALOG</span>
+                            <strong>{manufacturerLabel}</strong>
+                        </div>
+                        <div class="catalog-filter-pill">Manufacturer Matched</div>
+                    </div>
+
+                    <!-- SEARCH -->
+                    <lightning-input type="search" label="Search Part Catalog" placeholder="Search by part name, number, or keyword..." value={searchTerm} onchange={handleSearchChange}></lightning-input>
+
+                    <!-- CATALOG -->
+                    <div class="parts-area">
+
+                        <template if:true={isSearching}>
+                            <div class="parts-loading"><lightning-spinner alternative-text="Searching parts" size="small"></lightning-spinner></div>
+                        </template>
+
+                        <template if:true={hasParts}>
+                            <div class="catalog-list">
+
+                                <template for:each={displayedParts} for:item="part">
+                                    <button key={part.id} class={part.cssClass} data-id={part.id} onclick={handlePartSelect} aria-pressed={part.selected}>
+
+                                        <div class="catalog-part-main">
+                                            <div class="catalog-part-copy">
+                                                <strong>{part.name}</strong>
+                                                <template if:true={part.partNumber}><span class="part-number">{part.partNumber}</span></template>
+                                            </div>
+
+                                            <div class="catalog-select-indicator">
+                                                <template if:true={part.selected}>
+                                                    <span class="catalog-selected-label">Selected</span>
+                                                    <span class="selected-check"><lightning-icon icon-name="utility:success" size="xx-small" variant="inverse"></lightning-icon></span>
+                                                </template>
+
+                                                <template if:false={part.selected}>
+                                                    <span class="catalog-add-label">Select</span>
+                                                </template>
+                                            </div>
+                                        </div>
+
+                                    </button>
+                                </template>
+
+                            </div>
+
+                            <div class="catalog-controls">
+                                <template if:true={canShowLess}><button class="catalog-control-button" onclick={handleShowLess}>Show Less</button></template>
+                                <template if:true={hasMoreParts}><button class="catalog-control-button" onclick={handleShowMore}>Show More</button></template>
+                            </div>
+                        </template>
+
+                        <template if:true={showNoParts}>
+                            <div class="empty-parts">
+                                <lightning-icon icon-name="utility:search" size="small"></lightning-icon>
+                                <p>No matching active {context.manufacturer} parts were found.</p>
+                            </div>
+                        </template>
+
+                    </div>
+
+                    <!-- SELECTED PARTS -->
+                    <div class="selected-parts-section">
+
+                        <div class="selected-parts-header">
+                            <div>
+                                <span class="context-label">SELECTED PARTS</span>
+                                <h3>Parts to Request</h3>
+                            </div>
+                            <div class="selected-count-pill">{selectedCountLabel}</div>
+                        </div>
+
+                        <template if:true={hasSelectedParts}>
+                            <div class="selected-parts-list">
+
+                                <template for:each={selectedParts} for:item="part">
+                                    <div key={part.id} class="selected-part-row">
+
+                                        <div class="selected-part-info">
+                                            <strong>{part.name}</strong>
+                                            <template if:true={part.partNumber}><span>{part.partNumber}</span></template>
+                                        </div>
+
+                                        <div class="selected-part-actions">
+                                            <span class="quantity-label">Qty</span>
+                                            <lightning-input class="quantity-input" type="number" label="Quantity" variant="label-hidden" min="1" step="1" value={part.quantity} data-id={part.id} onchange={handleQuantityChange}></lightning-input>
+                                            <button class="remove-part-button" data-id={part.id} onclick={handleRemovePart} title="Remove part">Remove</button>
+                                        </div>
+
+                                    </div>
+                                </template>
+
+                            </div>
+                        </template>
+
+                        <template if:false={hasSelectedParts}>
+                            <div class="selected-parts-empty">Select one or more parts from the catalog above.</div>
+                        </template>
+
+                    </div>
+
+                    <!-- REASON -->
+                    <lightning-textarea class="step-one-input" label="Reason for Request" value={requestReason} required maxlength="32768" placeholder="Explain why these parts are required to continue or complete the repair." onchange={handleReasonChange}></lightning-textarea>
+
+                    <template if:true={stepError}><div class="inline-error">{stepError}</div></template>
+
+                </section>
+
+                <footer class="wizard-footer">
+                    <button class="secondary-button" onclick={handleClose}>Cancel</button>
+                    <button class="primary-button" onclick={handleNext}>Next <span>→</span></button>
+                </footer>
+            </template>
+
+            <!-- STEP 2 -->
+            <template if:true={isStepTwo}>
+                <section class="step-content">
+
+                    <div class="section-heading">
+                        <div class="heading-icon"><lightning-icon icon-name="utility:note" size="x-small" variant="inverse"></lightning-icon></div>
+                        <div>
+                            <h2>End Current Visit</h2>
+                            <p>Record what happened during this service visit.</p>
+                        </div>
+                    </div>
+
+                    <!-- REQUEST SUMMARY -->
+                    <div class="requested-parts-banner">
+
+                        <div class="requested-parts-banner-header">
+                            <div>
+                                <span class="context-label">REQUESTED PARTS</span>
+                                <strong>{selectedCountLabel}</strong>
+                            </div>
+                        </div>
+
+                        <div class="requested-parts-review-list">
+                            <template for:each={selectedParts} for:item="part">
+                                <div key={part.id} class="requested-part-review-row">
+
+                                    <div>
+                                        <strong>{part.name}</strong>
+                                        <template if:true={part.partNumber}><span>{part.partNumber}</span></template>
+                                    </div>
+
+                                    <div class="review-quantity">Qty {part.quantity}</div>
+
+                                </div>
+                            </template>
+                        </div>
+
+                        <div class="requested-reason-block">
+                            <span class="context-label">REASON FOR REQUEST</span>
+                            <p>{requestReason}</p>
+                        </div>
+
+                    </div>
+
+                    <!-- VISIT SUMMARY -->
+                    <lightning-textarea class="step-two-input" label="Visit Summary" value={visitSummary} required maxlength="32768" placeholder="Summarize what you found, what you tested or attempted, why the repair could not be completed, and any suspected cause." onchange={handleSummaryChange}></lightning-textarea>
+
+                    <div class="summary-help">If a temporary repair was applied, include what was performed and the machine condition when you left.</div>
+
+                    <!-- LABOR -->
+                    <lightning-input class="step-two-input labor-input" type="number" label="Labor Hours for This Visit" min="0" step="0.25" value={laborHours} required onchange={handleLaborChange}></lightning-input>
+
+                    <!-- TEMPORARY REPAIR -->
+                    <div class="temporary-card">
+                        <lightning-input type="checkbox" label="Temporary repair applied during this visit" checked={temporaryRepairApplied} onchange={handleTemporaryRepairChange}></lightning-input>
+                        <p>This records what happened during this visit. The Work Order will still move to <strong>Waiting on Parts</strong>.</p>
+                    </div>
+
+                    <!-- NEXT STEP -->
+                    <div class="next-step-card">
+                        <div class="next-icon"><lightning-icon icon-name="utility:forward" size="x-small" variant="inverse"></lightning-icon></div>
+
+                        <div>
+                            <strong>What happens next?</strong>
+                            <p>The requested parts and service visit are recorded. The Work Order returns to manager coordination as <strong>Waiting on Parts</strong>, the related Case moves to <strong>Waiting on Parts</strong>, and the Asset remains unchanged.</p>
+                        </div>
+                    </div>
+
+                    <template if:true={stepError}><div class="inline-error">{stepError}</div></template>
+
+                </section>
+
+                <footer class="wizard-footer">
+                    <button class="secondary-button" onclick={handleBack} disabled={isSubmitting}>Back</button>
+
+                    <button class="primary-button submit-button" onclick={handleSubmit} disabled={isSubmitting}>
+                        <template if:true={isSubmitting}>Submitting...</template>
+                        <template if:false={isSubmitting}>Submit Parts Request</template>
+                    </button>
+                </footer>
+            </template>
+
+        </div>
+    </template>
+
+    <!-- SUCCESS -->
+    <template if:true={isSuccess}>
+        <div class="state-shell">
+            <div class="state-card success-state">
+
+                <div class="state-icon"><lightning-icon icon-name="utility:success" size="small" variant="inverse"></lightning-icon></div>
+                <h2>Parts Request Submitted</h2>
+                <div class="status-pill">Waiting on Parts</div>
+
+                <p class="success-main">{successMessage}</p>
+                <p class="success-sub">The Work Order has been returned to manager coordination.</p>
+
+                <template if:true={notificationWarning}>
+                    <div class="notification-warning">
+                        <lightning-icon icon-name="utility:warning" size="x-small" variant="inverse"></lightning-icon>
+                        <span>{notificationWarning}</span>
+                    </div>
+                </template>
+
+                <div class="opening-log-message">
+                    <lightning-spinner alternative-text="Opening Maintenance Log" size="small"></lightning-spinner>
+                    <span>Opening Maintenance Log...</span>
+                </div>
+
+                <button class="white-outline-button open-log-button" onclick={handleOpenMaintenanceLog}>Open Maintenance Log Now</button>
+
+            </div>
+        </div>
+    </template>
+
+    <!-- SUBMIT ERROR -->
+    <template if:true={isSubmitError}>
+        <div class="state-shell">
+            <div class="state-card error-state">
+
+                <div class="state-icon"><lightning-icon icon-name="utility:warning" size="small" variant="inverse"></lightning-icon></div>
+                <h2>Parts Request Not Submitted</h2>
+                <p>{errorMessage}</p>
+                <p class="error-subtext">No changes were saved. You can return to the request and try again.</p>
+                <button class="white-button error-button" onclick={handleReturnToWizard}>Return to Request</button>
+
+            </div>
+        </div>
+    </template>
+
+</template>

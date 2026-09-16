@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>67.0</apiVersion>
+    <isExposed>true</isExposed>
+    <masterLabel>MillTrack - Work Order Part Summary</masterLabel>
+    <description>Shared MillTrack Work Order Part record experience with configurable manager and technician editing.</description>
+
+    <targets>
+        <target>lightning__RecordPage</target>
+    </targets>
+
+    <targetConfigs>
+        <targetConfig targets="lightning__RecordPage">
+            <objects>
+                <object>Work_Order_Part__c</object>
+            </objects>
+
+            <property name="enableManagerEditing" type="Boolean" label="Enable Manager Editing" description="Allow ordering, supplier, quantity, and notes updates from this component." default="false"/>
+            <property name="enableTechnicianEditing" type="Boolean" label="Enable Technician Notes Editing" description="Allow technicians to update only the Work Order Part notes." default="false"/>
+        </targetConfig>
+    </targetConfigs>
+</LightningComponentBundle>

@@ -1,0 +1,421 @@
+:host {
+    display: block;
+
+    --milltrack-navy: #061d3d;
+    --milltrack-blue: #0b5cab;
+}
+
+.loading-shell {
+    position: relative;
+    min-height: 8rem;
+}
+
+/* =========================================================
+   Work Order Hero
+   ========================================================= */
+
+.hero {
+    position: relative;
+
+    overflow: hidden;
+
+    color: white;
+
+    background:
+        linear-gradient(
+            120deg,
+            #061d3d 0%,
+            #0b4f8a 45%,
+            #1268b3 100%
+        );
+
+    border-radius: 0.9rem;
+
+    box-shadow:
+        0 5px 16px rgba(6, 29, 61, 0.16);
+}
+
+.hero-content {
+    position: relative;
+    z-index: 2;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 1.5rem;
+
+    padding: 1.35rem 1.5rem 1.15rem;
+}
+
+.hero-main {
+    min-width: 0;
+}
+
+/* =========================================================
+   Hero Text
+   ========================================================= */
+
+.eyebrow {
+    margin-bottom: 0.3rem;
+
+    color: #cfe6ff;
+
+    font-size: 0.68rem;
+    font-weight: 800;
+
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.title-row {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+
+    gap: 0.55rem;
+}
+
+.title-row h1 {
+    margin: 0 0.25rem 0 0;
+
+    font-size: 1.62rem;
+    font-weight: 800;
+    line-height: 1.2;
+}
+
+.hero-meta {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+
+    gap: 0.5rem;
+
+    margin-top: 0.55rem;
+
+    color: #dcecff;
+
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.dot {
+    opacity: 0.65;
+}
+
+/* =========================================================
+   Hero Decoration
+   ========================================================= */
+
+.hero-decoration {
+    position: absolute;
+
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 50%;
+}
+
+.hero-decoration-one {
+    width: 23rem;
+    height: 23rem;
+
+    top: -14rem;
+    right: -3rem;
+}
+
+.hero-decoration-two {
+    width: 31rem;
+    height: 31rem;
+
+    top: -19rem;
+    right: 5rem;
+}
+
+/* =========================================================
+   Status / Priority Pills
+   ========================================================= */
+
+.pill {
+    display: inline-flex;
+    align-items: center;
+
+    padding: 0.24rem 0.68rem;
+
+    border-radius: 999px;
+
+    font-size: 0.71rem;
+    font-weight: 800;
+
+    white-space: nowrap;
+}
+
+.status-assigned {
+    color: #073763;
+    background: #d8ecff;
+}
+
+.status-progress {
+    color: #0c4427;
+    background: #cdefd9;
+}
+
+.status-parts {
+    color: #073763;
+    background: #d8ecff;
+}
+
+.status-warning {
+    color: #6f3500;
+    background: #f8d49d;
+}
+
+.status-complete {
+    color: #0c4427;
+    background: #cdefd9;
+}
+
+.status-neutral {
+    color: #344150;
+    background: #e8edf3;
+}
+
+.priority-critical {
+    color: white;
+    background: #ba0517;
+}
+
+.priority-high {
+    color: #8e030f;
+    background: #fddde0;
+}
+
+.priority-medium {
+    color: #6f3500;
+    background: #f8d49d;
+}
+
+.priority-low {
+    color: #5b4b00;
+    background: #f9eb9a;
+}
+
+/* =========================================================
+   Technician Actions
+   ========================================================= */
+
+.action-area {
+    position: relative;
+    z-index: 3;
+
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+
+    gap: 0.55rem;
+}
+
+.action-button {
+    appearance: none;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    gap: 0.4rem;
+
+    min-height: 2.15rem;
+
+    padding: 0.45rem 0.8rem;
+
+    color: #0b5cab;
+    background: #ffffff;
+
+    border: 1px solid #ffffff;
+    border-radius: 0.45rem;
+
+    font-family: inherit;
+    font-size: 0.73rem;
+    font-weight: 700;
+    line-height: 1;
+
+    white-space: nowrap;
+
+    cursor: pointer;
+
+    box-shadow:
+        0 1px 3px rgba(0, 0, 0, 0.08);
+
+    transition:
+        transform 120ms ease,
+        box-shadow 120ms ease,
+        background-color 120ms ease,
+        border-color 120ms ease,
+        color 120ms ease;
+}
+
+/*
+ * Keeps existing HTML compatible if the buttons still contain
+ * primary-action / secondary-action.
+ *
+ * Every technician lifecycle button now uses the same white style.
+ */
+.primary-action,
+.secondary-action {
+    color: #0b5cab;
+    background: #ffffff;
+
+    border-color: #ffffff;
+}
+
+/* Normalize Lightning icon spacing across every action button */
+
+.action-button lightning-icon,
+.action-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    flex: 0 0 auto;
+
+    margin: 0;
+
+    --slds-c-icon-color-foreground-default: #0b5cab;
+}
+
+/*
+ * Keeps text positioning identical regardless of label length.
+ */
+.action-button > span {
+    display: inline-flex;
+    align-items: center;
+
+    margin: 0;
+    padding: 0;
+
+    line-height: 1;
+}
+
+/* =========================================================
+   Action Hover / Focus
+   ========================================================= */
+
+.action-button:hover,
+.primary-action:hover,
+.secondary-action:hover {
+    color: #074f91;
+    background: #eef6ff;
+
+    border-color: #eef6ff;
+
+    box-shadow:
+        0 3px 8px rgba(0, 0, 0, 0.14);
+
+    transform: translateY(-1px);
+}
+
+.action-button:hover lightning-icon,
+.primary-action:hover lightning-icon,
+.secondary-action:hover lightning-icon {
+    --slds-c-icon-color-foreground-default: #074f91;
+}
+
+.action-button:focus-visible {
+    outline: 2px solid #ffffff;
+    outline-offset: 2px;
+}
+
+/* =========================================================
+   Work Order Context Strip
+   ========================================================= */
+
+.context-strip {
+    position: relative;
+    z-index: 2;
+
+    display: grid;
+
+    grid-template-columns:
+        2fr 1fr 1fr;
+
+    background: rgba(3, 27, 54, 0.35);
+
+    border-top: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+.context-item {
+    min-width: 0;
+
+    padding: 0.72rem 1.5rem;
+
+    border-right: 1px solid rgba(255, 255, 255, 0.13);
+}
+
+.context-item:last-child {
+    border-right: 0;
+}
+
+.context-label {
+    display: block;
+
+    margin-bottom: 0.18rem;
+
+    color: #bdd8f2;
+
+    font-size: 0.65rem;
+    font-weight: 800;
+
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.context-item strong {
+    display: block;
+
+    overflow-wrap: anywhere;
+
+    color: white;
+
+    font-size: 0.78rem;
+}
+
+/* =========================================================
+   Medium / Narrow Screens
+   ========================================================= */
+
+@media (max-width: 64rem) {
+    .hero-content {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .action-area {
+        justify-content: flex-start;
+    }
+
+    .context-strip {
+        grid-template-columns: 1fr;
+    }
+
+    .context-item {
+        border-right: 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.13);
+    }
+
+    .context-item:last-child {
+        border-bottom: 0;
+    }
+}
+
+/* =========================================================
+   Accessibility
+   ========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+    .action-button {
+        transition: none;
+    }
+
+    .action-button:hover {
+        transform: none;
+    }
+}

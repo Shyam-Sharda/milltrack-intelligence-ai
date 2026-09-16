@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>67.0</apiVersion>
+    <isExposed>true</isExposed>
+
+    <masterLabel>
+        MillTrack - Maintenance Log Service Summary
+    </masterLabel>
+
+    <description>
+        Dynamic MillTrack service visit summary for Maintenance Log records.
+    </description>
+
+    <targets>
+        <target>lightning__RecordPage</target>
+    </targets>
+
+    <targetConfigs>
+        <targetConfig targets="lightning__RecordPage">
+
+            <objects>
+                <object>Maintenance_Log__c</object>
+            </objects>
+
+            <property
+                name="showRelatedRecordCards"
+                type="Boolean"
+                label="Show Related Record Cards"
+                description="Show the Work Order and Machine cards beneath the Service Outcome."
+                default="true"/>
+
+            <property
+                name="enableServiceOutcomeEditing"
+                type="Boolean"
+                label="Enable Service Outcome Editing"
+                description="Allow the user to edit Summary, Root Cause, and Parts Used from the Service Outcome card."
+                default="false"/>
+
+        </targetConfig>
+    </targetConfigs>
+</LightningComponentBundle>

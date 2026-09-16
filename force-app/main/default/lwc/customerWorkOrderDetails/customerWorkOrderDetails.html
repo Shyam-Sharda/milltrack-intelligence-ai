@@ -1,0 +1,705 @@
+<template>
+    <section class="work-order-page">
+
+        <!-- =====================================================
+             LOADING
+             ===================================================== -->
+
+        <template lwc:if={isLoading}>
+
+            <div class="state-card">
+
+                <lightning-spinner
+                    alternative-text="Loading service visit"
+                    size="medium">
+                </lightning-spinner>
+
+                <p>
+                    Loading your service visit...
+                </p>
+
+            </div>
+
+        </template>
+
+
+        <!-- =====================================================
+             ERROR
+             ===================================================== -->
+
+        <template lwc:elseif={errorMessage}>
+
+            <div class="error-card">
+
+                <div class="error-icon">
+                    !
+                </div>
+
+                <div>
+
+                    <h2>
+                        We couldn't load this service visit
+                    </h2>
+
+                    <p>
+                        {errorMessage}
+                    </p>
+
+                </div>
+
+            </div>
+
+        </template>
+
+
+        <!-- =====================================================
+             MAIN PAGE
+             ===================================================== -->
+
+        <template lwc:elseif={hasData}>
+
+            <!-- =================================================
+                 SERVICE VISIT SUMMARY
+                 ================================================= -->
+
+            <section class="summary-card">
+
+                <div class="summary-accent">
+                </div>
+
+
+                <div class="summary-content">
+
+                    <div class="summary-title-row">
+
+                        <div class="summary-main">
+
+                            <div class="summary-number-row">
+
+                                <span class="section-eyebrow section-eyebrow-inline">
+                                    Service Visit {serviceVisit.displayNumber}
+                                </span>
+
+
+                                <template lwc:if={hasProgress}>
+
+                                    <span class={progress.statusClass}>
+                                        {progress.currentStage}
+                                    </span>
+
+                                </template>
+
+                            </div>
+
+
+                            <h1>
+                                {serviceVisit.subjectDisplay}
+                            </h1>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="summary-meta-grid">
+
+                        <!-- Scheduled Visit -->
+
+                        <div class="summary-meta-item">
+
+                            <span class="meta-label">
+                                Scheduled Visit
+                            </span>
+
+
+                            <template lwc:if={hasScheduledVisit}>
+
+                                <strong>
+
+                                    <lightning-formatted-date-time
+                                        value={serviceVisit.scheduledVisit}
+                                        year="numeric"
+                                        month="short"
+                                        day="2-digit"
+                                        hour="numeric"
+                                        minute="2-digit">
+                                    </lightning-formatted-date-time>
+
+                                </strong>
+
+                            </template>
+
+
+                            <template lwc:else>
+
+                                <strong class="meta-empty">
+                                    Not scheduled yet
+                                </strong>
+
+                            </template>
+
+                        </div>
+
+
+                        <!-- Assigned Technician -->
+
+                        <div class="summary-meta-item">
+
+                            <span class="meta-label">
+                                Assigned Technician
+                            </span>
+
+                            <strong>
+                                {serviceVisit.assignedTechnicianDisplay}
+                            </strong>
+
+                        </div>
+
+
+                        <!-- Work Started -->
+
+                        <div class="summary-meta-item">
+
+                            <span class="meta-label">
+                                Work Started
+                            </span>
+
+
+                            <template lwc:if={hasWorkStarted}>
+
+                                <strong>
+
+                                    <lightning-formatted-date-time
+                                        value={serviceVisit.workStartedDateTime}
+                                        year="numeric"
+                                        month="short"
+                                        day="2-digit"
+                                        hour="numeric"
+                                        minute="2-digit">
+                                    </lightning-formatted-date-time>
+
+                                </strong>
+
+                            </template>
+
+
+                            <template lwc:else>
+
+                                <strong class="meta-empty">
+                                    Not started
+                                </strong>
+
+                            </template>
+
+                        </div>
+
+
+                        <!-- Work Ended -->
+
+                        <div class="summary-meta-item">
+
+                            <span class="meta-label">
+                                Work Ended
+                            </span>
+
+
+                            <template lwc:if={hasWorkEnded}>
+
+                                <strong>
+
+                                    <lightning-formatted-date-time
+                                        value={serviceVisit.workEndedDateTime}
+                                        year="numeric"
+                                        month="short"
+                                        day="2-digit"
+                                        hour="numeric"
+                                        minute="2-digit">
+                                    </lightning-formatted-date-time>
+
+                                </strong>
+
+                            </template>
+
+
+                            <template lwc:else>
+
+                                <strong class="meta-empty">
+                                    Not completed
+                                </strong>
+
+                            </template>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- =================================================
+                 SERVICE PROGRESS
+                 ================================================= -->
+
+            <template lwc:if={showProgressTracker}>
+
+                <section class="progress-card">
+
+                    <div class="progress-heading">
+
+                        <span class="section-eyebrow">
+                            Service Progress
+                        </span>
+
+                        <h2>
+                            {progress.currentStage}
+                        </h2>
+
+                        <p>
+                            {progress.message}
+                        </p>
+
+                    </div>
+
+
+                    <ol
+                        class="progress-track"
+                        aria-label="Service visit progress">
+
+                        <template
+                            for:each={progress.stages}
+                            for:item="stage">
+
+                            <li
+                                key={stage.key}
+                                class={stage.itemClass}
+                                aria-current={stage.ariaCurrent}>
+
+                                <div class={stage.markerClass}>
+                                    {stage.stepNumber}
+                                </div>
+
+                                <div class="progress-copy">
+
+                                    <strong>
+                                        {stage.label}
+                                    </strong>
+
+                                </div>
+
+                            </li>
+
+                        </template>
+
+                    </ol>
+
+                </section>
+
+            </template>
+
+
+            <!-- =================================================
+                 CANCELLED SERVICE VISIT
+                 ================================================= -->
+
+            <template lwc:if={showCancelledProgress}>
+
+                <section class="cancelled-card">
+
+                    <div class="cancelled-icon">
+
+                        <lightning-icon
+                            icon-name="utility:error"
+                            size="small"
+                            alternative-text="">
+                        </lightning-icon>
+
+                    </div>
+
+
+                    <div>
+
+                        <span class="section-eyebrow">
+                            Service Progress
+                        </span>
+
+                        <h2>
+                            {progress.currentStage}
+                        </h2>
+
+                        <p>
+                            {progress.message}
+                        </p>
+
+                    </div>
+
+                </section>
+
+            </template>
+
+
+            <!-- =================================================
+                 MACHINE + AI SOLUTION
+                 ================================================= -->
+
+            <div class="primary-grid">
+
+                <!-- =============================================
+                     AFFECTED MACHINE
+                     ============================================= -->
+
+                <template lwc:if={hasMachine}>
+
+                    <section class="machine-card">
+
+                        <div class="card-heading-row">
+
+                            <div>
+
+                                <span class="section-eyebrow">
+                                    Affected Machine
+                                </span>
+
+                                <h2>
+                                    {machine.name}
+                                </h2>
+
+                            </div>
+
+
+                            <span class={machine.statusClass}>
+                                {machine.statusDisplay}
+                            </span>
+
+                        </div>
+
+
+                        <div class="machine-layout">
+
+                            <div class="machine-image-panel">
+
+                                <template lwc:if={hasMachineImage}>
+
+                                    <img
+                                        src={machine.imageUrl}
+                                        alt={machine.name}
+                                        class="machine-image"
+                                    />
+
+                                </template>
+
+
+                                <template lwc:else>
+
+                                    <div class="machine-image-placeholder">
+
+                                        <lightning-icon
+                                            icon-name="utility:settings"
+                                            size="large"
+                                            alternative-text="">
+                                        </lightning-icon>
+
+                                        <span>
+                                            Machine image unavailable
+                                        </span>
+
+                                    </div>
+
+                                </template>
+
+                            </div>
+
+
+                            <div class="machine-details">
+
+                                <div class="machine-detail">
+
+                                    <span>
+                                        Manufacturer
+                                    </span>
+
+                                    <strong>
+                                        {machine.manufacturerDisplay}
+                                    </strong>
+
+                                </div>
+
+
+                                <div class="machine-detail">
+
+                                    <span>
+                                        Model
+                                    </span>
+
+                                    <strong>
+                                        {machine.modelDisplay}
+                                    </strong>
+
+                                </div>
+
+
+                                <div class="machine-detail machine-detail-full">
+
+                                    <span>
+                                        Serial Number
+                                    </span>
+
+                                    <strong>
+                                        {machine.serialNumberDisplay}
+                                    </strong>
+
+                                </div>
+
+
+                                <button
+                                    class="secondary-button machine-button"
+                                    type="button"
+                                    onclick={handleViewMachine}>
+
+                                    View Machine
+
+                                    <span
+                                        class="button-arrow"
+                                        aria-hidden="true">
+                                        →
+                                    </span>
+
+                                </button>
+
+                            </div>
+
+                        </div>
+
+                    </section>
+
+                </template>
+
+
+                <!-- =============================================
+                     AI RECOMMENDED SOLUTION
+                     ============================================= -->
+
+                <section class="service-plan-card">
+
+                    <div class="card-heading">
+
+                        <span class="section-eyebrow">
+                            Service Guidance
+                        </span>
+
+                        <h2>
+                            AI Recommended Solution
+                        </h2>
+
+                    </div>
+
+
+                    <div class="service-plan-content">
+
+                        <div class="service-plan-icon">
+
+                            <lightning-icon
+                                icon-name="utility:knowledge_base"
+                                size="small"
+                                alternative-text="">
+                            </lightning-icon>
+
+                        </div>
+
+
+                        <div>
+
+                            <span class="detail-label">
+                                Recommended Solution
+                            </span>
+
+                            <p>
+                                {serviceVisit.recommendedSolutionDisplay}
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                </section>
+
+            </div>
+
+
+            <!-- =================================================
+                 RELATED REQUEST + NEXT STEP
+                 ================================================= -->
+
+            <div class="bottom-grid">
+
+                <!-- =============================================
+                     RELATED SERVICE REQUEST
+                     ============================================= -->
+
+                <section class="service-request-card">
+
+                    <template lwc:if={hasServiceRequest}>
+
+                        <div class="bottom-card-heading">
+
+                            <span class="section-eyebrow">
+                                Related Service Request
+                            </span>
+
+
+                            <div class="request-heading-row">
+
+                                <h2>
+                                    Service Request {serviceRequest.displayNumber}
+                                </h2>
+
+
+                                <div class="request-badges">
+
+                                    <span class={serviceRequest.statusClass}>
+                                        {serviceRequest.customerStatusDisplay}
+                                    </span>
+
+                                    <span class={serviceRequest.priorityClass}>
+                                        {serviceRequest.priorityDisplay} Priority
+                                    </span>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="related-request-content">
+
+                            <strong class="related-request-subject">
+                                {serviceRequest.subjectDisplay}
+                            </strong>
+
+
+                            <div class="related-request-footer">
+
+                                <div class="related-request-meta">
+
+                                    <span class="detail-label">
+                                        Opened
+                                    </span>
+
+                                    <strong>
+
+                                        <lightning-formatted-date-time
+                                            value={serviceRequest.createdDate}
+                                            year="numeric"
+                                            month="short"
+                                            day="2-digit">
+                                        </lightning-formatted-date-time>
+
+                                    </strong>
+
+                                </div>
+
+
+                                <button
+                                    class="secondary-button request-button"
+                                    type="button"
+                                    onclick={handleViewServiceRequest}>
+
+                                    View Service Request
+
+                                    <span
+                                        class="button-arrow"
+                                        aria-hidden="true">
+                                        →
+                                    </span>
+
+                                </button>
+
+                            </div>
+
+                        </div>
+
+                    </template>
+
+
+                    <template lwc:else>
+
+                        <div class="bottom-card-heading">
+
+                            <span class="section-eyebrow">
+                                Related Service Request
+                            </span>
+
+                            <h2>
+                                No linked service request
+                            </h2>
+
+                        </div>
+
+
+                        <div class="empty-related-state">
+
+                            This service visit is not currently linked to a customer service request.
+
+                        </div>
+
+                    </template>
+
+                </section>
+
+
+                <!-- =============================================
+                     WHAT HAPPENS NEXT
+                     ============================================= -->
+
+                <section class="next-step-card">
+
+                    <div class="bottom-card-heading">
+
+                        <span class="section-eyebrow">
+                            Next Step
+                        </span>
+
+                        <h2>
+                            What happens next
+                        </h2>
+
+                    </div>
+
+
+                    <div class="next-step-content">
+
+                        <div class="next-step-icon">
+
+                            <lightning-icon
+                                icon-name="utility:forward"
+                                size="small"
+                                alternative-text="">
+                            </lightning-icon>
+
+                        </div>
+
+
+                        <div class="next-step-copy">
+
+                            <strong>
+                                {nextStep.title}
+                            </strong>
+
+                            <p>
+                                {nextStep.message}
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                </section>
+
+            </div>
+
+        </template>
+
+    </section>
+</template>

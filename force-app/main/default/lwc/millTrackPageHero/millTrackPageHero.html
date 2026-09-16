@@ -1,18 +1,103 @@
 <template>
-    <section class="page-hero">
+    <div class="hero-shell">
 
-        <!-- Decorative background waves -->
-        <div class="wave wave-one"></div>
-        <div class="wave wave-two"></div>
+        <section class="page-hero">
 
-        <!-- Page-specific content -->
-        <div class="page-hero-content">
-            <h1>{pageTitle}</h1>
+            <!-- =================================================
+                 DECORATIVE BACKGROUND
+                 ================================================= -->
 
-            <p class="page-subtitle">
-                {pageSubtitle}
-            </p>
-        </div>
+            <div class="hero-orb hero-orb-one"></div>
+            <div class="hero-orb hero-orb-two"></div>
+            <div class="hero-orb hero-orb-three"></div>
 
-    </section>
+            <div class="hero-wave hero-wave-back"></div>
+            <div class="hero-wave hero-wave-front"></div>
+
+
+            <!-- =================================================
+                 CONTENT
+                 ================================================= -->
+
+            <div class="hero-content">
+
+                <!-- =============================================
+                     LEFT
+                     ============================================= -->
+
+                <div class="hero-main">
+
+                    <h1>
+                        {pageTitle}
+                    </h1>
+
+
+                    <p class="portal-label">
+                        Customer Portal
+                    </p>
+
+
+                    <p class="page-subtitle">
+                        {pageSubtitle}
+                    </p>
+
+                </div>
+
+
+                <!-- =============================================
+                     RIGHT CONTEXT
+                     ============================================= -->
+
+                <aside class="context-panel">
+
+                    <div class="context-icon">
+
+                        <svg
+                            viewBox="0 0 24 24"
+                            aria-hidden="true">
+
+                            <circle
+                                cx="12"
+                                cy="12"
+                                r="3">
+                            </circle>
+
+                            <circle
+                                cx="12"
+                                cy="12"
+                                r="7">
+                            </circle>
+
+                            <path
+                                d="M12 2.5v2M12 19.5v2M21.5 12h-2M4.5 12h-2">
+                            </path>
+
+                        </svg>
+
+                    </div>
+
+
+                    <div class="context-copy">
+
+                        <span class="context-eyebrow">
+                            {contextEyebrow}
+                        </span>
+
+                        <strong>
+                            {contextTitle}
+                        </strong>
+
+                        <span class="context-subtitle">
+                            {contextSubtitle}
+                        </span>
+
+                    </div>
+
+                </aside>
+
+            </div>
+
+        </section>
+
+    </div>
 </template>

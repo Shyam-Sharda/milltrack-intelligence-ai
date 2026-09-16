@@ -1,0 +1,511 @@
+:host {
+    display: block;
+
+    --manager-navy: #03172f;
+    --manager-navy-mid: #05264a;
+    --manager-navy-light: #0a3c69;
+
+    --manager-blue: #0b5cab;
+    --manager-blue-dark: #074f91;
+
+    --manager-text: #183546;
+    --manager-body: #425a68;
+    --manager-muted: #6d818d;
+
+    --manager-border: #d7e3ec;
+
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+
+/* =========================================================
+   PAGE
+   ========================================================= */
+
+.manager-workspace {
+    width: 100%;
+    min-height: 100vh;
+
+    padding-bottom: 38px;
+
+    color: var(--manager-text);
+
+    background:
+        linear-gradient(
+            180deg,
+            #f1f6fa 0%,
+            #f7f9fb 28%,
+            #f4f7fa 100%
+        );
+}
+
+
+/* =========================================================
+   HERO
+   ========================================================= */
+
+.hero {
+    position: relative;
+
+    min-height: 200px;
+
+    overflow: hidden;
+
+    margin-bottom: 30px;
+
+    border-radius: 18px;
+
+    background:
+        linear-gradient(
+            115deg,
+            #02152b 0%,
+            #031d3a 38%,
+            #052b50 70%,
+            #093d68 100%
+        );
+
+    box-shadow:
+        0 14px 32px rgba(3, 23, 47, 0.24),
+        0 3px 9px rgba(11, 92, 171, 0.08);
+}
+
+
+/* =========================================================
+   HERO CONTENT
+   ========================================================= */
+
+.hero-content {
+    position: relative;
+    z-index: 5;
+
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+
+    gap: 30px;
+
+    padding: 26px 34px 58px;
+}
+
+
+.hero-left {
+    display: flex;
+    align-items: flex-start;
+
+    min-width: 0;
+}
+
+
+.hero-copy {
+    min-width: 0;
+}
+
+
+/* =========================================================
+   BRAND LOGO
+   Same placement / crop as Technician Home
+   ========================================================= */
+
+.hero-brand-row {
+    width: 300px;
+    height: 50px;
+    overflow: visible;
+    margin-bottom: 8px;
+}
+
+.hero-brand-logo {
+    display: block;
+    width: 100%;
+    height: auto;
+    transform: translateY(2px);
+}
+
+
+/* =========================================================
+   HERO TYPOGRAPHY
+   ========================================================= */
+
+.hero h1 {
+    margin: 0;
+
+    color: #ffffff;
+
+    font-size: 28px;
+    font-weight: 800;
+    line-height: 1.2;
+}
+
+
+.hero-welcome {
+    margin: 9px 0 0;
+
+    color: #ffffff;
+
+    font-size: 17px;
+    font-weight: 700;
+}
+
+
+.hero-subtitle {
+    max-width: 720px;
+
+    margin: 7px 0 0;
+
+    color: rgba(255, 255, 255, 0.84);
+
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+
+/* =========================================================
+   MANAGER HERO PANEL
+   ========================================================= */
+
+.hero-manager-panel {
+    position: relative;
+    z-index: 6;
+
+    display: flex;
+    align-items: center;
+
+    gap: 12px;
+
+    min-width: 250px;
+
+    margin-top: 22px;
+    padding: 13px 15px;
+
+    border: 1px solid rgba(169, 205, 234, 0.24);
+    border-radius: 12px;
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(255, 255, 255, 0.12) 0%,
+            rgba(255, 255, 255, 0.07) 100%
+        );
+
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.09),
+        0 5px 15px rgba(0, 0, 0, 0.08);
+
+    backdrop-filter: blur(6px);
+}
+
+
+.hero-manager-panel__icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 42px;
+    height: 42px;
+
+    flex: 0 0 42px;
+
+    border: 1px solid rgba(191, 221, 244, 0.25);
+    border-radius: 10px;
+
+    background: rgba(255, 255, 255, 0.10);
+}
+
+
+.hero-manager-panel__icon lightning-icon {
+    --slds-c-icon-color-foreground-default: #ffffff;
+}
+
+
+.hero-manager-panel > div:last-child {
+    display: flex;
+    flex-direction: column;
+
+    min-width: 0;
+}
+
+
+.hero-manager-panel__eyebrow {
+    color: #a9d1ee;
+
+    font-size: 9px;
+    font-weight: 800;
+
+    letter-spacing: 0.8px;
+}
+
+
+.hero-manager-panel strong {
+    margin-top: 2px;
+
+    color: #ffffff;
+
+    font-size: 14px;
+    font-weight: 800;
+}
+
+
+.hero-manager-panel__description {
+    margin-top: 3px;
+
+    color: rgba(255, 255, 255, 0.68);
+
+    font-size: 10px;
+}
+
+
+/* =========================================================
+   HERO DECORATION
+   ========================================================= */
+
+.hero-wave {
+    position: absolute;
+
+    left: -3%;
+
+    width: 106%;
+
+    border-radius: 50% 50% 0 0;
+}
+
+
+.hero-wave-back {
+    z-index: 2;
+
+    bottom: -57px;
+
+    height: 91px;
+
+    background: rgba(167, 211, 236, 0.52);
+
+    transform: rotate(-1deg);
+}
+
+
+.hero-wave-front {
+    z-index: 3;
+
+    bottom: -68px;
+
+    height: 92px;
+
+    background: #f1f6fa;
+
+    transform: rotate(1deg);
+}
+
+
+.hero-orb {
+    position: absolute;
+
+    border-radius: 50%;
+
+    background: rgba(255, 255, 255, 0.045);
+}
+
+
+.hero-orb-one {
+    top: -125px;
+    right: 95px;
+
+    width: 290px;
+    height: 290px;
+}
+
+
+.hero-orb-two {
+    top: 5px;
+    right: -90px;
+
+    width: 230px;
+    height: 230px;
+}
+
+
+.hero-grid-glow {
+    position: absolute;
+
+    top: -70px;
+    right: 18%;
+
+    width: 340px;
+    height: 220px;
+
+    border-radius: 50%;
+
+    background:
+        radial-gradient(
+            circle,
+            rgba(34, 118, 181, 0.16) 0%,
+            rgba(34, 118, 181, 0.06) 38%,
+            transparent 72%
+        );
+
+    filter: blur(6px);
+}
+
+
+/* =========================================================
+   WORKSPACE CONTENT
+   ========================================================= */
+
+.workspace-content {
+    width: calc(100% - 36px);
+    max-width: 1500px;
+
+    margin: 0 auto;
+}
+
+
+/* =========================================================
+   WORKSPACE SECTIONS
+   ========================================================= */
+
+.workspace-section {
+    width: 100%;
+
+    margin-bottom: 30px;
+}
+
+.workspace-section:last-child {
+    margin-bottom: 0;
+}
+
+
+/* =========================================================
+   RESPONSIVE — LARGE TABLETS
+   ========================================================= */
+
+@media (max-width: 1100px) {
+
+    .hero-content {
+        gap: 22px;
+    }
+
+
+    .hero-manager-panel {
+        min-width: 225px;
+    }
+}
+
+
+/* =========================================================
+   RESPONSIVE — TABLETS
+   ========================================================= */
+
+@media (max-width: 850px) {
+
+    .hero {
+        min-height: 225px;
+    }
+
+
+    .hero-content {
+        align-items: flex-start;
+        flex-direction: column;
+
+        gap: 14px;
+
+        padding: 24px 28px 64px;
+    }
+
+
+    .hero-manager-panel {
+        margin-top: 0;
+
+        min-width: 0;
+    }
+
+
+    .workspace-content {
+        width: calc(100% - 24px);
+    }
+}
+
+
+/* =========================================================
+   RESPONSIVE — MOBILE
+   ========================================================= */
+
+@media (max-width: 700px) {
+
+    .hero {
+        min-height: 240px;
+
+        margin-bottom: 24px;
+
+        border-radius: 16px;
+    }
+
+
+    .hero-content {
+        gap: 13px;
+
+        padding: 24px 22px 66px;
+    }
+
+
+    .hero-brand-row {
+        width: 250px;
+        height: 40px;
+
+        margin-bottom: 7px;
+    }
+
+
+    .hero-brand-logo {
+        transform: translateY(2px);
+    }
+
+
+    .hero h1 {
+        font-size: 23px;
+    }
+
+
+    .hero-welcome {
+        font-size: 15px;
+    }
+
+
+    .hero-subtitle {
+        font-size: 13px;
+    }
+
+
+    .hero-manager-panel {
+        padding: 10px 12px;
+    }
+
+
+    .hero-manager-panel__icon {
+        width: 36px;
+        height: 36px;
+
+        flex-basis: 36px;
+    }
+
+
+    .workspace-content {
+        width: calc(100% - 18px);
+    }
+
+
+    .workspace-section {
+        margin-bottom: 24px;
+    }
+}
+
+
+/* =========================================================
+   VERY SMALL SCREENS
+   ========================================================= */
+
+@media (max-width: 480px) {
+
+    .hero-manager-panel {
+        width: 100%;
+
+        box-sizing: border-box;
+    }
+
+}

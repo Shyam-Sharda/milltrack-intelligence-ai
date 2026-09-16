@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+﻿<?xml version="1.0" encoding="UTF-8"?>
 <FlexiPage xmlns="http://soap.sforce.com/2006/04/metadata">
     <flexiPageRegions>
         <itemInstances>
@@ -6,9 +6,6 @@
                 <componentInstanceProperties>
                     <name>actionNames</name>
                     <valueList>
-                        <valueListItems>
-                            <value>WorkOrder.Complete_Work_Order</value>
-                        </valueListItems>
                         <valueListItems>
                             <value>Share</value>
                         </valueListItems>
@@ -599,3 +596,4 @@
     </template>
     <type>RecordPage</type>
 </FlexiPage>
+

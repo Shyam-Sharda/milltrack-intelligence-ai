@@ -1,0 +1,608 @@
+<template>
+    <div class="page-shell">
+        <template if:true={isLoading}>
+            <div class="loading-state">
+                <lightning-spinner alternative-text="Loading Work Order" size="medium"></lightning-spinner>
+            </div>
+        </template>
+
+        <template if:true={errorMessage}>
+            <div class="error-panel">
+                <lightning-icon icon-name="utility:error" size="small" variant="inverse"></lightning-icon>
+                <div><strong>Unable to load Work Order</strong><p>{errorMessage}</p></div>
+            </div>
+        </template>
+
+        <template if:true={hasRecord}>
+            <div class="record-layout">
+                <!-- LEFT / PRIMARY WORK ORDER EXPERIENCE -->
+                <main class="primary-column">
+                    <!-- HERO -->
+                    <section class="hero">
+                        <div class="hero-decoration hero-decoration-one"></div>
+                        <div class="hero-decoration hero-decoration-two"></div>
+
+                        <div class="hero-content">
+                            <div class="hero-top">
+                                <div>
+                                    <div class="eyebrow">WORK ORDER</div>
+
+                                    <div class="title-row">
+                                        <h1>{workOrderNumber}</h1>
+                                        <span class={dispatchStatusClass}>{dispatchStatusLabel}</span>
+                                        <span class={priorityClass}>{priorityLabel}</span>
+                                    </div>
+
+                                    <div class="hero-meta">
+                                        <template if:true={assetId}>
+                                            <a href={assetUrl} class="hero-link">{machineName}</a>
+                                        </template>
+                                        <template if:false={assetId}>
+                                            <span>{machineName}</span>
+                                        </template>
+
+                                        <span class="dot">•</span>
+
+                                        <template if:true={accountId}>
+                                            <a href={accountUrl} class="hero-link">{accountName}</a>
+                                        </template>
+                                        <template if:false={accountId}>
+                                            <span>{accountName}</span>
+                                        </template>
+                                    </div>
+                                </div>
+
+                                <lightning-button
+                                    label="Edit Work Order"
+                                    icon-name="utility:edit"
+                                    variant="brand"
+                                    onclick={openEditModal}
+                                    class="edit-button">
+                                </lightning-button>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- CUSTOMER + MACHINE -->
+                    <section class="context-grid">
+                        <!-- CUSTOMER & CASE -->
+                        <article class="context-card">
+                            <div class="card-heading">
+                                <span class="icon-wrap">
+                                    <lightning-icon icon-name="standard:account" size="small"></lightning-icon>
+                                </span>
+
+                                <div>
+                                    <span class="card-kicker">CUSTOMER</span>
+                                    <h2>Customer & Case</h2>
+                                </div>
+                            </div>
+
+                            <div class="field-row">
+                                <span class="field-label">Account</span>
+
+                                <template if:true={accountId}>
+                                    <a href={accountUrl}>{accountName}</a>
+                                </template>
+
+                                <template if:false={accountId}>
+                                    <span class="field-value">{accountName}</span>
+                                </template>
+                            </div>
+
+                            <div class="field-row">
+                                <span class="field-label">Contact</span>
+
+                                <template if:true={contactId}>
+                                    <a href={contactUrl}>{contactName}</a>
+                                </template>
+
+                                <template if:false={contactId}>
+                                    <span class="field-value">{contactName}</span>
+                                </template>
+                            </div>
+
+                            <div class="field-row">
+                                <span class="field-label">Service Case</span>
+
+                                <template if:true={caseId}>
+                                    <a href={caseUrl}>{caseNumber}</a>
+                                </template>
+
+                                <template if:false={caseId}>
+                                    <span class="field-value">{caseNumber}</span>
+                                </template>
+                            </div>
+
+                            <div class="field-row">
+                                <span class="field-label">Subject</span>
+                                <span class="field-value field-value-wrap">{subject}</span>
+                            </div>
+
+                            <div class="field-row">
+                                <span class="field-label">Case Status</span>
+                                <span class={caseStatusClass}>{caseStatus}</span>
+                            </div>
+
+                            <div class="field-row field-row-last">
+                                <span class="field-label">Contact Phone</span>
+                                <span class="field-value">{contactPhone}</span>
+                            </div>
+                        </article>
+
+                        <!-- MACHINE -->
+                        <article class="context-card">
+                            <div class="card-heading">
+                                <span class="icon-wrap">
+                                    <lightning-icon icon-name="standard:asset_object" size="small"></lightning-icon>
+                                </span>
+
+                                <div>
+                                    <span class="card-kicker">MACHINE</span>
+                                    <h2>Machine Information</h2>
+                                </div>
+                            </div>
+
+                            <div class="field-row">
+                                <span class="field-label">Machine</span>
+
+                                <template if:true={assetId}>
+                                    <a href={assetUrl}>{machineName}</a>
+                                </template>
+
+                                <template if:false={assetId}>
+                                    <span class="field-value">{machineName}</span>
+                                </template>
+                            </div>
+
+                            <div class="field-row">
+                                <span class="field-label">Manufacturer / Model</span>
+                                <span class="field-value">{machineLabel}</span>
+                            </div>
+
+                            <div class="field-row">
+                                <span class="field-label">Serial Number</span>
+                                <span class="field-value">{serialNumber}</span>
+                            </div>
+
+                            <div class="field-row">
+                                <span class="field-label">Machine Status</span>
+                                <span class={machineStatusClass}>{machineStatus}</span>
+                            </div>
+
+                            <div class="field-row">
+                                <span class="field-label">Warranty Start</span>
+                                <span class="field-value">{warrantyStartDate}</span>
+                            </div>
+
+                            <div class="field-row field-row-last">
+                                <span class="field-label">Warranty End</span>
+                                <span class="field-value">{warrantyEndDate}</span>
+                            </div>
+                        </article>
+                    </section>
+
+                    <!-- SCHEDULING -->
+                    <article class="context-card responsibility-card">
+                        <div class="card-heading">
+                            <span class="icon-wrap">
+                                <lightning-icon icon-name="standard:service_appointment" size="small"></lightning-icon>
+                            </span>
+
+                            <div>
+                                <span class="card-kicker">SERVICE</span>
+                                <h2>Scheduling & Responsibility</h2>
+                            </div>
+                        </div>
+
+                        <div class="responsibility-grid">
+                            <div class="compact-field">
+                                <span class="compact-label">Scheduled Visit</span>
+                                <strong>{scheduledVisit}</strong>
+                            </div>
+
+                            <div class="compact-field">
+                                <span class="compact-label">Assigned Technician</span>
+
+                                <template if:true={assignedTechnicianId}>
+                                    <a href={assignedTechnicianUrl}>{assignedTechnicianName}</a>
+                                </template>
+
+                                <template if:false={assignedTechnicianId}>
+                                    <strong>{assignedTechnicianName}</strong>
+                                </template>
+                            </div>
+
+                            <div class="compact-field">
+                                <span class="compact-label">Service Manager</span>
+
+                                <template if:true={serviceManagerId}>
+                                    <a href={serviceManagerUrl}>{serviceManagerName}</a>
+                                </template>
+
+                                <template if:false={serviceManagerId}>
+                                    <strong>{serviceManagerName}</strong>
+                                </template>
+                            </div>
+
+                            <div class="compact-field">
+                                <span class="compact-label">Owner</span>
+                                <strong>{ownerName}</strong>
+                            </div>
+
+                            <div class="compact-field">
+                                <span class="compact-label">Cumulative Labor</span>
+                                <strong>{laborHours}</strong>
+                            </div>
+
+                            <div class="compact-field">
+                                <span class="compact-label">Work Started</span>
+                                <strong>{workStarted}</strong>
+                            </div>
+                        </div>
+                    </article>
+
+                    <!-- PROBLEM -->
+                    <section class="section-card problem-card">
+                        <div class="section-header">
+                            <div class="section-title">
+                                <span class="section-icon problem-icon">
+                                    <lightning-icon icon-name="utility:warning" size="x-small" variant="inverse"></lightning-icon>
+                                </span>
+
+                                <div>
+                                    <span class="section-kicker">SERVICE REQUEST</span>
+                                    <h2>Problem & Assessment</h2>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="content-block">
+                            <div class="content-label">Problem Summary</div>
+                            <div class="long-text">{problemSummary}</div>
+                        </div>
+
+                        <div class="divider"></div>
+
+                        <div class="content-block">
+                            <div class="content-label">AI Recommended Solution</div>
+                            <div class="long-text">{recommendedSolution}</div>
+                        </div>
+                    </section>
+
+                    <!-- REPAIR PLAN -->
+                    <section class="section-card repair-card">
+                        <div class="section-header">
+                            <div class="section-title">
+                                <span class="section-icon repair-icon">
+                                    <lightning-icon icon-name="utility:settings" size="x-small" variant="inverse"></lightning-icon>
+                                </span>
+
+                                <div>
+                                    <span class="section-kicker">MANAGER-APPROVED PLAN</span>
+                                    <h2>Repair Plan</h2>
+                                </div>
+                            </div>
+
+                            <div class="previous-failure-compact">
+                                <span>Previous Failure</span>
+                                <span class={previousFailureClass}>{previousFailureLabel}</span>
+                            </div>
+                        </div>
+
+                        <div class="repair-grid">
+                            <div class="repair-item repair-item-wide">
+                                <div class="content-label">Recommended Fix Summary</div>
+                                <div class="long-text">{recommendedFixSummary}</div>
+                            </div>
+
+                            <div class="repair-item">
+                                <div class="repair-item-heading">
+                                    <lightning-icon icon-name="utility:tools" size="x-small"></lightning-icon>
+                                    <span>Recommended Tools</span>
+                                </div>
+
+                                <div class="long-text">{recommendedTools}</div>
+                            </div>
+
+                            <div class="repair-item">
+                                <div class="repair-item-heading">
+                                    <lightning-icon icon-name="utility:package" size="x-small"></lightning-icon>
+                                    <span>Recommended Parts</span>
+                                </div>
+
+                                <div class="long-text">{recommendedParts}</div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- TIMELINE -->
+                    <section class="section-card">
+                        <div class="section-header">
+                            <div class="section-title">
+                                <span class="section-icon blue-icon">
+                                    <lightning-icon icon-name="utility:event" size="x-small" variant="inverse"></lightning-icon>
+                                </span>
+
+                                <div>
+                                    <span class="section-kicker">WORK ORDER</span>
+                                    <h2>Service Timeline</h2>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="timeline-grid">
+                            <div class="timeline-item">
+                                <span class="timeline-label">Created</span>
+                                <strong>{createdDate}</strong>
+                            </div>
+
+                            <div class="timeline-item">
+                                <span class="timeline-label">Scheduled Visit</span>
+                                <strong>{scheduledVisit}</strong>
+                            </div>
+
+                            <div class="timeline-item">
+                                <span class="timeline-label">Work Started</span>
+                                <strong>{workStarted}</strong>
+                            </div>
+
+                            <div class="timeline-item">
+                                <span class="timeline-label">Work Ended</span>
+                                <strong>{workEnded}</strong>
+                            </div>
+
+                            <div class="timeline-item">
+                                <span class="timeline-label">Labor Hours</span>
+                                <strong>{laborHours}</strong>
+                            </div>
+
+                            <div class="timeline-item">
+                                <span class="timeline-label">Last Updated</span>
+                                <strong>{lastModifiedDate}</strong>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- NOTES -->
+                    <section class="section-card notes-card">
+                        <div class="section-header">
+                            <div class="section-title">
+                                <span class="section-icon blue-icon">
+                                    <lightning-icon icon-name="utility:note" size="x-small" variant="inverse"></lightning-icon>
+                                </span>
+
+                                <div>
+                                    <span class="section-kicker">SERVICE HISTORY</span>
+                                    <h2>Technician Service Notes</h2>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="notes-content">{technicianNotes}</div>
+                    </section>
+                </main>
+
+                <!-- RIGHT / RELATED CONTEXT RAIL -->
+                <aside class="related-rail">
+                    <div class="rail-header">
+                        <span class="rail-header-icon">
+                            <lightning-icon icon-name="utility:link" size="small" variant="inverse"></lightning-icon>
+                        </span>
+
+                        <div>
+                            <span class="rail-kicker">WORK ORDER</span>
+                            <h2>Related Records</h2>
+                        </div>
+                    </div>
+
+                    <!-- PARTS -->
+                    <section class="related-card">
+                        <div class="related-card-header">
+                            <div class="related-card-title">
+                                <span class="related-icon">
+                                    <lightning-icon icon-name="standard:product_item" size="small"></lightning-icon>
+                                </span>
+
+                                <div>
+                                    <h3>Work Order Parts</h3>
+                                    <span>{workOrderPartCountLabel}</span>
+                                </div>
+                            </div>
+
+                            <template if:true={workOrderPartsRelatedListId}>
+                                <button class="view-all-button" onclick={viewAllParts}>View All</button>
+                            </template>
+                        </div>
+
+                        <template if:true={hasWorkOrderParts}>
+                            <div class="related-items">
+                                <template for:each={workOrderParts} for:item="part">
+                                    <a key={part.id} href={part.url} class="related-item">
+                                        <div class="related-item-top">
+                                            <strong>{part.name}</strong>
+                                            <span class={part.statusClass}>{part.status}</span>
+                                        </div>
+
+                                        <div class="related-item-name">{part.partName}</div>
+                                        <div class="related-item-meta">Quantity: {part.quantity}</div>
+                                    </a>
+                                </template>
+                            </div>
+                        </template>
+
+                        <template if:false={hasWorkOrderParts}>
+                            <div class="empty-related">
+                                <lightning-icon icon-name="utility:package" size="small"></lightning-icon>
+                                <span>No Work Order Parts</span>
+                            </div>
+                        </template>
+                    </section>
+
+                    <!-- MAINTENANCE LOGS -->
+                    <section class="related-card">
+                        <div class="related-card-header">
+                            <div class="related-card-title">
+                                <span class="related-icon">
+                                    <lightning-icon icon-name="standard:maintenance_plan" size="small"></lightning-icon>
+                                </span>
+
+                                <div>
+                                    <h3>Maintenance Logs</h3>
+                                    <span>{maintenanceLogCountLabel}</span>
+                                </div>
+                            </div>
+
+                            <template if:true={maintenanceLogsRelatedListId}>
+                                <button class="view-all-button" onclick={viewAllLogs}>View All</button>
+                            </template>
+                        </div>
+
+                        <template if:true={hasMaintenanceLogs}>
+                            <div class="related-items">
+                                <template for:each={maintenanceLogs} for:item="log">
+                                    <a key={log.id} href={log.url} class="related-item">
+                                        <div class="related-item-top">
+                                            <strong>{log.name}</strong>
+                                            <span class="related-status neutral-related-status">{log.type}</span>
+                                        </div>
+
+                                        <div class="related-item-name">{log.date}</div>
+                                        <div class="related-item-meta">{log.outcome}</div>
+                                    </a>
+                                </template>
+                            </div>
+                        </template>
+
+                        <template if:false={hasMaintenanceLogs}>
+                            <div class="empty-related">
+                                <lightning-icon icon-name="utility:note" size="small"></lightning-icon>
+                                <span>No Maintenance Logs</span>
+                            </div>
+                        </template>
+                    </section>
+
+                    <!-- FILES -->
+                    <section class="related-card">
+                        <div class="related-card-header">
+                            <div class="related-card-title">
+                                <span class="related-icon">
+                                    <lightning-icon icon-name="standard:file" size="small"></lightning-icon>
+                                </span>
+
+                                <div>
+                                    <h3>Files</h3>
+                                    <span>Work Order documents</span>
+                                </div>
+                            </div>
+
+                            <button class="view-all-button" onclick={viewFiles}>View Files</button>
+                        </div>
+
+                        <div class="files-body">
+                            <p>Upload service documents, photos, or supporting files for this Work Order.</p>
+
+                            <lightning-file-upload
+                                label="Upload Files"
+                                record-id={recordId}
+                                multiple
+                                onuploadfinished={handleUploadFinished}>
+                            </lightning-file-upload>
+                        </div>
+                    </section>
+                </aside>
+            </div>
+        </template>
+    </div>
+
+    <!-- EDIT MODAL -->
+    <template if:true={showEditModal}>
+        <section
+            role="dialog"
+            tabindex="-1"
+            aria-modal="true"
+            aria-labelledby="edit-work-order-title"
+            class="slds-modal slds-fade-in-open">
+
+            <div class="slds-modal__container modal-container">
+                <header class="slds-modal__header modal-header">
+                    <button
+                        class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse"
+                        title="Close"
+                        onclick={closeEditModal}>
+
+                        <lightning-icon
+                            icon-name="utility:close"
+                            alternative-text="Close"
+                            variant="inverse"
+                            size="small">
+                        </lightning-icon>
+                    </button>
+
+                    <div class="modal-title-row">
+                        <span class="modal-icon">
+                            <lightning-icon icon-name="standard:work_order" size="small"></lightning-icon>
+                        </span>
+
+                        <div>
+                            <span class="modal-kicker">MANAGER WORK ORDER</span>
+                            <h2 id="edit-work-order-title">Edit Work Order</h2>
+                            <p>Update service planning and scheduling information.</p>
+                        </div>
+                    </div>
+                </header>
+
+                <lightning-record-edit-form
+                    record-id={recordId}
+                    object-api-name="WorkOrder"
+                    onsubmit={handleSubmit}
+                    onsuccess={handleSuccess}
+                    onerror={handleSaveError}>
+
+                    <div class="slds-modal__content modal-body">
+                        <lightning-messages></lightning-messages>
+
+                        <template if:true={isSaving}>
+                            <div class="modal-spinner">
+                                <lightning-spinner alternative-text="Saving Work Order" size="medium"></lightning-spinner>
+                            </div>
+                        </template>
+
+                        <div class="edit-section">
+                            <div class="edit-section-heading">Work Order Details</div>
+
+                            <div class="edit-grid">
+                                <lightning-input-field field-name="Subject"></lightning-input-field>
+                                <lightning-input-field field-name="Priority"></lightning-input-field>
+                                <lightning-input-field field-name="Suggested_Technician__c"></lightning-input-field>
+                                <lightning-input-field field-name="Scheduled_Visit__c"></lightning-input-field>
+                            </div>
+                        </div>
+
+                        <div class="edit-section">
+                            <div class="edit-section-heading">Problem & Recommendation</div>
+
+                            <lightning-input-field field-name="Problem_Summary__c"></lightning-input-field>
+                            <lightning-input-field field-name="Recommended_Solution__c"></lightning-input-field>
+                        </div>
+
+                        <div class="edit-section">
+                            <div class="edit-section-heading">Repair Plan</div>
+
+                            <lightning-input-field field-name="Recommended_Fix_Summary__c"></lightning-input-field>
+                            <lightning-input-field field-name="Recommended_Tools__c"></lightning-input-field>
+                            <lightning-input-field field-name="Recommended_Parts__c"></lightning-input-field>
+                        </div>
+                    </div>
+
+                    <footer class="slds-modal__footer modal-footer">
+                        <lightning-button label="Cancel" onclick={closeEditModal} disabled={isSaving}></lightning-button>
+                        <lightning-button class="save-button" label="Save Changes" variant="brand" type="submit" disabled={isSaving}></lightning-button>
+                    </footer>
+                </lightning-record-edit-form>
+            </div>
+        </section>
+
+        <div class="slds-backdrop slds-backdrop_open modal-backdrop"></div>
+    </template>
+</template>

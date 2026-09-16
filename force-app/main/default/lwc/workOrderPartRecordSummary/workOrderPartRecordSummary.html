@@ -1,0 +1,320 @@
+<template>
+
+    <template if:true={isLoading}>
+        <div class="loading-state">
+            <lightning-spinner alternative-text="Loading Work Order Part" size="medium"></lightning-spinner>
+            <p>Preparing part request...</p>
+        </div>
+    </template>
+
+    <template if:true={hasError}>
+        <div class="error-state">
+            <lightning-icon icon-name="utility:warning" size="small" variant="inverse"></lightning-icon>
+            <div>
+                <strong>Work Order Part Unavailable</strong>
+                <p>{errorMessage}</p>
+            </div>
+        </div>
+    </template>
+
+    <template if:true={workOrderPartRecord.data}>
+        <div class="part-shell">
+
+            <!-- HERO -->
+            <div class="part-hero">
+                <div class="hero-main">
+                    <div class="hero-icon">
+                        <lightning-icon
+                            icon-name="utility:package"
+                            size="small"
+                            variant="inverse"
+                            alternative-text="Work Order Part">
+                        </lightning-icon>
+                    </div>
+
+                    <div class="hero-copy">
+                        <div class="hero-eyebrow-row">
+                            <p class="eyebrow">WORK ORDER PART</p>
+
+                            <template if:true={recordName}>
+                                <span class="record-pill">{recordName}</span>
+                            </template>
+
+                            <template if:true={orderStatusLabel}>
+                                <span class={orderStatusClass}>{orderStatusLabel}</span>
+                            </template>
+
+                            <template if:true={technicianRequestLabel}>
+                                <span class={technicianRequestClass}>{technicianRequestLabel}</span>
+                            </template>
+                        </div>
+
+                        <div class="hero-title-row">
+                            <h1>{partCatalogName}</h1>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="hero-actions">
+                    <template if:true={showManagerEditButton}>
+                        <button class="hero-edit-button" onclick={openManagerEditModal}>
+                            <lightning-icon
+                                icon-name="utility:edit"
+                                size="xx-small"
+                                variant="inverse"
+                                alternative-text="Edit">
+                            </lightning-icon>
+                            <span>Edit Order Details</span>
+                        </button>
+                    </template>
+
+                    <template if:true={showTechnicianNotesButton}>
+                        <button class="hero-edit-button" onclick={openTechnicianNotesModal}>
+                            <lightning-icon
+                                icon-name="utility:edit"
+                                size="xx-small"
+                                variant="inverse"
+                                alternative-text="Edit">
+                            </lightning-icon>
+                            <span>Edit Notes</span>
+                        </button>
+                    </template>
+                </div>
+            </div>
+
+            <!-- QUICK DETAILS -->
+            <section class="detail-strip">
+                <div class="detail-item">
+                    <span class="field-label">PART NUMBER</span>
+                    <strong>{partNumber}</strong>
+                </div>
+
+                <div class="detail-item">
+                    <span class="field-label">MACHINE</span>
+                    <strong>{machineName}</strong>
+                </div>
+
+                <div class="detail-item">
+                    <span class="field-label">QUANTITY</span>
+                    <strong>{quantityLabel}</strong>
+                </div>
+            </section>
+
+            <!-- PART REQUEST -->
+            <section class="information-card">
+                <div class="section-heading">
+                    <div class="heading-icon">
+                        <lightning-icon icon-name="utility:info" size="x-small" variant="inverse"></lightning-icon>
+                    </div>
+
+                    <div>
+                        <h2>Part Request</h2>
+                        <p>Requested part and service context.</p>
+                    </div>
+                </div>
+
+                <div class="info-grid">
+
+                    <template if:true={hasPartCatalog}>
+                        <button class="info-card clickable-card" onclick={handlePartCatalogOpen}>
+                            <span class="field-label">PART CATALOG</span>
+                            <strong>{partName}</strong>
+                            <p>{partNumber}</p>
+                        </button>
+                    </template>
+
+                    <template if:false={hasPartCatalog}>
+                        <div class="info-card">
+                            <span class="field-label">PART CATALOG</span>
+                            <strong>Unavailable</strong>
+                        </div>
+                    </template>
+
+                    <template if:true={hasMachine}>
+                        <button class="info-card clickable-card" onclick={handleMachineOpen}>
+                            <span class="field-label">MACHINE</span>
+                            <strong>{machineName}</strong>
+                            <p>{machineManufacturer} • {machineModel}</p>
+
+                            <template if:true={machineStatus}>
+                                <span class="mini-status">{machineStatus}</span>
+                            </template>
+                        </button>
+                    </template>
+
+                    <template if:false={hasMachine}>
+                        <div class="info-card">
+                            <span class="field-label">MACHINE</span>
+                            <strong>Unavailable</strong>
+                        </div>
+                    </template>
+
+                    <template if:true={hasWorkOrder}>
+                        <button class="info-card clickable-card" onclick={handleWorkOrderOpen}>
+                            <span class="field-label">WORK ORDER</span>
+                            <strong>{workOrderNumber}</strong>
+
+                            <template if:true={workOrderSubject}>
+                                <p>{workOrderSubject}</p>
+                            </template>
+
+                            <template if:true={dispatchStatus}>
+                                <span class="mini-status">{dispatchStatus}</span>
+                            </template>
+                        </button>
+                    </template>
+
+                    <div class="info-card">
+                        <span class="field-label">ORDERED BY</span>
+                        <strong>{orderedByName}</strong>
+                        <p>Technician Requested: {requestedLabel}</p>
+                    </div>
+
+                </div>
+            </section>
+
+            <!-- SUPPLIER & ORDERING -->
+            <section class="information-card">
+                <div class="section-heading">
+                    <div class="heading-icon supplier-icon">
+                        <lightning-icon icon-name="utility:cart" size="x-small" variant="inverse"></lightning-icon>
+                    </div>
+
+                    <div>
+                        <h2>Supplier &amp; Ordering</h2>
+                        <p>Current supplier and order information for this request.</p>
+                    </div>
+                </div>
+
+                <div class="info-grid">
+                    <div class="info-card">
+                        <span class="field-label">SUPPLIER</span>
+                        <strong>{supplierName}</strong>
+                    </div>
+
+                    <div class="info-card">
+                        <span class="field-label">SUPPLIER PHONE</span>
+                        <strong>{supplierPhone}</strong>
+                    </div>
+
+                    <div class="info-card">
+                        <span class="field-label">ORDER STATUS</span>
+                        <strong>{orderStatus}</strong>
+                    </div>
+
+                    <div class="info-card">
+                        <span class="field-label">PART CATEGORY</span>
+                        <strong>{partCategory}</strong>
+                        <p>{manufacturer} • {compatibleModel}</p>
+                    </div>
+                </div>
+
+                <template if:true={hasOrderUrl}>
+                    <div class="order-action">
+                        <button class="order-button" onclick={handleOrder}>
+                            <lightning-icon icon-name="utility:new_window" size="xx-small" variant="inverse"></lightning-icon>
+                            <span>Open Order Page</span>
+                        </button>
+                    </div>
+                </template>
+            </section>
+
+            <!-- NOTES -->
+            <template if:true={hasNotes}>
+                <section class="notes-card">
+                    <span class="field-label">TECHNICIAN NOTES</span>
+                    <p>{notes}</p>
+                </section>
+            </template>
+
+        </div>
+    </template>
+
+    <!-- MANAGER EDIT -->
+    <template if:true={isManagerEditOpen}>
+        <section class="modal-backdrop">
+            <div class="edit-modal">
+
+                <div class="modal-header">
+                    <div>
+                        <p class="modal-eyebrow">MANAGER UPDATE</p>
+                        <h2>Edit Order Details</h2>
+                        <p>Update ordering and supplier information for this part request.</p>
+                    </div>
+
+                    <button class="close-button" onclick={handleCloseManagerEdit} title="Close">
+                        <lightning-icon icon-name="utility:close" size="small"></lightning-icon>
+                    </button>
+                </div>
+
+                <lightning-record-edit-form
+                    record-id={recordId}
+                    object-api-name="Work_Order_Part__c"
+                    onsuccess={handleManagerSaveSuccess}
+                    onerror={handleSaveError}>
+
+                    <div class="modal-body">
+                        <div class="edit-grid">
+                            <lightning-input-field field-name={quantityField}></lightning-input-field>
+                            <lightning-input-field field-name={orderStatusField}></lightning-input-field>
+                            <lightning-input-field field-name={supplierNameField}></lightning-input-field>
+                            <lightning-input-field field-name={supplierPhoneField}></lightning-input-field>
+                            <lightning-input-field field-name={orderUrlField}></lightning-input-field>
+                            <lightning-input-field field-name={orderedByField}></lightning-input-field>
+                        </div>
+
+                        <div class="notes-edit">
+                            <lightning-input-field field-name={notesField}></lightning-input-field>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="secondary-button" onclick={handleCloseManagerEdit}>Cancel</button>
+                        <lightning-button type="submit" variant="brand" label="Save Changes"></lightning-button>
+                    </div>
+
+                </lightning-record-edit-form>
+
+            </div>
+        </section>
+    </template>
+
+    <!-- TECHNICIAN NOTES EDIT -->
+    <template if:true={isTechnicianEditOpen}>
+        <section class="modal-backdrop">
+            <div class="edit-modal technician-modal">
+
+                <div class="modal-header">
+                    <div>
+                        <p class="modal-eyebrow">TECHNICIAN UPDATE</p>
+                        <h2>Edit Technician Notes</h2>
+                        <p>Add or update notes for this part request.</p>
+                    </div>
+
+                    <button class="close-button" onclick={handleCloseTechnicianEdit} title="Close">
+                        <lightning-icon icon-name="utility:close" size="small"></lightning-icon>
+                    </button>
+                </div>
+
+                <lightning-record-edit-form
+                    record-id={recordId}
+                    object-api-name="Work_Order_Part__c"
+                    onsuccess={handleTechnicianSaveSuccess}
+                    onerror={handleSaveError}>
+
+                    <div class="modal-body">
+                        <lightning-input-field field-name={notesField}></lightning-input-field>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="secondary-button" onclick={handleCloseTechnicianEdit}>Cancel</button>
+                        <lightning-button type="submit" variant="brand" label="Save Notes"></lightning-button>
+                    </div>
+
+                </lightning-record-edit-form>
+
+            </div>
+        </section>
+    </template>
+
+</template>

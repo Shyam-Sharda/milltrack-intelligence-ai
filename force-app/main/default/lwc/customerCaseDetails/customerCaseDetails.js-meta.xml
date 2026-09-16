@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>65.0</apiVersion>
+
+    <isExposed>true</isExposed>
+
+    <masterLabel>
+        MillTrack Customer Case Details
+    </masterLabel>
+
+    <description>
+        Customer-facing MillTrack service request details,
+        affected machine information, request progress,
+        and related service visit.
+    </description>
+
+    <targets>
+        <target>lightningCommunity__Page</target>
+        <target>lightningCommunity__Default</target>
+    </targets>
+
+    <targetConfigs>
+
+        <targetConfig targets="lightningCommunity__Default">
+
+            <property
+                name="recordId"
+                type="String"
+                label="Record ID"
+                default="{!recordId}"
+                description="Automatically uses the current Case record ID."
+            />
+
+        </targetConfig>
+
+    </targetConfigs>
+
+</LightningComponentBundle>

@@ -1,84 +1,115 @@
 <template>
     <header class="milltrack-header">
 
-        <!-- =========================
-             MillTrack Logo
-             ========================= -->
+        <!-- =====================================================
+             BRAND
+             ===================================================== -->
+
         <div class="brand-section">
+
             <button
                 class="brand-button"
                 type="button"
                 onclick={handleHomeClick}
                 title="MillTrack Home"
-            >
-                <img
-                    src={logoUrl}
-                    alt="MillTrack"
-                    class="brand-logo"
-                />
+                aria-label="MillTrack Intelligence Home">
+
+                <svg
+                    class="brand-mark"
+                    viewBox="0 0 44 50"
+                    aria-hidden="true">
+
+                    <path
+                        d="M22 2.5 40 13v24L22 47.5 4 37V13z">
+                    </path>
+
+                    <path
+                        d="M13.5 31V19l8.5 7 8.5-7v12">
+                    </path>
+
+                </svg>
+
+                <span class="brand-name">
+                    MillTrack Intelligence
+                </span>
+
             </button>
+
         </div>
 
 
-        <!-- =========================
-             Main Navigation
-             ========================= -->
-        <nav class="main-navigation" aria-label="Main navigation">
+        <!-- =====================================================
+             MAIN NAVIGATION
+             ===================================================== -->
+
+        <nav
+            class="main-navigation"
+            aria-label="Main navigation">
 
             <button
                 class={homeNavClass}
                 type="button"
-                onclick={handleHomeClick}
-            >
+                onclick={handleHomeClick}>
+
                 <lightning-icon
                     icon-name="utility:home"
                     size="x-small"
                     alternative-text=""
-                    class="nav-icon"
-                >
+                    class="nav-icon">
                 </lightning-icon>
 
-                <span>Home</span>
+                <span>
+                    Home
+                </span>
+
             </button>
 
 
             <button
                 class={reportIssueNavClass}
                 type="button"
-                onclick={handleReportIssueClick}
-            >
+                onclick={handleReportIssueClick}>
+
                 <lightning-icon
                     icon-name="utility:note"
                     size="x-small"
                     alternative-text=""
-                    class="nav-icon"
-                >
+                    class="nav-icon">
                 </lightning-icon>
 
-                <span>Report an Issue</span>
+                <span>
+                    Report an Issue
+                </span>
+
             </button>
 
         </nav>
 
 
-        <!-- =========================
-             Header Actions
-             ========================= -->
+        <!-- =====================================================
+             HEADER ACTIONS
+             ===================================================== -->
+
         <div class="header-actions">
 
             <!-- Help -->
+
             <button
                 class="icon-button help-button"
                 type="button"
                 onclick={handleHelpClick}
                 title="Help"
-                aria-label="Help"
-            >
-                <span class="help-symbol">?</span>
+                aria-label="Help">
+
+                <span class="help-symbol">
+                    ?
+                </span>
+
             </button>
 
 
             <!-- Profile -->
+
             <div class="profile-container">
 
                 <button
@@ -86,33 +117,40 @@
                     type="button"
                     onclick={toggleProfileMenu}
                     aria-label="Open profile menu"
-                    aria-expanded={isProfileMenuOpen}
-                >
+                    aria-expanded={isProfileMenuOpen}>
+
                     <span class="profile-icon-wrapper">
+
                         <lightning-icon
                             icon-name="utility:user"
                             size="small"
                             alternative-text=""
-                            class="profile-icon"
-                        >
+                            class="profile-icon">
                         </lightning-icon>
+
                     </span>
+
 
                     <lightning-icon
                         icon-name="utility:chevrondown"
                         size="xx-small"
                         alternative-text=""
-                        class="profile-chevron"
-                    >
+                        class="profile-chevron">
                     </lightning-icon>
+
                 </button>
 
 
-                <!-- Profile Dropdown -->
+                <!-- =============================================
+                     PROFILE DROPDOWN
+                     ============================================= -->
+
                 <template lwc:if={isProfileMenuOpen}>
+
                     <div class="profile-menu">
 
                         <div class="profile-menu-header">
+
                             <span class="profile-menu-name">
                                 {customerName}
                             </span>
@@ -120,50 +158,57 @@
                             <span class="profile-menu-subtitle">
                                 Customer Portal
                             </span>
+
                         </div>
 
 
-                        <div class="profile-menu-divider"></div>
+                        <div class="profile-menu-divider">
+                        </div>
 
 
-                        <!-- Decorative for now -->
                         <button
                             class="profile-menu-item"
                             type="button"
-                            onclick={handleProfileClick}
-                        >
+                            onclick={handleProfileClick}>
+
                             <lightning-icon
                                 icon-name="utility:user"
                                 size="x-small"
                                 alternative-text=""
-                                class="menu-item-icon"
-                            >
+                                class="menu-item-icon">
                             </lightning-icon>
 
-                            <span>My Profile</span>
+                            <span>
+                                My Profile
+                            </span>
+
                         </button>
 
 
-                        <div class="profile-menu-divider"></div>
+                        <div class="profile-menu-divider">
+                        </div>
 
 
                         <button
                             class="profile-menu-item logout-item"
                             type="button"
-                            onclick={handleLogout}
-                        >
+                            onclick={handleLogout}>
+
                             <lightning-icon
                                 icon-name="utility:logout"
                                 size="x-small"
                                 alternative-text=""
-                                class="menu-item-icon"
-                            >
+                                class="menu-item-icon">
                             </lightning-icon>
 
-                            <span>Log Out</span>
+                            <span>
+                                Log Out
+                            </span>
+
                         </button>
 
                     </div>
+
                 </template>
 
             </div>
