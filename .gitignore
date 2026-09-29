@@ -57,3 +57,6 @@ scripts/demo/testManagerOrderPartsAllCancelled.apex
 scripts/demo/testManagerOrderPartsAllOrdered.apex
 scripts/demo/testManagerOrderPartsController.apex
 scripts/demo/testManagerOrderPartsPartial.apex
+
+# Local MillTrack inspection output
+milltrack-inspect/

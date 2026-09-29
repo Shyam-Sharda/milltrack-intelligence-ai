@@ -1,6 +1,5 @@
 @IsTest
 private class GetRelevantHistoricalRepairsForCaseTest {
-
     /*
      * ============================================================
      * TEST DATA HELPERS
@@ -8,13 +7,10 @@ private class GetRelevantHistoricalRepairsForCaseTest {
      */
     private static Account createAccount(String name) {
         Account accountRecord = new Account(Name = name);
-
         insert accountRecord;
         return accountRecord;
     }
-
     private static Asset createAsset(Account accountRecord, String name, String manufacturer, String model, String serialNumber) {
-
         Asset assetRecord = new Asset(
             Name = name,
             AccountId = accountRecord.Id,
@@ -23,11 +19,9 @@ private class GetRelevantHistoricalRepairsForCaseTest {
             Serial_Number__c = serialNumber,
             Machine_Status__c = 'Active'
         );
-
         insert assetRecord;
         return assetRecord;
     }
-
     private static Case createCase(
         Account accountRecord,
         Asset assetRecord,
@@ -35,7 +29,6 @@ private class GetRelevantHistoricalRepairsForCaseTest {
         String description,
         String errorCode
     ) {
-
         Case caseRecord = new Case(
             AccountId = accountRecord.Id,
             AssetId = assetRecord == null ? null : assetRecord.Id,
@@ -46,13 +39,10 @@ private class GetRelevantHistoricalRepairsForCaseTest {
             Priority = 'Medium',
             Error_Code__c = errorCode
         );
-
         insert caseRecord;
         return caseRecord;
     }
-
     private static WorkOrder createWorkOrder(Account accountRecord, Asset assetRecord, Case caseRecord, String subject) {
-
         WorkOrder workOrderRecord = new WorkOrder(
             AccountId = accountRecord.Id,
             AssetId = assetRecord.Id,
@@ -62,12 +52,9 @@ private class GetRelevantHistoricalRepairsForCaseTest {
             Status = 'New',
             Priority = 'Medium'
         );
-
         insert workOrderRecord;
         return workOrderRecord;
     }
-
-
     private static Maintenance_Log__c createMaintenanceLog(
         Asset assetRecord,
         WorkOrder workOrderRecord,
@@ -80,45 +67,33 @@ private class GetRelevantHistoricalRepairsForCaseTest {
         Boolean resolved,
         Boolean followUpRequired
     ) {
-
-        Maintenance_Log__c logRecord =
-            new Maintenance_Log__c(
-                Asset__c = assetRecord.Id,
-                Work_Order__c = workOrderRecord == null ? null : workOrderRecord.Id,
-                Maintenance_Date__c = maintenanceDate,
-                Maintenance_Type__c = maintenanceType,
-                Summary__c = summary,
-                Root_Cause__c = rootCause,
-                Parts_Used__c = partsUsed,
-                Technician_Notes__c = technicianNotes,
-                Labor_Hours__c = 2,
-                Issue_Resolved__c = resolved,
-                Follow_Up_Required__c = followUpRequired
-            );
-
+        Maintenance_Log__c logRecord = new Maintenance_Log__c(
+            Asset__c = assetRecord.Id,
+            Work_Order__c = workOrderRecord == null ? null : workOrderRecord.Id,
+            Maintenance_Date__c = maintenanceDate,
+            Maintenance_Type__c = maintenanceType,
+            Summary__c = summary,
+            Root_Cause__c = rootCause,
+            Parts_Used__c = partsUsed,
+            Technician_Notes__c = technicianNotes,
+            Labor_Hours__c = 2,
+            Issue_Resolved__c = resolved,
+            Follow_Up_Required__c = followUpRequired
+        );
         insert logRecord;
         return logRecord;
     }
-
-
     private static GetRelevantHistoricalRepairsForCase.Result runAction(Id caseId, Integer maxResults) {
-
         GetRelevantHistoricalRepairsForCase.Request request = new GetRelevantHistoricalRepairsForCase.Request();
-
         request.caseId = caseId;
         request.maxResults = maxResults;
-
         Test.startTest();
         List<GetRelevantHistoricalRepairsForCase.Result> results =
-    GetRelevantHistoricalRepairsForCase.getRelevantHistoricalRepairsForCase( new List<GetRelevantHistoricalRepairsForCase.Request>{request});
+            GetRelevantHistoricalRepairsForCase.getRelevantHistoricalRepairsForCase(new List<GetRelevantHistoricalRepairsForCase.Request>{request});
         Test.stopTest();
-
         System.assertEquals(1, results.size(), 'The action should return one result for one request.');
-
         return results[0];
     }
-
-
     /*
      * ============================================================
      * TEST 1
@@ -128,9 +103,7 @@ private class GetRelevantHistoricalRepairsForCaseTest {
      */
     @IsTest
     static void testRelevantHistoricalRepairFound() {
-
         Account accountRecord = createAccount('Historical Repair Test Account');
-
         Asset assetRecord = createAsset(
             accountRecord,
             'Straumann M Series Test Mill',
@@ -138,7 +111,6 @@ private class GetRelevantHistoricalRepairsForCaseTest {
             'M Series',
             'STR-TEST-001'
         );
-
         /*
          * Historical Case / Work Order / Maintenance Log.
          */
@@ -149,15 +121,12 @@ private class GetRelevantHistoricalRepairsForCaseTest {
             'Coolant is present but is not reaching the milling chamber.',
             'COOL-101'
         );
-
-        WorkOrder historicalWorkOrder =
-            createWorkOrder(
+        WorkOrder historicalWorkOrder = createWorkOrder(
                 accountRecord,
                 assetRecord,
                 historicalCase,
                 'Repair coolant flow problem'
             );
-
         createMaintenanceLog(
             assetRecord,
             historicalWorkOrder,
@@ -170,7 +139,6 @@ private class GetRelevantHistoricalRepairsForCaseTest {
             true,
             false
         );
-
         /*
          * Current Case being evaluated.
          */
@@ -181,9 +149,7 @@ private class GetRelevantHistoricalRepairsForCaseTest {
             'Coolant is not reaching the milling chamber.',
             'COOL-101'
         );
-
         GetRelevantHistoricalRepairsForCase.Result result =  runAction(currentCase.Id, 3);
-
         System.assertEquals(true, result.success, 'A relevant successful repair should be returned.');
         System.assertEquals('SUCCESS', result.statusCode);
         System.assertEquals(1, result.matchCount);
@@ -191,34 +157,27 @@ private class GetRelevantHistoricalRepairsForCaseTest {
             result.historicalRepairContext.contains('HISTORICAL REPAIR INTELLIGENCE'),
             'Historical context header should be returned.'
         );
-
         System.assert(
             result.historicalRepairContext.contains('Same current Asset: Yes'),
             'The historical repair should be identified as belonging to the same Asset.'
         );
-
         System.assert(
             result.historicalRepairContext.contains('same error code'),
             'The exact matching historical error code should be identified.'
         );
-
         System.assert(
             result.historicalRepairContext.contains('Coolant tank was extremely dirty'),
             'The recorded historical root cause should be returned.'
         );
-
         System.assert(
             result.historicalRepairContext.contains('Coolant Pump Motor'),
             'Historical parts used should be returned as evidence.'
         );
-
         System.assert(
             result.historicalRepairContext.contains('Coolant flow was restored'),
             'Historical technician notes should be available to the Manager.'
         );
     }
-
-
     /*
      * ============================================================
      * TEST 2
@@ -231,9 +190,7 @@ private class GetRelevantHistoricalRepairsForCaseTest {
      */
     @IsTest
     static void testNoRelevantHistoricalRepair() {
-
         Account accountRecord = createAccount('No Match Test Account');
-
         Asset assetRecord = createAsset(
             accountRecord,
             'Roland DWX Test Mill',
@@ -241,7 +198,6 @@ private class GetRelevantHistoricalRepairsForCaseTest {
             'DWX-52D',
             'ROL-TEST-001'
         );
-
         Case historicalCase = createCase(
             accountRecord,
             assetRecord,
@@ -249,10 +205,7 @@ private class GetRelevantHistoricalRepairsForCaseTest {
             'Coolant pump area leaking fluid.',
             null
         );
-
-
         WorkOrder historicalWorkOrder = createWorkOrder(accountRecord, assetRecord, historicalCase, 'Repair coolant leak');
-
         createMaintenanceLog(
             assetRecord,
             historicalWorkOrder,
@@ -265,7 +218,6 @@ private class GetRelevantHistoricalRepairsForCaseTest {
             true,
             false
         );
-
         Case currentCase = createCase(
             accountRecord,
             assetRecord,
@@ -273,9 +225,7 @@ private class GetRelevantHistoricalRepairsForCaseTest {
             'Grinding noise occurs when spindle starts rotating.',
             null
         );
-
         GetRelevantHistoricalRepairsForCase.Result result = runAction(currentCase.Id, 3);
-
         System.assertEquals(false, result.success);
         System.assertEquals(
             'NO_RELEVANT_HISTORY',
@@ -285,8 +235,6 @@ private class GetRelevantHistoricalRepairsForCaseTest {
         System.assertEquals(0, result.matchCount);
         System.assertEquals('', result.historicalRepairContext);
     }
-
-
     /*
      * ============================================================
      * TEST 3
@@ -297,9 +245,7 @@ private class GetRelevantHistoricalRepairsForCaseTest {
      */
     @IsTest
     static void testTemporaryRepairExcluded() {
-
         Account accountRecord = createAccount('Temporary Repair Test');
-
         Asset assetRecord = createAsset(
             accountRecord,
             'Straumann Temporary Test Mill',
@@ -307,7 +253,6 @@ private class GetRelevantHistoricalRepairsForCaseTest {
             'M Series',
             'STR-TEMP-001'
         );
-
         Case historicalCase = createCase(
             accountRecord,
             assetRecord,
@@ -315,9 +260,7 @@ private class GetRelevantHistoricalRepairsForCaseTest {
             'Coolant is not reaching the chamber.',
             'COOL-500'
         );
-
         WorkOrder historicalWorkOrder = createWorkOrder(accountRecord, assetRecord, historicalCase, 'Temporary coolant repair');
-
         createMaintenanceLog(
             assetRecord,
             historicalWorkOrder,
@@ -330,7 +273,6 @@ private class GetRelevantHistoricalRepairsForCaseTest {
             false,
             true
         );
-
         Case currentCase = createCase(
             accountRecord,
             assetRecord,
@@ -338,9 +280,7 @@ private class GetRelevantHistoricalRepairsForCaseTest {
             'Coolant is not reaching the chamber.',
             'COOL-500'
         );
-
         GetRelevantHistoricalRepairsForCase.Result result =  runAction(currentCase.Id, 3);
-
         System.assertEquals(false, result.success);
         System.assertEquals(
             'NO_SUCCESSFUL_HISTORY',
@@ -349,8 +289,6 @@ private class GetRelevantHistoricalRepairsForCaseTest {
         );
         System.assertEquals(0, result.matchCount);
     }
-
-
     /*
      * ============================================================
      * TEST 4
@@ -361,9 +299,7 @@ private class GetRelevantHistoricalRepairsForCaseTest {
      */
     @IsTest
     static void testMissingAsset() {
-
         Account accountRecord = createAccount('Missing Asset Test');
-
         Case currentCase = createCase(
             accountRecord,
             null,
@@ -371,15 +307,11 @@ private class GetRelevantHistoricalRepairsForCaseTest {
             'Customer reports abnormal noise.',
             null
         );
-
         GetRelevantHistoricalRepairsForCase.Result result = runAction(currentCase.Id, 3);
-
         System.assertEquals(false, result.success);
         System.assertEquals('NO_ASSET_CONTEXT', result.statusCode);
         System.assertEquals(0, result.matchCount);
     }
-
-
     /*
      * ============================================================
      * TEST 5
@@ -393,9 +325,7 @@ private class GetRelevantHistoricalRepairsForCaseTest {
      */
     @IsTest
     static void testCurrentCaseHistoryExcluded() {
-
         Account accountRecord = createAccount('Current Case Exclusion Test');
-
         Asset assetRecord = createAsset(
             accountRecord,
             'Ceramill Current Case Test',
@@ -403,7 +333,6 @@ private class GetRelevantHistoricalRepairsForCaseTest {
             'Motion 2',
             'CER-TEST-001'
         );
-
         Case currentCase = createCase(
             accountRecord,
             assetRecord,
@@ -411,15 +340,12 @@ private class GetRelevantHistoricalRepairsForCaseTest {
             'Machine has strong spindle vibration during milling.',
             'VIB-100'
         );
-
-        WorkOrder currentCaseWorkOrder =
-            createWorkOrder(
+        WorkOrder currentCaseWorkOrder = createWorkOrder(
                 accountRecord,
                 assetRecord,
                 currentCase,
                 'Spindle vibration repair'
             );
-
         createMaintenanceLog(
             assetRecord,
             currentCaseWorkOrder,
@@ -432,9 +358,7 @@ private class GetRelevantHistoricalRepairsForCaseTest {
             true,
             false
         );
-
         GetRelevantHistoricalRepairsForCase.Result result = runAction(currentCase.Id, 3);
-
         System.assertEquals(false, result.success);
         System.assertEquals(
             'NO_RELEVANT_HISTORY',
@@ -443,8 +367,6 @@ private class GetRelevantHistoricalRepairsForCaseTest {
         );
         System.assertEquals(0, result.matchCount);
     }
-
-
     /*
      * ============================================================
      * TEST 6
@@ -458,9 +380,7 @@ private class GetRelevantHistoricalRepairsForCaseTest {
      */
     @IsTest
     static void testDifferentAssetSameModelPrecedent() {
-
         Account accountRecord = createAccount('Same Model Different Asset Test');
-
         Asset historicalAsset = createAsset(
             accountRecord,
             'Historical Straumann Mill',
@@ -468,7 +388,6 @@ private class GetRelevantHistoricalRepairsForCaseTest {
             'M Series',
             'STR-HIST-001'
         );
-
         Asset currentAsset = createAsset(
             accountRecord,
             'Current Straumann Mill',
@@ -476,7 +395,6 @@ private class GetRelevantHistoricalRepairsForCaseTest {
             'M Series',
             'STR-CURRENT-001'
         );
-
         Case historicalCase = createCase(
             accountRecord,
             historicalAsset,
@@ -484,9 +402,7 @@ private class GetRelevantHistoricalRepairsForCaseTest {
             'Coolant flow stopped during milling.',
             'COOL-700'
         );
-
         WorkOrder historicalWorkOrder = createWorkOrder(accountRecord, historicalAsset, historicalCase, 'Coolant delivery repair');
-
         createMaintenanceLog(
             historicalAsset,
             historicalWorkOrder,
@@ -499,7 +415,6 @@ private class GetRelevantHistoricalRepairsForCaseTest {
             true,
             false
         );
-
         Case currentCase = createCase(
             accountRecord,
             currentAsset,
@@ -507,9 +422,7 @@ private class GetRelevantHistoricalRepairsForCaseTest {
             'Coolant flow stopped during milling.',
             'COOL-700'
         );
-
         GetRelevantHistoricalRepairsForCase.Result result = runAction(currentCase.Id, 3);
-
         System.assertEquals(true, result.success);
         System.assertEquals('SUCCESS', result.statusCode);
         System.assertEquals(1, result.matchCount);
@@ -522,8 +435,6 @@ private class GetRelevantHistoricalRepairsForCaseTest {
             'The output should explain that the precedent is relevant because it is the same model.'
         );
     }
-
-
     /*
      * ============================================================
      * TEST 7
@@ -537,10 +448,7 @@ private class GetRelevantHistoricalRepairsForCaseTest {
      */
     @IsTest
     static void testEquivalentRolandModelAliasAccepted() {
-
-        Account accountRecord =
-            createAccount('Roland Model Alias Test');
-
+        Account accountRecord = createAccount('Roland Model Alias Test');
         Asset historicalAsset = createAsset(
             accountRecord,
             'Historical Roland 53DC',
@@ -548,7 +456,6 @@ private class GetRelevantHistoricalRepairsForCaseTest {
             'DWX-53DC',
             'ROL-53DC-HIST'
         );
-
         Asset currentAsset = createAsset(
             accountRecord,
             'Current Roland 53DC',
@@ -556,7 +463,6 @@ private class GetRelevantHistoricalRepairsForCaseTest {
             '53DC',
             'ROL-53DC-CURRENT'
         );
-
         Case historicalCase = createCase(
             accountRecord,
             historicalAsset,
@@ -564,15 +470,12 @@ private class GetRelevantHistoricalRepairsForCaseTest {
             'Disc changer binds near the bottom of travel and reports a collision.',
             null
         );
-
-        WorkOrder historicalWorkOrder =
-            createWorkOrder(
+        WorkOrder historicalWorkOrder = createWorkOrder(
                 accountRecord,
                 historicalAsset,
                 historicalCase,
                 'Repair disc changer binding'
             );
-
         createMaintenanceLog(
             historicalAsset,
             historicalWorkOrder,
@@ -585,7 +488,6 @@ private class GetRelevantHistoricalRepairsForCaseTest {
             true,
             false
         );
-
         Case currentCase = createCase(
             accountRecord,
             currentAsset,
@@ -593,10 +495,7 @@ private class GetRelevantHistoricalRepairsForCaseTest {
             'Disc changer binds near the bottom of travel and reports a collision.',
             null
         );
-
-        GetRelevantHistoricalRepairsForCase.Result result =
-            runAction(currentCase.Id, 3);
-
+        GetRelevantHistoricalRepairsForCase.Result result = runAction(currentCase.Id, 3);
         System.assertEquals(
             true,
             result.success,
@@ -604,24 +503,19 @@ private class GetRelevantHistoricalRepairsForCaseTest {
         );
         System.assertEquals('SUCCESS', result.statusCode);
         System.assertEquals(1, result.matchCount);
-
         System.assert(
             result.historicalRepairContext.contains('Same current Asset: No'),
             'The repair is from a different Asset and must not be represented as a previous failure of the current Asset.'
         );
-
         System.assert(
             result.historicalRepairContext.contains('same model'),
             'DWX-53DC and 53DC should be treated as the same normalized model.'
         );
-
         System.assert(
             result.historicalRepairContext.contains('Disc changer mechanism was misaligned'),
             'The matching historical repair evidence should be returned.'
         );
     }
-
-
     /*
      * ============================================================
      * TEST 8
@@ -636,10 +530,7 @@ private class GetRelevantHistoricalRepairsForCaseTest {
      */
     @IsTest
     static void testDifferentModelSameManufacturerExcluded() {
-
-        Account accountRecord =
-            createAccount('Cross Model Exclusion Test');
-
+        Account accountRecord = createAccount('Cross Model Exclusion Test');
         Asset historicalAsset = createAsset(
             accountRecord,
             'Historical Roland 52D',
@@ -647,7 +538,6 @@ private class GetRelevantHistoricalRepairsForCaseTest {
             'DWX-52D',
             'ROL-52D-HIST'
         );
-
         Asset currentAsset = createAsset(
             accountRecord,
             'Current Roland 53DC',
@@ -655,7 +545,6 @@ private class GetRelevantHistoricalRepairsForCaseTest {
             'DWX-53DC',
             'ROL-53DC-CURRENT'
         );
-
         Case historicalCase = createCase(
             accountRecord,
             historicalAsset,
@@ -663,15 +552,12 @@ private class GetRelevantHistoricalRepairsForCaseTest {
             'Machine binds in the chamber and reports a collision after cleaning.',
             null
         );
-
-        WorkOrder historicalWorkOrder =
-            createWorkOrder(
+        WorkOrder historicalWorkOrder = createWorkOrder(
                 accountRecord,
                 historicalAsset,
                 historicalCase,
                 'Repair correction collision'
             );
-
         createMaintenanceLog(
             historicalAsset,
             historicalWorkOrder,
@@ -684,7 +570,6 @@ private class GetRelevantHistoricalRepairsForCaseTest {
             true,
             false
         );
-
         Case currentCase = createCase(
             accountRecord,
             currentAsset,
@@ -692,27 +577,20 @@ private class GetRelevantHistoricalRepairsForCaseTest {
             'Disc changer binds in the chamber and reports a collision after cleaning.',
             null
         );
-
-        GetRelevantHistoricalRepairsForCase.Result result =
-            runAction(currentCase.Id, 3);
-
+        GetRelevantHistoricalRepairsForCase.Result result = runAction(currentCase.Id, 3);
         System.assertEquals(
             false,
             result.success,
             'A different model must not qualify solely from manufacturer and overlapping problem terms.'
         );
-
         System.assertEquals(
             'NO_RELEVANT_HISTORY',
             result.statusCode,
             'Cross-model Roland history should be excluded before lexical similarity can qualify it.'
         );
-
         System.assertEquals(0, result.matchCount);
         System.assertEquals('', result.historicalRepairContext);
     }
-
-
     /*
      * ============================================================
      * TEST 9
@@ -725,9 +603,7 @@ private class GetRelevantHistoricalRepairsForCaseTest {
      */
     @IsTest
     static void testMaximumResultsLimitedToFive() {
-
         Account accountRecord = createAccount('Maximum Result Test');
-
         Asset assetRecord = createAsset(
             accountRecord,
             'Roland Maximum Test Mill',
@@ -735,7 +611,6 @@ private class GetRelevantHistoricalRepairsForCaseTest {
             'DWX-52D',
             'ROL-MAX-001'
         );
-
         Case historicalCase = createCase(
             accountRecord,
             assetRecord,
@@ -743,11 +618,8 @@ private class GetRelevantHistoricalRepairsForCaseTest {
             'Machine reports low air pressure while milling.',
             'AIR-100'
         );
-
         WorkOrder historicalWorkOrder = createWorkOrder(accountRecord, assetRecord, historicalCase, 'Air pressure repair');
-
         for (Integer i = 0; i < 6; i++) {
-
             createMaintenanceLog(
                 assetRecord,
                 historicalWorkOrder,
@@ -761,7 +633,6 @@ private class GetRelevantHistoricalRepairsForCaseTest {
                 false
             );
         }
-
         Case currentCase = createCase(
             accountRecord,
             assetRecord,
@@ -769,16 +640,12 @@ private class GetRelevantHistoricalRepairsForCaseTest {
             'Machine reports low air pressure while milling.',
             'AIR-100'
         );
-
         GetRelevantHistoricalRepairsForCase.Result result = runAction(currentCase.Id, 10);
-
         System.assertEquals(true, result.success);
         System.assertEquals('SUCCESS', result.statusCode);
         System.assertEquals(5, result.matchCount, 'The Apex action must never return more than five historical precedents.');
         System.assert(!result.historicalRepairContext.contains('6. '), 'A sixth historical repair must not appear in the returned context.');
     }
-
-
     /*
      * ============================================================
      * TEST 10
@@ -786,38 +653,28 @@ private class GetRelevantHistoricalRepairsForCaseTest {
      * Invalid request.
      * ============================================================
      */
-
     @IsTest
     static void testMissingCaseId() {
-
         GetRelevantHistoricalRepairsForCase.Request request = new GetRelevantHistoricalRepairsForCase.Request();
-
         request.caseId = null;
         request.maxResults = 3;
-
         Test.startTest();
-        List<GetRelevantHistoricalRepairsForCase.Result> results =
-            GetRelevantHistoricalRepairsForCase.getRelevantHistoricalRepairsForCase(
+        List<GetRelevantHistoricalRepairsForCase.Result> results = GetRelevantHistoricalRepairsForCase.getRelevantHistoricalRepairsForCase(
                     new List<GetRelevantHistoricalRepairsForCase.Request>{request});
         Test.stopTest();
-
         System.assertEquals(1, results.size());
         System.assertEquals(false, results[0].success);
         System.assertEquals('INVALID_REQUEST', results[0].statusCode);
         System.assertEquals(0,  results[0].matchCount);
     }
-
         /*
      * ============================================================
      * LWC ENDPOINT TESTS
      * ============================================================
      */
-
     @IsTest
     static void testLwcEndpointReturnsRelevantHistory() {
-
         Account accountRecord = createAccount('HRI LWC Endpoint Test');
-
         Asset assetRecord = createAsset(
             accountRecord,
             'LWC Historical Test Mill',
@@ -825,7 +682,6 @@ private class GetRelevantHistoricalRepairsForCaseTest {
             'DWX-53DC',
             'LWC-HRI-001'
         );
-
         Case historicalCase = createCase(
             accountRecord,
             assetRecord,
@@ -833,10 +689,7 @@ private class GetRelevantHistoricalRepairsForCaseTest {
             'Disc changer binds near the bottom of travel during Run-in.',
             'COLLISION-200'
         );
-
-        WorkOrder historicalWorkOrder =
-            createWorkOrder(accountRecord, assetRecord, historicalCase, 'Repair disc changer binding');
-
+        WorkOrder historicalWorkOrder = createWorkOrder(accountRecord, assetRecord, historicalCase, 'Repair disc changer binding');
         createMaintenanceLog(
             assetRecord,
             historicalWorkOrder,
@@ -849,7 +702,6 @@ private class GetRelevantHistoricalRepairsForCaseTest {
             true,
             false
         );
-
         Case currentCase = createCase(
             accountRecord,
             assetRecord,
@@ -857,46 +709,40 @@ private class GetRelevantHistoricalRepairsForCaseTest {
             'Disc changer binds near the bottom of travel during Run-in.',
             'COLLISION-200'
         );
-
         Test.startTest();
-        GetRelevantHistoricalRepairsForCase.Result result =
-            GetRelevantHistoricalRepairsForCase.getHistoricalRepairsForLwc(currentCase.Id, 3);
+        GetRelevantHistoricalRepairsForCase.Result result = GetRelevantHistoricalRepairsForCase.getHistoricalRepairsForLwc(currentCase.Id, 3);
         Test.stopTest();
-
         System.assertEquals(true, result.success);
         System.assertEquals('SUCCESS', result.statusCode);
         System.assertEquals(1, result.matchCount);
         System.assertNotEquals('', result.historicalRepairContext);
-
         System.assert(
             result.historicalRepairContext.contains('Same current Asset: Yes'),
             'The LWC endpoint should preserve the same historical context returned to Prompt Builder.'
         );
-
         System.assert(
             result.historicalRepairContext.contains('Disc changer mechanism was misaligned'),
             'The Prompt Builder context should continue exposing the recorded root cause.'
         );
-
         System.assertNotEquals(null, result.precedents, 'The LWC endpoint should return a structured precedent collection.');
         System.assertEquals(1, result.precedents.size(), 'One relevant historical precedent should be returned.');
-
         GetRelevantHistoricalRepairsForCase.HistoricalPrecedentUi precedent = result.precedents[0];
-
         System.assertNotEquals(null, precedent.maintenanceLogId);
         System.assertNotEquals(null, precedent.maintenanceLogName);
         System.assertEquals(Date.today().addDays(-45), precedent.maintenanceDate);
-
         System.assertEquals(assetRecord.Id, precedent.assetId);
         System.assertEquals('Roland', precedent.manufacturer);
         System.assertEquals('DWX-53DC', precedent.model);
         System.assertEquals('LWC-HRI-001', precedent.serialNumber);
-
         System.assertEquals(historicalWorkOrder.Id, precedent.workOrderId);
         System.assertNotEquals(null, precedent.workOrderNumber);
-
         System.assertEquals(true, precedent.sameAsset);
         System.assertEquals(true, precedent.sameModel);
+        System.assertEquals(
+            'Disc changer binds near the bottom of travel during Run-in.',
+            precedent.problemSummary,
+            'The structured precedent should expose the original historical problem description.'
+        );
         System.assert(
             precedent.whyRelevant.contains('same error code'),
             'Structured relevance should identify the exact matching historical error code.'
@@ -905,7 +751,6 @@ private class GetRelevantHistoricalRepairsForCaseTest {
             precedent.whyRelevant.contains('same Asset'),
             'Structured relevance should identify that the precedent belongs to the current Asset.'
         );
-
         System.assertEquals(
             'Corrected disc changer alignment and restored normal travel.',
             precedent.successfulRepair
@@ -919,13 +764,9 @@ private class GetRelevantHistoricalRepairsForCaseTest {
         System.assertEquals(Decimal.valueOf('2'), precedent.laborHours);
         System.assertEquals('Issue resolved; no follow-up required.', precedent.outcome);
     }
-
-
     @IsTest
     static void testLwcEndpointUsesDefaultMaximum() {
-
         Account accountRecord = createAccount('HRI LWC Default Maximum Test');
-
         Asset assetRecord = createAsset(
             accountRecord,
             'LWC Default Maximum Mill',
@@ -933,7 +774,6 @@ private class GetRelevantHistoricalRepairsForCaseTest {
             'M Series',
             'LWC-HRI-002'
         );
-
         Case historicalCase = createCase(
             accountRecord,
             assetRecord,
@@ -941,10 +781,7 @@ private class GetRelevantHistoricalRepairsForCaseTest {
             'Coolant is not reaching the milling chamber.',
             'COOL-LWC-100'
         );
-
-        WorkOrder historicalWorkOrder =
-            createWorkOrder(accountRecord, assetRecord, historicalCase, 'Repair coolant flow');
-
+        WorkOrder historicalWorkOrder = createWorkOrder(accountRecord, assetRecord, historicalCase, 'Repair coolant flow');
         createMaintenanceLog(
             assetRecord,
             historicalWorkOrder,
@@ -957,7 +794,6 @@ private class GetRelevantHistoricalRepairsForCaseTest {
             true,
             false
         );
-
         Case currentCase = createCase(
             accountRecord,
             assetRecord,
@@ -965,30 +801,26 @@ private class GetRelevantHistoricalRepairsForCaseTest {
             'Coolant is not reaching the milling chamber.',
             'COOL-LWC-100'
         );
-
         Test.startTest();
-        GetRelevantHistoricalRepairsForCase.Result result =
-            GetRelevantHistoricalRepairsForCase.getHistoricalRepairsForLwc(currentCase.Id, null);
+        GetRelevantHistoricalRepairsForCase.Result result = GetRelevantHistoricalRepairsForCase.getHistoricalRepairsForLwc(currentCase.Id, null);
         Test.stopTest();
-
         System.assertEquals(true, result.success);
         System.assertEquals('SUCCESS', result.statusCode);
         System.assertEquals(1, result.matchCount);
         System.assertNotEquals(null, result.precedents);
         System.assertEquals(1, result.precedents.size());
+        System.assertEquals(
+            'Coolant is not reaching the milling chamber.',
+            result.precedents[0].problemSummary
+        );
         System.assertEquals('Coolant line restriction.', result.precedents[0].rootCause);
         System.assertEquals('Coolant Hose', result.precedents[0].partsUsed);
     }
-
-
     @IsTest
     static void testLwcEndpointRejectsMissingCaseId() {
-
         Test.startTest();
-        GetRelevantHistoricalRepairsForCase.Result result =
-            GetRelevantHistoricalRepairsForCase.getHistoricalRepairsForLwc(null, 3);
+        GetRelevantHistoricalRepairsForCase.Result result = GetRelevantHistoricalRepairsForCase.getHistoricalRepairsForLwc(null, 3);
         Test.stopTest();
-
         System.assertEquals(false, result.success);
         System.assertEquals('INVALID_REQUEST', result.statusCode);
         System.assertEquals(0, result.matchCount);

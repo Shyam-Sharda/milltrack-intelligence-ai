@@ -1,8 +1,8 @@
 import { LightningElement, api } from 'lwc';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
-
 import getReviewData from '@salesforce/apex/ManagerReviewWorkOrderController.getReviewData';
 import approveWorkOrder from '@salesforce/apex/ManagerReviewWorkOrderController.approveWorkOrder';
+import getToolCatalog from '@salesforce/apex/ManagerReviewWorkOrderController.getToolCatalog';
 import getHistoricalRepairsForLwc from '@salesforce/apex/GetRelevantHistoricalRepairsForCase.getHistoricalRepairsForLwc';
 import getCompatibleParts from '@salesforce/apex/ManagerPartCatalogController.getCompatibleParts';
 
@@ -16,7 +16,7 @@ export default class ManagerReviewWorkOrderWizard extends LightningElement {
     errorMessage;
     currentStep = 1;
 
-    // Editable AI proposal state. reviewData remains stable record context.
+    // Editable proposal state
     problemSummary = '';
     recommendedSolution = '';
     recommendedFixSummary = '';
@@ -25,9 +25,22 @@ export default class ManagerReviewWorkOrderWizard extends LightningElement {
     technicianNotes = '';
     previousFailure = false;
     proposalPriority = '';
-    newToolName = '';
 
-    // Step 3 - Parts to Order state.
+    // Step 1 editable assessment state
+    isEditingProblemSummary = false;
+    problemSummaryDraft = '';
+    isEditingRecommendedSolution = false;
+    recommendedSolutionDraft = '';
+
+    // Tool Catalog state
+    toolCatalog = [];
+    toolSearchTerm = '';
+    isToolDropdownOpen = false;
+    toolAddedMessage = '';
+    showToolAddedMessage = false;
+    toolAddedMessageTimer;
+
+    // Step 3 - Parts
     catalogParts = [];
     selectedParts = [];
     partSearchTerm = '';
@@ -36,7 +49,7 @@ export default class ManagerReviewWorkOrderWizard extends LightningElement {
     catalogPageSize = 12;
     visibleCatalogPartCount = 12;
 
-    // Regeneration state.
+    // Regeneration
     isRegenerating = false;
     showRegenerationFlow = false;
     showRegenerationConfirmation = false;
@@ -44,7 +57,7 @@ export default class ManagerReviewWorkOrderWizard extends LightningElement {
     regenerationStartedAt = null;
     minimumRegenerationDisplayMs = 1200;
 
-    // Approval state.
+    // Approval
     isApproving = false;
     approvalErrorMessage = '';
 
@@ -57,7 +70,9 @@ export default class ManagerReviewWorkOrderWizard extends LightningElement {
         this.errorMessage = null;
 
         try {
-            this.reviewData = await getReviewData({ workOrderId: this.recordId });
+            this.reviewData = await getReviewData({
+                workOrderId: this.recordId
+            });
 
             this.problemSummary = this.reviewData?.problemSummary || '';
             this.recommendedSolution = this.reviewData?.recommendedSolution || '';
@@ -68,7 +83,10 @@ export default class ManagerReviewWorkOrderWizard extends LightningElement {
             this.previousFailure = this.reviewData?.previousFailure === true;
             this.proposalPriority = this.reviewData?.priority || '';
 
-            await this.loadCompatibleParts();
+            await Promise.all([
+                this.loadToolCatalog(),
+                this.loadCompatibleParts()
+            ]);
 
             if (this.reviewData?.caseId) {
                 this.historicalResult = await getHistoricalRepairsForLwc({
@@ -80,6 +98,16 @@ export default class ManagerReviewWorkOrderWizard extends LightningElement {
             this.errorMessage = this.getErrorMessage(error);
         } finally {
             this.isLoading = false;
+        }
+    }
+
+    async loadToolCatalog() {
+        try {
+            this.toolCatalog = await getToolCatalog() || [];
+            this.syncRecommendedToolsWithCatalog();
+        } catch (error) {
+            this.toolCatalog = [];
+            throw error;
         }
     }
 
@@ -205,7 +233,6 @@ export default class ManagerReviewWorkOrderWizard extends LightningElement {
 
         if (status === 'closed') return 'case-status-badge case-status-closed';
         if (status === 'waiting on parts') return 'case-status-badge case-status-waiting';
-
         if (status === 'working' || status === 'in progress') {
             return 'case-status-badge case-status-working';
         }
@@ -232,8 +259,9 @@ export default class ManagerReviewWorkOrderWizard extends LightningElement {
     get precedentHeading() {
         const count = this.precedentCount;
 
-        if (count === 1) return 'Historical Precedent · 1 similar repair';
-        return `Historical Precedent · ${count} similar repairs`;
+        return count === 1
+            ? 'Historical Precedent · 1 similar repair'
+            : `Historical Precedent · ${count} similar repairs`;
     }
 
     get precedents() {
@@ -242,16 +270,19 @@ export default class ManagerReviewWorkOrderWizard extends LightningElement {
         return this.historicalResult.precedents.map((precedent, index) => ({
             ...precedent,
             displayNumber: index + 1,
-            machineLabel: [precedent.manufacturer, precedent.model].filter(Boolean).join(' '),
+            machineLabel: [precedent.manufacturer, precedent.model]
+                .filter(Boolean)
+                .join(' '),
             sameAssetLabel: precedent.sameAsset ? 'Same Asset' : 'Different Asset',
             sameAssetClass: precedent.sameAsset
                 ? 'precedent-badge same-asset'
                 : 'precedent-badge different-asset',
-            hasSuccessfulRepair: Boolean(precedent.successfulRepair),
+            hasProblemSummary: Boolean(precedent.problemSummary),
             hasRootCause: Boolean(precedent.rootCause),
-            hasPartsUsed: Boolean(precedent.partsUsed),
-            hasTechnicianNotes: Boolean(precedent.technicianNotes),
-            hasLaborHours: precedent.laborHours !== null && precedent.laborHours !== undefined
+            hasSuccessfulRepair: Boolean(precedent.successfulRepair),
+            hasLaborHours:
+                precedent.laborHours !== null &&
+                precedent.laborHours !== undefined
         }));
     }
 
@@ -260,8 +291,112 @@ export default class ManagerReviewWorkOrderWizard extends LightningElement {
             return 'Historical repair information is not available.';
         }
 
-        return this.historicalResult.statusMessage ||
-            'No relevant historical repair precedent was identified.';
+        return (
+            this.historicalResult.statusMessage ||
+            'No relevant historical repair precedent was identified.'
+        );
+    }
+
+    // =========================================================
+    // Step 1 - Manager Edits
+    // =========================================================
+
+    handleEditProblemSummary() {
+        if (this.isRegenerating) return;
+
+        this.problemSummaryDraft = this.problemSummary || '';
+        this.isEditingProblemSummary = true;
+
+        this.syncAssessmentEditInput(
+            '.problem-summary-edit-input',
+            this.problemSummaryDraft
+        );
+    }
+
+    handleProblemSummaryDraftChange(event) {
+        this.problemSummaryDraft = event.target.value || '';
+    }
+
+    handleSaveProblemSummary() {
+        const value = this.problemSummaryDraft.trim();
+
+        if (!value) {
+            this.dispatchEvent(
+                new ShowToastEvent({
+                    title: 'Problem Summary Required',
+                    message: 'Problem Summary cannot be blank.',
+                    variant: 'error'
+                })
+            );
+            return;
+        }
+
+        this.problemSummary = value;
+        this.problemSummaryDraft = '';
+        this.isEditingProblemSummary = false;
+    }
+
+    handleCancelProblemSummaryEdit() {
+        this.problemSummaryDraft = '';
+        this.isEditingProblemSummary = false;
+    }
+
+    handleEditRecommendedSolution() {
+        if (this.isRegenerating) return;
+
+        this.recommendedSolutionDraft = this.recommendedSolution || '';
+        this.isEditingRecommendedSolution = true;
+
+        this.syncAssessmentEditInput(
+            '.recommended-solution-edit-input',
+            this.recommendedSolutionDraft
+        );
+    }
+
+    handleRecommendedSolutionDraftChange(event) {
+        this.recommendedSolutionDraft = event.target.value || '';
+    }
+
+    handleSaveRecommendedSolution() {
+        const value = this.recommendedSolutionDraft.trim();
+
+        if (!value) {
+            this.dispatchEvent(
+                new ShowToastEvent({
+                    title: 'Recommended Solution Required',
+                    message: 'AI Recommended Solution cannot be blank.',
+                    variant: 'error'
+                })
+            );
+            return;
+        }
+
+        this.recommendedSolution = value;
+        this.recommendedSolutionDraft = '';
+        this.isEditingRecommendedSolution = false;
+    }
+
+    handleCancelRecommendedSolutionEdit() {
+        this.recommendedSolutionDraft = '';
+        this.isEditingRecommendedSolution = false;
+    }
+
+    syncAssessmentEditInput(selector, value) {
+        requestAnimationFrame(() => {
+            const input = this.template.querySelector(selector);
+
+            if (!input) return;
+
+            input.value = value || '';
+            input.focus();
+
+            const cursorPosition = input.value.length;
+
+            input.setSelectionRange(
+                cursorPosition,
+                cursorPosition
+            );
+        });
     }
 
     // =========================================================
@@ -269,7 +404,13 @@ export default class ManagerReviewWorkOrderWizard extends LightningElement {
     // =========================================================
 
     get regenerationFlowInputs() {
-        return [{ name: 'workOrderId', type: 'String', value: this.recordId }];
+        return [
+            {
+                name: 'workOrderId',
+                type: 'String',
+                value: this.recordId
+            }
+        ];
     }
 
     get regenerateIconClass() {
@@ -280,6 +421,7 @@ export default class ManagerReviewWorkOrderWizard extends LightningElement {
 
     handleRegenerate() {
         if (this.isRegenerating || !this.recordId) return;
+
         this.showRegenerationConfirmation = true;
     }
 
@@ -292,6 +434,8 @@ export default class ManagerReviewWorkOrderWizard extends LightningElement {
 
         this.showRegenerationConfirmation = false;
         this.isRegenerating = true;
+        this.isToolDropdownOpen = false;
+        this.toolSearchTerm = '';
         this.regenerationStartedAt = Date.now();
         this.regenerationErrorMessage = '';
         this.showRegenerationFlow = false;
@@ -309,55 +453,94 @@ export default class ManagerReviewWorkOrderWizard extends LightningElement {
             return;
         }
 
-        if (status !== 'FINISHED_SCREEN' && status !== 'FINISHED') return;
+        if (
+            status !== 'FINISHED_SCREEN' &&
+            status !== 'FINISHED'
+        ) {
+            return;
+        }
 
         try {
             const outputs = event.detail.outputVariables || [];
 
             const getOutput = name => {
-                const output = outputs.find(item => item.name === name);
-                return output ? output.value : null;
+                const output = outputs.find(
+                    item => item.name === name
+                );
+
+                return output
+                    ? output.value
+                    : null;
             };
 
-            this.problemSummary = getOutput('outProblemSummary') ?? this.problemSummary;
-            this.recommendedFixSummary = getOutput('outRecommendedFixSummary') ?? this.recommendedFixSummary;
-            this.recommendedSolution = getOutput('outRecommendedSolution') ?? this.recommendedSolution;
-            this.technicianNotes = getOutput('outTechnicianNotes') ?? this.technicianNotes;
+            this.problemSummary =
+                getOutput('outProblemSummary') ??
+                this.problemSummary;
 
-            const regeneratedTools = getOutput('outRecommendedTools');
+            this.recommendedFixSummary =
+                getOutput('outRecommendedFixSummary') ??
+                this.recommendedFixSummary;
 
-            if (regeneratedTools !== null && regeneratedTools !== undefined) {
-                this.recommendedTools = this.parseRecommendedTools(regeneratedTools);
-            }
+            this.recommendedSolution =
+                getOutput('outRecommendedSolution') ??
+                this.recommendedSolution;
 
-            this.recommendedParts = getOutput('outRecommendedParts') ?? this.recommendedParts;
+            this.technicianNotes =
+                getOutput('outTechnicianNotes') ??
+                this.technicianNotes;
 
-            const regeneratedPreviousFailure = getOutput('outPreviousFailure');
+            this.recommendedParts =
+                getOutput('outRecommendedParts') ??
+                this.recommendedParts;
 
-            if (regeneratedPreviousFailure !== null && regeneratedPreviousFailure !== undefined) {
+            const regeneratedPreviousFailure =
+                getOutput('outPreviousFailure');
+
+            if (
+                regeneratedPreviousFailure !== null &&
+                regeneratedPreviousFailure !== undefined
+            ) {
                 this.previousFailure =
                     regeneratedPreviousFailure === true ||
                     regeneratedPreviousFailure === 'true';
             }
 
-            this.proposalPriority = getOutput('outPriority') ?? this.proposalPriority;
+            this.proposalPriority =
+                getOutput('outPriority') ??
+                this.proposalPriority;
+
+            this.isEditingProblemSummary = false;
+            this.problemSummaryDraft = '';
+            this.isEditingRecommendedSolution = false;
+            this.recommendedSolutionDraft = '';
 
             if (this.reviewData?.caseId) {
-                this.historicalResult = await getHistoricalRepairsForLwc({
-                    caseId: this.reviewData.caseId,
-                    maxResults: 3
-                });
+                this.historicalResult =
+                    await getHistoricalRepairsForLwc({
+                        caseId:
+                            this.reviewData.caseId,
+                        maxResults:
+                            3
+                    });
             }
 
-            const elapsed = Date.now() - (this.regenerationStartedAt || Date.now());
-            const remaining = Math.max(
-                0,
-                this.minimumRegenerationDisplayMs - elapsed
-            );
+            const elapsed =
+                Date.now() -
+                (this.regenerationStartedAt || Date.now());
+
+            const remaining =
+                Math.max(
+                    0,
+                    this.minimumRegenerationDisplayMs -
+                        elapsed
+                );
 
             if (remaining > 0) {
                 await new Promise(resolve => {
-                    setTimeout(resolve, remaining);
+                    setTimeout(
+                        resolve,
+                        remaining
+                    );
                 });
             }
 
@@ -399,76 +582,283 @@ export default class ManagerReviewWorkOrderWizard extends LightningElement {
     }
 
     handleRecommendedFixChange(event) {
-        this.recommendedFixSummary = event.target.value || '';
+        this.recommendedFixSummary =
+            event.target.value || '';
     }
 
     syncRecommendedFixSummaryInput() {
         requestAnimationFrame(() => {
-            const input = this.template.querySelector('.fix-summary-input');
-            if (input) input.value = this.recommendedFixSummary || '';
+            const input =
+                this.template.querySelector(
+                    '.fix-summary-input'
+                );
+
+            if (input) {
+                input.value =
+                    this.recommendedFixSummary || '';
+            }
         });
     }
 
-    handleNewToolChange(event) {
-        this.newToolName = event.target.value || '';
+    get availableToolOptions() {
+        const selectedNames =
+            new Set(
+                this.recommendedTools.map(
+                    tool =>
+                        (tool.name || '')
+                            .trim()
+                            .toLowerCase()
+                )
+            );
+
+        const searchTerm =
+            (this.toolSearchTerm || '')
+                .trim()
+                .toLowerCase();
+
+        return this.toolCatalog.filter(tool => {
+            const toolName =
+                (tool.name || '')
+                    .trim()
+                    .toLowerCase();
+
+            if (selectedNames.has(toolName)) {
+                return false;
+            }
+
+            if (!searchTerm) {
+                return true;
+            }
+
+            return toolName.includes(searchTerm);
+        });
     }
 
-    handleAddTool() {
-        const toolName = this.newToolName.trim();
+    get hasAvailableToolOptions() {
+        return this.availableToolOptions.length > 0;
+    }
 
-        if (!toolName) return;
+    get toolPickerLabel() {
+        return 'Add tools...';
+    }
 
-        const alreadyExists = this.recommendedTools.some(
-            tool => tool.name.toLowerCase() === toolName.toLowerCase()
-        );
+    get toolPickerClass() {
+        return this.isToolDropdownOpen
+            ? 'tool-picker tool-picker-open'
+            : 'tool-picker';
+    }
+
+    get toolPickerChevronClass() {
+        return this.isToolDropdownOpen
+            ? 'tool-picker-chevron tool-picker-chevron-open'
+            : 'tool-picker-chevron';
+    }
+
+    handleToggleToolDropdown() {
+        if (this.isRegenerating) return;
+
+        this.isToolDropdownOpen =
+            !this.isToolDropdownOpen;
+
+        if (this.isToolDropdownOpen) {
+            this.toolSearchTerm = '';
+
+            requestAnimationFrame(() => {
+                const searchInput =
+                    this.template.querySelector(
+                        '.tool-picker-search-input'
+                    );
+
+                if (searchInput) {
+                    searchInput.focus();
+                }
+            });
+        }
+    }
+
+    handleToolSearchChange(event) {
+        this.toolSearchTerm =
+            event.target.value || '';
+    }
+
+    handleToolSearchKeyDown(event) {
+        if (event.key !== 'Escape') return;
+
+        event.preventDefault();
+
+        this.isToolDropdownOpen = false;
+        this.toolSearchTerm = '';
+    }
+
+    handleToolOptionClick(event) {
+        if (this.isRegenerating) return;
+
+        const toolId =
+            event.currentTarget.dataset.id;
+
+        const selectedTool =
+            this.toolCatalog.find(
+                tool => tool.id === toolId
+            );
+
+        if (!selectedTool) return;
+
+        const alreadyExists =
+            this.recommendedTools.some(
+                tool =>
+                    (tool.name || '')
+                        .trim()
+                        .toLowerCase() ===
+                    (selectedTool.name || '')
+                        .trim()
+                        .toLowerCase()
+            );
 
         if (!alreadyExists) {
             this.recommendedTools = [
                 ...this.recommendedTools,
                 {
-                    id: this.createToolId(toolName),
-                    name: toolName
+                    id: selectedTool.id,
+                    name: selectedTool.name
                 }
             ];
+
+            this.showToolAddedConfirmation(
+                selectedTool.name
+            );
         }
 
-        this.newToolName = '';
+        this.toolSearchTerm = '';
+        this.isToolDropdownOpen = true;
+
+        requestAnimationFrame(() => {
+            const searchInput =
+                this.template.querySelector(
+                    '.tool-picker-search-input'
+                );
+
+            if (searchInput) {
+                searchInput.focus();
+            }
+        });
     }
 
-    handleToolKeyDown(event) {
-        if (event.key === 'Enter') {
-            event.preventDefault();
-            this.handleAddTool();
+    showToolAddedConfirmation(toolName) {
+        if (this.toolAddedMessageTimer) {
+            clearTimeout(
+                this.toolAddedMessageTimer
+            );
         }
+
+        this.toolAddedMessage =
+            `${toolName} added`;
+
+        this.showToolAddedMessage = true;
+
+        this.toolAddedMessageTimer =
+            setTimeout(() => {
+                this.showToolAddedMessage = false;
+                this.toolAddedMessage = '';
+                this.toolAddedMessageTimer = undefined;
+            }, 1600);
     }
 
     handleRemoveTool(event) {
-        const toolId = event.currentTarget.dataset.id;
-        this.recommendedTools = this.recommendedTools.filter(
-            tool => tool.id !== toolId
-        );
+        const toolId =
+            event.currentTarget.dataset.id;
+
+        this.recommendedTools =
+            this.recommendedTools.filter(
+                tool => tool.id !== toolId
+            );
     }
 
     parseRecommendedTools(value) {
-        if (!value || value.trim().toLowerCase() === 'none identified') {
+        if (
+            !value ||
+            value
+                .trim()
+                .toLowerCase() ===
+                'none identified'
+        ) {
             return [];
         }
+
+        const seen = new Set();
 
         return value
             .split(/\r?\n|,|;/)
             .map(tool => tool.trim())
             .filter(Boolean)
+            .filter(tool => {
+                const key =
+                    tool.toLowerCase();
+
+                if (seen.has(key)) {
+                    return false;
+                }
+
+                seen.add(key);
+
+                return true;
+            })
             .map(tool => ({
-                id: this.createToolId(tool),
-                name: tool
+                id:
+                    this.createToolId(tool),
+                name:
+                    tool
             }));
+    }
+
+    syncRecommendedToolsWithCatalog() {
+        if (
+            !this.toolCatalog.length ||
+            !this.recommendedTools.length
+        ) {
+            return;
+        }
+
+        const catalogByName =
+            new Map(
+                this.toolCatalog.map(tool => [
+                    (tool.name || '')
+                        .trim()
+                        .toLowerCase(),
+                    tool
+                ])
+            );
+
+        this.recommendedTools =
+            this.recommendedTools.map(tool => {
+                const catalogTool =
+                    catalogByName.get(
+                        (tool.name || '')
+                            .trim()
+                            .toLowerCase()
+                    );
+
+                return catalogTool
+                    ? {
+                        id:
+                            catalogTool.id,
+                        name:
+                            catalogTool.name
+                    }
+                    : tool;
+            });
     }
 
     createToolId(toolName) {
         return toolName
             .toLowerCase()
-            .replace(/[^a-z0-9]+/g, '-')
-            .replace(/^-|-$/g, '');
+            .replace(
+                /[^a-z0-9]+/g,
+                '-'
+            )
+            .replace(
+                /^-|-$/g,
+                ''
+            );
     }
 
     // =========================================================
@@ -476,8 +866,11 @@ export default class ManagerReviewWorkOrderWizard extends LightningElement {
     // =========================================================
 
     async loadCompatibleParts() {
-        const manufacturer = this.reviewData?.manufacturer;
-        const model = this.reviewData?.model;
+        const manufacturer =
+            this.reviewData?.manufacturer;
+
+        const model =
+            this.reviewData?.model;
 
         if (!manufacturer || !model) {
             this.catalogParts = [];
@@ -488,18 +881,29 @@ export default class ManagerReviewWorkOrderWizard extends LightningElement {
         this.partsErrorMessage = '';
 
         try {
-            const parts = await getCompatibleParts({ manufacturer, model });
+            const parts =
+                await getCompatibleParts({
+                    manufacturer,
+                    model
+                });
 
-            this.visibleCatalogPartCount = this.catalogPageSize;
+            this.visibleCatalogPartCount =
+                this.catalogPageSize;
 
-            this.catalogParts = (parts || []).map(part => ({
-                ...part,
-                selected: this.selectedParts.some(
-                    selected => selected.id === part.id
-                )
-            }));
+            this.catalogParts =
+                (parts || []).map(part => ({
+                    ...part,
+                    selected:
+                        this.selectedParts.some(
+                            selected =>
+                                selected.id ===
+                                part.id
+                        )
+                }));
         } catch (error) {
-            this.partsErrorMessage = this.getErrorMessage(error);
+            this.partsErrorMessage =
+                this.getErrorMessage(error);
+
             this.catalogParts = [];
         } finally {
             this.isLoadingParts = false;
@@ -507,10 +911,15 @@ export default class ManagerReviewWorkOrderWizard extends LightningElement {
     }
 
     get hasRecommendedParts() {
-        const value = (this.recommendedParts || '').trim();
+        const value =
+            (this.recommendedParts || '')
+                .trim();
 
-        return Boolean(value) &&
-            value.toLowerCase() !== 'none identified';
+        return (
+            Boolean(value) &&
+            value.toLowerCase() !==
+                'none identified'
+        );
     }
 
     get recommendedPartsDisplay() {
@@ -520,19 +929,27 @@ export default class ManagerReviewWorkOrderWizard extends LightningElement {
     }
 
     get filteredCatalogParts() {
-        const searchTerm = (this.partSearchTerm || '').trim().toLowerCase();
+        const searchTerm =
+            (this.partSearchTerm || '')
+                .trim()
+                .toLowerCase();
 
-        if (!searchTerm) return this.catalogParts;
+        if (!searchTerm) {
+            return this.catalogParts;
+        }
 
-        return this.catalogParts.filter(part =>
-            [
-                part.name,
-                part.partNumber,
-                part.category,
-                part.compatibleModel
-            ].some(value =>
-                (value || '').toLowerCase().includes(searchTerm)
-            )
+        return this.catalogParts.filter(
+            part =>
+                [
+                    part.name,
+                    part.partNumber,
+                    part.category,
+                    part.compatibleModel
+                ].some(value =>
+                    (value || '')
+                        .toLowerCase()
+                        .includes(searchTerm)
+                )
         );
     }
 
@@ -544,16 +961,25 @@ export default class ManagerReviewWorkOrderWizard extends LightningElement {
     }
 
     get hasMoreCatalogParts() {
-        return this.visibleCatalogPartCount < this.filteredCatalogParts.length;
+        return (
+            this.visibleCatalogPartCount <
+            this.filteredCatalogParts.length
+        );
     }
 
     get canShowLessCatalogParts() {
-        return this.visibleCatalogPartCount > this.catalogPageSize;
+        return (
+            this.visibleCatalogPartCount >
+            this.catalogPageSize
+        );
     }
 
     get catalogDisplayCountLabel() {
-        const visibleCount = this.visibleCatalogParts.length;
-        const totalCount = this.filteredCatalogParts.length;
+        const visibleCount =
+            this.visibleCatalogParts.length;
+
+        const totalCount =
+            this.filteredCatalogParts.length;
 
         return `Showing ${visibleCount} of ${totalCount}`;
     }
@@ -567,35 +993,54 @@ export default class ManagerReviewWorkOrderWizard extends LightningElement {
     }
 
     get selectedPartCountLabel() {
-        const count = this.selectedParts.length;
+        const count =
+            this.selectedParts.length;
+
         return `${count} selected`;
     }
 
     handlePartSearchChange(event) {
-        this.partSearchTerm = event.target.value || '';
-        this.visibleCatalogPartCount = this.catalogPageSize;
+        this.partSearchTerm =
+            event.target.value || '';
+
+        this.visibleCatalogPartCount =
+            this.catalogPageSize;
     }
 
     handleShowMoreCatalogParts() {
-        this.visibleCatalogPartCount = Math.min(
-            this.visibleCatalogPartCount + this.catalogPageSize,
-            this.filteredCatalogParts.length
-        );
+        this.visibleCatalogPartCount =
+            Math.min(
+                this.visibleCatalogPartCount +
+                    this.catalogPageSize,
+                this.filteredCatalogParts.length
+            );
     }
 
     handleShowLessCatalogParts() {
-        this.visibleCatalogPartCount = this.catalogPageSize;
+        this.visibleCatalogPartCount =
+            this.catalogPageSize;
     }
 
     handlePartSelection(event) {
-        const partId = event.currentTarget.dataset.id;
-        const isSelected = event.target.checked;
-        const part = this.catalogParts.find(item => item.id === partId);
+        const partId =
+            event.currentTarget.dataset.id;
+
+        const isSelected =
+            event.target.checked;
+
+        const part =
+            this.catalogParts.find(
+                item => item.id === partId
+            );
 
         if (!part) return;
 
         if (isSelected) {
-            if (!this.selectedParts.some(item => item.id === partId)) {
+            if (
+                !this.selectedParts.some(
+                    item => item.id === partId
+                )
+            ) {
                 this.selectedParts = [
                     ...this.selectedParts,
                     {
@@ -605,51 +1050,73 @@ export default class ManagerReviewWorkOrderWizard extends LightningElement {
                 ];
             }
         } else {
-            this.selectedParts = this.selectedParts.filter(
-                item => item.id !== partId
-            );
+            this.selectedParts =
+                this.selectedParts.filter(
+                    item =>
+                        item.id !== partId
+                );
         }
 
         this.syncCatalogSelectionState();
     }
 
     handlePartQuantityChange(event) {
-        const partId = event.currentTarget.dataset.id;
-        const parsedQuantity = Number.parseInt(event.target.value, 10);
+        const partId =
+            event.currentTarget.dataset.id;
+
+        const parsedQuantity =
+            Number.parseInt(
+                event.target.value,
+                10
+            );
+
         const quantity =
-            Number.isFinite(parsedQuantity) && parsedQuantity > 0
+            Number.isFinite(
+                parsedQuantity
+            ) &&
+            parsedQuantity > 0
                 ? parsedQuantity
                 : 1;
 
-        this.selectedParts = this.selectedParts.map(part =>
-            part.id === partId
-                ? {
-                    ...part,
-                    quantity
-                }
-                : part
-        );
+        this.selectedParts =
+            this.selectedParts.map(
+                part =>
+                    part.id === partId
+                        ? {
+                            ...part,
+                            quantity
+                        }
+                        : part
+            );
     }
 
     handleRemovePart(event) {
-        const partId = event.currentTarget.dataset.id;
+        const partId =
+            event.currentTarget.dataset.id;
 
-        this.selectedParts = this.selectedParts.filter(
-            part => part.id !== partId
-        );
+        this.selectedParts =
+            this.selectedParts.filter(
+                part =>
+                    part.id !== partId
+            );
 
         this.syncCatalogSelectionState();
     }
 
     syncCatalogSelectionState() {
-        const selectedIds = new Set(
-            this.selectedParts.map(part => part.id)
-        );
+        const selectedIds =
+            new Set(
+                this.selectedParts.map(
+                    part => part.id
+                )
+            );
 
-        this.catalogParts = this.catalogParts.map(part => ({
-            ...part,
-            selected: selectedIds.has(part.id)
-        }));
+        this.catalogParts =
+            this.catalogParts.map(part => ({
+                ...part,
+                selected:
+                    selectedIds.has(part.id)
+            }));
     }
 
     // =========================================================
@@ -657,7 +1124,8 @@ export default class ManagerReviewWorkOrderWizard extends LightningElement {
     // =========================================================
 
     get approvalToolCountLabel() {
-        const count = this.recommendedTools.length;
+        const count =
+            this.recommendedTools.length;
 
         return count === 1
             ? '1 tool'
@@ -665,7 +1133,8 @@ export default class ManagerReviewWorkOrderWizard extends LightningElement {
     }
 
     get approvalPartCountLabel() {
-        const count = this.selectedParts.length;
+        const count =
+            this.selectedParts.length;
 
         return count === 1
             ? '1 part selected'
@@ -691,38 +1160,60 @@ export default class ManagerReviewWorkOrderWizard extends LightningElement {
     }
 
     get isApproveDisabled() {
-        return this.isApproving || this.isRegenerating;
+        return (
+            this.isApproving ||
+            this.isRegenerating
+        );
     }
 
     async handleApproveWorkOrder() {
-        if (this.isApproveDisabled || !this.recordId) return;
+        if (
+            this.isApproveDisabled ||
+            !this.recordId
+        ) {
+            return;
+        }
 
         this.isApproving = true;
         this.approvalErrorMessage = '';
 
         try {
-            const selectedPartsJson = JSON.stringify(
-                this.selectedParts.map(part => ({
-                    partCatalogId: part.id,
-                    quantity: part.quantity
-                }))
-            );
+            const selectedPartsJson =
+                JSON.stringify(
+                    this.selectedParts.map(
+                        part => ({
+                            partCatalogId:
+                                part.id,
+                            quantity:
+                                part.quantity
+                        })
+                    )
+                );
 
-            const recommendedTools = this.recommendedTools
-                .map(tool => tool.name)
-                .join('\n');
+            const recommendedTools =
+                this.recommendedTools
+                    .map(tool => tool.name)
+                    .join('\n');
 
-            const result = await approveWorkOrder({
-                workOrderId: this.recordId,
-                problemSummary: this.problemSummary,
-                recommendedSolution: this.recommendedSolution,
-                recommendedFixSummary: this.recommendedFixSummary,
-                recommendedTools,
-                recommendedParts: this.recommendedParts,
-                previousFailure: this.previousFailure,
-                priority: this.priority,
-                selectedPartsJson
-            });
+            const result =
+                await approveWorkOrder({
+                    workOrderId:
+                        this.recordId,
+                    problemSummary:
+                        this.problemSummary,
+                    recommendedSolution:
+                        this.recommendedSolution,
+                    recommendedFixSummary:
+                        this.recommendedFixSummary,
+                    recommendedTools,
+                    recommendedParts:
+                        this.recommendedParts,
+                    previousFailure:
+                        this.previousFailure,
+                    priority:
+                        this.priority,
+                    selectedPartsJson
+                });
 
             if (!result?.success) {
                 throw new Error(
@@ -734,36 +1225,51 @@ export default class ManagerReviewWorkOrderWizard extends LightningElement {
             if (this.reviewData) {
                 this.reviewData = {
                     ...this.reviewData,
-                    dispatchStatus: result.dispatchStatus
+                    dispatchStatus:
+                        result.dispatchStatus
                 };
             }
 
             this.dispatchEvent(
                 new ShowToastEvent({
-                    title: 'Work Order Approved',
-                    message: result.message,
-                    variant: 'success'
+                    title:
+                        'Work Order Approved',
+                    message:
+                        result.message,
+                    variant:
+                        'success'
                 })
             );
 
             this.dispatchEvent(
-                new CustomEvent('approved', {
-                    detail: {
-                        workOrderId: result.workOrderId,
-                        dispatchStatus: result.dispatchStatus,
-                        requestedPartCount: result.requestedPartCount,
-                        message: result.message
+                new CustomEvent(
+                    'approved',
+                    {
+                        detail: {
+                            workOrderId:
+                                result.workOrderId,
+                            dispatchStatus:
+                                result.dispatchStatus,
+                            requestedPartCount:
+                                result.requestedPartCount,
+                            message:
+                                result.message
+                        }
                     }
-                })
+                )
             );
         } catch (error) {
-            this.approvalErrorMessage = this.getErrorMessage(error);
+            this.approvalErrorMessage =
+                this.getErrorMessage(error);
 
             this.dispatchEvent(
                 new ShowToastEvent({
-                    title: 'Approval Failed',
-                    message: this.approvalErrorMessage,
-                    variant: 'error'
+                    title:
+                        'Approval Failed',
+                    message:
+                        this.approvalErrorMessage,
+                    variant:
+                        'error'
                 })
             );
         } finally {
@@ -798,7 +1304,9 @@ export default class ManagerReviewWorkOrderWizard extends LightningElement {
     }
 
     get stepTwoClass() {
-        if (this.currentStep === 2) return 'progress-step active';
+        if (this.currentStep === 2) {
+            return 'progress-step active';
+        }
 
         return this.currentStep > 2
             ? 'progress-step complete'
@@ -806,7 +1314,9 @@ export default class ManagerReviewWorkOrderWizard extends LightningElement {
     }
 
     get stepThreeClass() {
-        if (this.currentStep === 3) return 'progress-step active';
+        if (this.currentStep === 3) {
+            return 'progress-step active';
+        }
 
         return this.currentStep > 3
             ? 'progress-step complete'
@@ -825,7 +1335,11 @@ export default class ManagerReviewWorkOrderWizard extends LightningElement {
     }
 
     handleBack() {
-        const nextStep = Math.max(1, this.currentStep - 1);
+        const nextStep =
+            Math.max(
+                1,
+                this.currentStep - 1
+            );
 
         this.currentStep = nextStep;
 
@@ -843,7 +1357,9 @@ export default class ManagerReviewWorkOrderWizard extends LightningElement {
     }
 
     handleCancel() {
-        this.dispatchEvent(new CustomEvent('cancel'));
+        this.dispatchEvent(
+            new CustomEvent('cancel')
+        );
     }
 
     // =========================================================
@@ -851,8 +1367,13 @@ export default class ManagerReviewWorkOrderWizard extends LightningElement {
     // =========================================================
 
     getErrorMessage(error) {
-        if (error?.body?.message) return error.body.message;
-        if (error?.message) return error.message;
+        if (error?.body?.message) {
+            return error.body.message;
+        }
+
+        if (error?.message) {
+            return error.message;
+        }
 
         return 'The Work Order review could not be loaded.';
     }

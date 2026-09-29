@@ -9,7 +9,6 @@ export default class MillTrackPageHero extends LightningElement {
         this.currentPageReference = pageReference;
     }
 
-
     // =========================================================
     // Current Page Information
     // =========================================================
@@ -30,6 +29,21 @@ export default class MillTrackPageHero extends LightningElement {
         );
     }
 
+    get actionName() {
+        return (
+            this.currentPageReference?.attributes?.actionName ||
+            this.currentPageReference?.state?.actionName ||
+            ''
+        );
+    }
+
+    get recordId() {
+        return (
+            this.currentPageReference?.attributes?.recordId ||
+            this.currentPageReference?.state?.recordId ||
+            ''
+        );
+    }
 
     // =========================================================
     // Page Type Detection
@@ -45,13 +59,35 @@ export default class MillTrackPageHero extends LightningElement {
         );
     }
 
-    get isCasePage() {
+    get isCaseListPage() {
+        const objectName = this.objectApiName.toLowerCase();
+        const pageName = this.pageName.toLowerCase();
+        const actionName = this.actionName.toLowerCase();
+
+        return (
+            pageName === 'case_list__c' ||
+            pageName.includes('case_list') ||
+            (
+                objectName === 'case' &&
+                (
+                    actionName === 'list' ||
+                    !this.recordId
+                )
+            )
+        );
+    }
+
+    get isCaseDetailPage() {
         const objectName = this.objectApiName.toLowerCase();
         const pageName = this.pageName.toLowerCase();
 
         return (
-            objectName === 'case' ||
-            pageName === 'case_detail__c'
+            pageName === 'case_detail__c' ||
+            pageName.includes('case_detail') ||
+            (
+                objectName === 'case' &&
+                Boolean(this.recordId)
+            )
         );
     }
 
@@ -69,16 +105,16 @@ export default class MillTrackPageHero extends LightningElement {
         return this.pageName.toLowerCase() === 'report_an_issue__c';
     }
 
-
     // =========================================================
     // Main Page Content
     // =========================================================
 
     get pageTitle() {
         if (this.isAssetPage) return 'Milling Machine Details';
-        if (this.isCasePage) return 'Service Request Details';
+        if (this.isCaseListPage) return 'Service Requests';
+        if (this.isCaseDetailPage) return 'Service Request Details';
         if (this.isWorkOrderPage) return 'Service Visit Details';
-        if (this.isReportIssuePage) return 'Report a Machine Issue';
+        if (this.isReportIssuePage) return 'Request Service Assistance';
 
         return 'MillTrack Customer Portal';
     }
@@ -88,7 +124,11 @@ export default class MillTrackPageHero extends LightningElement {
             return 'Review your machine information, resources, maintenance plan, and service history in one place.';
         }
 
-        if (this.isCasePage) {
+        if (this.isCaseListPage) {
+            return 'View active requests, upcoming service visits, and completed MillTrack service history.';
+        }
+
+        if (this.isCaseDetailPage) {
             return 'Review the current status and details of your MillTrack service request.';
         }
 
@@ -103,14 +143,14 @@ export default class MillTrackPageHero extends LightningElement {
         return 'Manage your machines, service activity, and MillTrack support from one secure workspace.';
     }
 
-
     // =========================================================
     // Context Panel
     // =========================================================
 
     get contextEyebrow() {
         if (this.isAssetPage) return 'Machine Workspace';
-        if (this.isCasePage) return 'Service Request';
+        if (this.isCaseListPage) return 'Service Requests';
+        if (this.isCaseDetailPage) return 'Service Request';
         if (this.isWorkOrderPage) return 'Service Visit';
         if (this.isReportIssuePage) return 'Customer Support';
 
@@ -119,7 +159,8 @@ export default class MillTrackPageHero extends LightningElement {
 
     get contextTitle() {
         if (this.isAssetPage) return 'Machine Overview';
-        if (this.isCasePage) return 'Request Tracking';
+        if (this.isCaseListPage) return 'Request Center';
+        if (this.isCaseDetailPage) return 'Request Tracking';
         if (this.isWorkOrderPage) return 'Visit Tracking';
         if (this.isReportIssuePage) return 'Report an Issue';
 
@@ -131,7 +172,11 @@ export default class MillTrackPageHero extends LightningElement {
             return 'Details • Manual • Service History';
         }
 
-        if (this.isCasePage) {
+        if (this.isCaseListPage) {
+            return 'Open • Scheduled • Completed';
+        }
+
+        if (this.isCaseDetailPage) {
             return 'Status • Details • Updates';
         }
 

@@ -292,13 +292,17 @@
 
                         <div class="repair-grid">
                             <div class="repair-item repair-item-wide">
-                                <div class="content-label">Recommended Fix Summary</div>
+                                <div class="repair-item-heading">
+                                    <lightning-icon icon-name="utility:check" size="x-small"></lightning-icon>
+                                    <span>Recommended Fix Summary</span>
+                                </div>
+
                                 <div class="long-text">{recommendedFixSummary}</div>
                             </div>
 
                             <div class="repair-item">
                                 <div class="repair-item-heading">
-                                    <lightning-icon icon-name="utility:tools" size="x-small"></lightning-icon>
+                                    <lightning-icon icon-name="utility:settings" size="x-small"></lightning-icon>
                                     <span>Recommended Tools</span>
                                 </div>
 
@@ -425,7 +429,7 @@
                                         </div>
 
                                         <div class="related-item-name">{part.partName}</div>
-                                        <div class="related-item-meta">Quantity: {part.quantity}</div>
+                                        <div class="related-item-meta">{part.partNumber} · Quantity: {part.quantity}</div>
                                     </a>
                                 </template>
                             </div>

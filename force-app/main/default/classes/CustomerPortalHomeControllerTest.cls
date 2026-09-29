@@ -18,7 +18,10 @@ private class CustomerPortalHomeControllerTest {
             LIMIT 1
         ];
 
-        System.assert(!roles.isEmpty(), 'At least one User Role is required to create the portal test Account owner.');
+        System.assert(
+            !roles.isEmpty(),
+            'At least one User Role is required to create the portal test Account owner.'
+        );
 
         String ownerToken = uniqueToken();
 
@@ -50,7 +53,10 @@ private class CustomerPortalHomeControllerTest {
             OwnerId=accountOwner.Id
         );
 
-        insert new List<Account>{customerAccount, unrelatedAccount};
+        insert new List<Account>{
+            customerAccount,
+            unrelatedAccount
+        };
 
         Contact customerContact = new Contact(
             FirstName='Maya',
@@ -81,7 +87,10 @@ private class CustomerPortalHomeControllerTest {
             Machine_Status__c='Active'
         );
 
-        insert new List<Asset>{customerMachine, unrelatedMachine};
+        insert new List<Asset>{
+            customerMachine,
+            unrelatedMachine
+        };
 
         String caseOrigin = getFirstActivePicklistValue(Case.Origin);
 
@@ -97,7 +106,7 @@ private class CustomerPortalHomeControllerTest {
             Work_Order_Proposal_Created__c=true
         );
 
-        Case closedRequest = new Case(
+        Case completedRequest = new Case(
             AccountId=customerAccount.Id,
             ContactId=customerContact.Id,
             AssetId=customerMachine.Id,
@@ -109,7 +118,22 @@ private class CustomerPortalHomeControllerTest {
             Work_Order_Proposal_Created__c=true
         );
 
-        insert new List<Case>{openRequest, closedRequest};
+        Case unrelatedRequest = new Case(
+            AccountId=unrelatedAccount.Id,
+            AssetId=unrelatedMachine.Id,
+            Subject='Unrelated customer service request',
+            Description='This request belongs to another customer.',
+            Status='New',
+            Priority='Medium',
+            Origin=caseOrigin,
+            Work_Order_Proposal_Created__c=true
+        );
+
+        insert new List<Case>{
+            openRequest,
+            completedRequest,
+            unrelatedRequest
+        };
 
         String workOrderStatus = getFirstActivePicklistValue(WorkOrder.Status);
 
@@ -122,25 +146,44 @@ private class CustomerPortalHomeControllerTest {
             Status=workOrderStatus,
             Priority='Medium',
             Dispatch_Status__c='Ready_to_Assign',
+            Scheduled_Visit__c=System.now().addDays(3),
             Problem_Summary__c='Machine vibrates during milling.',
             Recommended_Fix_Summary__c='Inspect spindle and milling assembly before service.',
             OwnerId=accountOwner.Id
         );
 
-        WorkOrder cancelledWorkOrder = new WorkOrder(
+        WorkOrder completedWorkOrder = new WorkOrder(
             AccountId=customerAccount.Id,
             ContactId=customerContact.Id,
             AssetId=customerMachine.Id,
-            CaseId=closedRequest.Id,
-            Subject='Cancelled prior service',
+            CaseId=completedRequest.Id,
+            Subject='Previous completed service request',
             Status=workOrderStatus,
             Priority='Low',
-            Dispatch_Status__c='Cancelled',
-            Problem_Summary__c='Prior service request.',
+            Dispatch_Status__c='Completed',
+            Scheduled_Visit__c=System.now().addDays(-5),
+            Problem_Summary__c='Previously resolved machine issue.',
+            Technician_Notes__c='Technician completed the service and verified normal machine operation.',
             OwnerId=accountOwner.Id
         );
 
-        insert new List<WorkOrder>{activeWorkOrder, cancelledWorkOrder};
+        WorkOrder unrelatedWorkOrder = new WorkOrder(
+            AccountId=unrelatedAccount.Id,
+            AssetId=unrelatedMachine.Id,
+            CaseId=unrelatedRequest.Id,
+            Subject='Unrelated customer work order',
+            Status=workOrderStatus,
+            Priority='Medium',
+            Dispatch_Status__c='Assigned',
+            Problem_Summary__c='This work order belongs to another customer.',
+            OwnerId=accountOwner.Id
+        );
+
+        insert new List<WorkOrder>{
+            activeWorkOrder,
+            completedWorkOrder,
+            unrelatedWorkOrder
+        };
 
         List<Profile> customerProfiles = [
             SELECT Id
@@ -200,7 +243,7 @@ private class CustomerPortalHomeControllerTest {
     }
 
     @IsTest
-    static void testGetHomeDataReturnsAuthorizedCurrentRecords() {
+    static void testGetHomeDataReturnsAuthorizedRecentRecords() {
         Contact customerContact = [
             SELECT Id
             FROM Contact
@@ -217,30 +260,277 @@ private class CustomerPortalHomeControllerTest {
 
         System.runAs(portalUser) {
             Test.startTest();
-            CustomerPortalHomeController.HomeData homeData = CustomerPortalHomeController.getHomeData();
+            CustomerPortalHomeController.HomeData homeData =
+                CustomerPortalHomeController.getHomeData();
             Test.stopTest();
 
-            System.assertNotEquals(null, homeData, 'Home data should be returned.');
-            System.assertEquals('Maya', homeData.customerFirstName, 'The greeting should use the customer Contact first name.');
+            System.assertNotEquals(
+                null,
+                homeData,
+                'Home data should be returned.'
+            );
 
-            System.assertEquals(1, homeData.machineCount, 'Only the customer authorized machine should be returned.');
-            System.assertEquals(1, homeData.machines.size(), 'Only one customer machine should be visible.');
-            System.assertEquals('Apex DWX-52D', homeData.machines[0].name);
-            System.assertEquals('HOME-DWX-001', homeData.machines[0].serialNumber);
+            System.assertEquals(
+                'Maya',
+                homeData.customerFirstName,
+                'The greeting should use the customer Contact first name.'
+            );
 
-            System.assertEquals(1, homeData.openServiceRequestCount, 'Closed Service Requests should not count as open.');
-            System.assertEquals(1, homeData.serviceRequests.size(), 'Only open Service Requests should appear on Home.');
-            System.assertEquals('Spindle vibration during milling', homeData.serviceRequests[0].subject);
-            System.assertEquals('New', homeData.serviceRequests[0].status);
+            System.assertEquals(
+                1,
+                homeData.machineCount,
+                'Only the customer authorized machine should be returned.'
+            );
 
-            System.assertEquals(1, homeData.activeWorkOrderCount, 'Cancelled Work Orders should not count as active.');
-            System.assertEquals(1, homeData.workOrders.size(), 'Only active Work Orders should appear on Home.');
-            System.assertEquals('Spindle vibration during milling', homeData.workOrders[0].subject);
-            System.assertEquals('Ready_to_Assign', homeData.workOrders[0].dispatchStatus);
+            System.assertEquals(
+                1,
+                homeData.machines.size(),
+                'Only one customer machine should be visible.'
+            );
+
+            System.assertEquals(
+                'Apex DWX-52D',
+                homeData.machines[0].name
+            );
+
+            System.assertEquals(
+                'HOME-DWX-001',
+                homeData.machines[0].serialNumber
+            );
+
+            System.assertEquals(
+                2,
+                homeData.recentServiceRequestCount,
+                'Both open and completed customer Service Requests should count as recent requests.'
+            );
+
+            System.assertEquals(
+                2,
+                homeData.serviceRequests.size(),
+                'Both open and completed customer Service Requests should appear on Home.'
+            );
+
+            Map<String, CustomerPortalHomeController.ServiceRequestSummary>
+                requestsBySubject =
+                    new Map<String, CustomerPortalHomeController.ServiceRequestSummary>();
+
+            for (
+                CustomerPortalHomeController.ServiceRequestSummary serviceRequest :
+                homeData.serviceRequests
+            ) {
+                requestsBySubject.put(
+                    serviceRequest.subject,
+                    serviceRequest
+                );
+
+                System.assertNotEquals(
+                    null,
+                    serviceRequest.caseNumber,
+                    'Each Service Request should include its Case Number.'
+                );
+
+                System.assertEquals(
+                    'Apex DWX-52D',
+                    serviceRequest.assetName,
+                    'Each Service Request should return the authorized machine.'
+                );
+            }
+
+            System.assert(
+                requestsBySubject.containsKey('Spindle vibration during milling'),
+                'The open Service Request should be returned.'
+            );
+
+            System.assert(
+                requestsBySubject.containsKey('Previous completed service request'),
+                'The completed Service Request should be returned.'
+            );
+
+            System.assert(
+                !requestsBySubject.containsKey('Unrelated customer service request'),
+                'Service Requests belonging to another customer must not be returned.'
+            );
+
+            CustomerPortalHomeController.ServiceRequestSummary activeRequest =
+                requestsBySubject.get('Spindle vibration during milling');
+
+            System.assertEquals(
+                'New',
+                activeRequest.caseStatus,
+                'The raw Case status should remain available when needed.'
+            );
+
+            System.assertEquals(
+                'Ready_to_Assign',
+                activeRequest.dispatchStatus,
+                'The related Work Order dispatch status should be included in the Service Request summary.'
+            );
+
             System.assertEquals(
                 'Under Review',
-                homeData.workOrders[0].customerStatus,
-                'Internal Ready_to_Assign should be translated for the customer.'
+                activeRequest.customerStatus,
+                'Ready_to_Assign should be translated into the unified customer status.'
+            );
+
+            System.assertNotEquals(
+                null,
+                activeRequest.workOrderId,
+                'The Service Request should include its related Work Order Id.'
+            );
+
+            System.assertNotEquals(
+                null,
+                activeRequest.workOrderNumber,
+                'The Service Request should include its related Work Order Number.'
+            );
+
+            System.assertNotEquals(
+                null,
+                activeRequest.scheduledVisit,
+                'The Service Request should include the scheduled visit from its related Work Order.'
+            );
+
+            System.assertEquals(
+                'Medium',
+                activeRequest.priority
+            );
+
+            System.assertNotEquals(
+                null,
+                activeRequest.createdDate
+            );
+
+            CustomerPortalHomeController.ServiceRequestSummary completedRequest =
+                requestsBySubject.get('Previous completed service request');
+
+            System.assertEquals(
+                'Closed',
+                completedRequest.caseStatus,
+                'The completed Service Request should retain its raw Case status.'
+            );
+
+            System.assertEquals(
+                'Completed',
+                completedRequest.dispatchStatus,
+                'The completed Service Request should include its completed Work Order state.'
+            );
+
+            System.assertEquals(
+                'Completed',
+                completedRequest.customerStatus,
+                'A completed Work Order should produce the customer-facing Completed status.'
+            );
+
+            System.assertNotEquals(
+                null,
+                completedRequest.workOrderId,
+                'The completed Service Request should include its related Work Order.'
+            );
+
+            System.assertNotEquals(
+                null,
+                completedRequest.workOrderNumber,
+                'The completed Service Request should include its Work Order Number.'
+            );
+
+            System.assertNotEquals(
+                null,
+                completedRequest.closedDate,
+                'The completed Service Request should include the Case closed date.'
+            );
+        }
+    }
+
+    @IsTest
+    static void testServiceRequestWithoutWorkOrderUsesCaseStatus() {
+        Account customerAccount = [
+            SELECT Id
+            FROM Account
+            WHERE Name = 'MillTrack Portal Home Customer'
+            LIMIT 1
+        ];
+
+        Contact customerContact = [
+            SELECT Id
+            FROM Contact
+            WHERE Email = 'maya.portal.home@milltrack.test'
+            LIMIT 1
+        ];
+
+        Asset customerMachine = [
+            SELECT Id
+            FROM Asset
+            WHERE AccountId = :customerAccount.Id
+            LIMIT 1
+        ];
+
+        User portalUser = [
+            SELECT Id
+            FROM User
+            WHERE ContactId = :customerContact.Id
+            LIMIT 1
+        ];
+
+        String caseOrigin = getFirstActivePicklistValue(Case.Origin);
+
+        Case requestWithoutWorkOrder = new Case(
+            AccountId=customerAccount.Id,
+            ContactId=customerContact.Id,
+            AssetId=customerMachine.Id,
+            Subject='New request without work order',
+            Description='Newly created request awaiting Work Order creation.',
+            Status='New',
+            Priority='Medium',
+            Origin=caseOrigin,
+            Work_Order_Proposal_Created__c=true
+        );
+
+        insert requestWithoutWorkOrder;
+
+        System.runAs(portalUser) {
+            Test.startTest();
+            CustomerPortalHomeController.HomeData homeData =
+                CustomerPortalHomeController.getHomeData();
+            Test.stopTest();
+
+            CustomerPortalHomeController.ServiceRequestSummary matchingRequest;
+
+            for (
+                CustomerPortalHomeController.ServiceRequestSummary serviceRequest :
+                homeData.serviceRequests
+            ) {
+                if (serviceRequest.id == requestWithoutWorkOrder.Id) {
+                    matchingRequest = serviceRequest;
+                    break;
+                }
+            }
+
+            System.assertNotEquals(
+                null,
+                matchingRequest,
+                'A Service Request should still appear before a Work Order has been created.'
+            );
+
+            System.assertEquals(
+                'New',
+                matchingRequest.caseStatus
+            );
+
+            System.assertEquals(
+                'Request Received',
+                matchingRequest.customerStatus,
+                'Without a Work Order, the customer status should fall back to the Case lifecycle.'
+            );
+
+            System.assertEquals(
+                null,
+                matchingRequest.workOrderId,
+                'A brand-new Service Request should not invent a Work Order relationship.'
+            );
+
+            System.assertEquals(
+                null,
+                matchingRequest.dispatchStatus
             );
         }
     }
@@ -275,16 +565,26 @@ private class CustomerPortalHomeControllerTest {
         );
     }
 
-    private static String getFirstActivePicklistValue(Schema.SObjectField fieldToken) {
-        for (Schema.PicklistEntry entry : fieldToken.getDescribe().getPicklistValues()) {
-            if (entry.isActive()) return entry.getValue();
+    private static String getFirstActivePicklistValue(
+        Schema.SObjectField fieldToken
+    ) {
+        for (
+            Schema.PicklistEntry entry :
+            fieldToken.getDescribe().getPicklistValues()
+        ) {
+            if (entry.isActive()) {
+                return entry.getValue();
+            }
         }
 
         return null;
     }
 
     private static String uniqueToken() {
-        String token = String.valueOf(DateTime.now().getTime()) + String.valueOf(Crypto.getRandomInteger());
+        String token =
+            String.valueOf(DateTime.now().getTime()) +
+            String.valueOf(Crypto.getRandomInteger());
+
         return token.replace('-', '1');
     }
 }

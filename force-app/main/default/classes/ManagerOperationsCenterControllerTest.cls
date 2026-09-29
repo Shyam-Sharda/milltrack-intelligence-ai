@@ -1,21 +1,16 @@
 @IsTest
 private class ManagerOperationsCenterControllerTest {
-
     @TestSetup
     static void createOperationsData() {
         Account testAccount = new Account(Name = 'MillTrack Test Dental Lab');
         insert testAccount;
-
         Asset testAsset = new Asset(Name = 'MillTrack Test Milling Machine', AccountId = testAccount.Id, SerialNumber = 'MT-TEST-001', Manufacturer__c = 'Roland', Model__c = 'DWX-52D');
         insert testAsset;
-
         Case testCase = new Case(Subject = 'Test spindle vibration', Status = 'New', Origin = 'Web', Priority = 'High', AccountId = testAccount.Id, AssetId = testAsset.Id);
         insert testCase;
-
         Case openInProgressCase = new Case(Subject = 'Open service case already in progress', Status = 'In Progress', Origin = 'Web', Priority = 'Medium', AccountId = testAccount.Id, AssetId = testAsset.Id);
         Case closedCase = new Case(Subject = 'Completed closed service case', Status = 'Closed', Origin = 'Web', Priority = 'Low', AccountId = testAccount.Id, AssetId = testAsset.Id);
         insert new List<Case>{openInProgressCase, closedCase};
-
         List<WorkOrder> workOrders = new List<WorkOrder>{
             buildWorkOrder('Pending manager review', 'Pending', null, testAccount.Id, testAsset.Id, testCase.Id),
             buildWorkOrder('Pre-dispatch parts required', 'Parts to Order', null, testAccount.Id, testAsset.Id, testCase.Id),
@@ -28,26 +23,22 @@ private class ManagerOperationsCenterControllerTest {
             buildWorkOrder('Completed visit with retained schedule', 'Completed', System.now().addDays(1), testAccount.Id, testAsset.Id, testCase.Id)
         };
         insert workOrders;
-
         WorkOrder waitingWorkOrder;
-
+        WorkOrder preDispatchWorkOrder;
         for (WorkOrder workOrder : workOrders) {
-            if (workOrder.Dispatch_Status__c == 'Waiting on Parts') {
-                waitingWorkOrder = workOrder;
-                break;
-            }
+            if (workOrder.Dispatch_Status__c == 'Waiting on Parts') waitingWorkOrder = workOrder;
+            if (workOrder.Dispatch_Status__c == 'Parts to Order') preDispatchWorkOrder = workOrder;
         }
-
         System.assertNotEquals(null, waitingWorkOrder, 'The test setup should create a Waiting on Parts Work Order.');
-
+        System.assertNotEquals(null, preDispatchWorkOrder, 'The test setup should create a Parts to Order Work Order.');
         Part_Catalog__c catalogPart = new Part_Catalog__c(
             Name = 'Spindle Bearings', Part_Number__c = 'SB-001', Manufacturer__c = 'Roland', Compatible_Model__c = 'DWX-52D', Parts_Category__c = 'Spindle',
             Supplier_Name__c = 'Roland Supplier', Supplier_Phone__c = '555-123-4567', Order_URL__c = 'https://example.com/spindle-bearings',
             Active__c = true, Keyword_Aliases__c = 'spindle bearing bearings spindle assembly'
         );
         insert catalogPart;
-
         List<Work_Order_Part__c> parts = new List<Work_Order_Part__c>{
+            buildWorkOrderPart(preDispatchWorkOrder.Id, testAsset.Id, catalogPart.Id, 1, 'Requested', false, 'Manager-approved required part', null, null, null, null),
             buildWorkOrderPart(waitingWorkOrder.Id, testAsset.Id, catalogPart.Id, 1, 'Requested', true, 'Technician-created test request', null, null, null, null),
             buildWorkOrderPart(waitingWorkOrder.Id, testAsset.Id, catalogPart.Id, 2, 'Ordered', false, 'Manager placed the supplier order', 'Roland Supplier', '555-123-4567', 'https://example.com/ordered-spindle', UserInfo.getUserId()),
             buildWorkOrderPart(waitingWorkOrder.Id, testAsset.Id, catalogPart.Id, 3, 'Shipped', true, 'Supplier dispatched the part', 'Roland Supplier', '555-123-4567', 'https://example.com/shipped-spindle', UserInfo.getUserId()),
@@ -57,18 +48,14 @@ private class ManagerOperationsCenterControllerTest {
         };
         insert parts;
     }
-
     @IsTest
     static void getOperationsDataClassifiesEveryQueue() {
         Test.startTest();
         ManagerOperationsCenterController.OperationsData data = ManagerOperationsCenterController.getOperationsData();
         Test.stopTest();
-
         System.assertNotEquals(null, data, 'The controller should return an OperationsData wrapper.');
         System.assertNotEquals(null, data.generatedAt, 'The response should include its generation time.');
-
         assertCountsMatchLists(data);
-
         System.assertEquals(1, data.newCasesCount, 'The seeded New Case should be returned.');
         System.assertEquals(2, data.openServiceCasesCount, 'Open Service Cases should count every non-closed Case, not only Cases with Status New.');
         System.assert(data.requiresReviewCount >= 1, 'The seeded Pending Work Order should be returned.');
@@ -78,83 +65,74 @@ private class ManagerOperationsCenterControllerTest {
         System.assert(data.readyToAssignCount >= 1, 'The Ready to Assign Work Order should be returned.');
         System.assertEquals(2, data.assignedVisitsCount, 'Both future and past Work Orders with Dispatch Status Assigned should be returned.');
         System.assert(data.activeRepairsCount >= 1, 'The In Progress Work Order should appear in Active Repairs.');
-
         Case expectedCase = [
             SELECT Id
             FROM Case
             WHERE Subject = 'Test spindle vibration'
             LIMIT 1
         ];
-
         ManagerOperationsCenterController.QueueItem newCaseItem = findItemByRecordId(data.newCases, expectedCase.Id);
-
         System.assertNotEquals(null, newCaseItem, 'The explicitly seeded New Case should be returned.');
         System.assertEquals('CASE', newCaseItem.rowType, 'The Case row should identify its row type.');
         assertAction(newCaseItem, 'NAVIGATE', 'VIEW_CASE', 'Open Case', null, expectedCase.Id);
         System.assertNotEquals(null, newCaseItem.workOrderId, 'A New Case with an active Work Order should expose its Work Order ID.');
         System.assertNotEquals(null, newCaseItem.relatedRecordNumber, 'A New Case with an active Work Order should expose its Work Order number.');
-
         WorkOrder linkedCaseWorkOrder = [
             SELECT Id, WorkOrderNumber, CaseId, Dispatch_Status__c
             FROM WorkOrder
             WHERE Id = :newCaseItem.workOrderId
             LIMIT 1
         ];
-
         System.assertEquals(expectedCase.Id, linkedCaseWorkOrder.CaseId, 'The Work Order exposed on the New Case row must belong to that Case.');
         System.assertEquals(linkedCaseWorkOrder.WorkOrderNumber, newCaseItem.relatedRecordNumber, 'The New Case row should expose the matching Work Order number.');
         System.assert(linkedCaseWorkOrder.Dispatch_Status__c != 'Completed' && linkedCaseWorkOrder.Dispatch_Status__c != 'Cancelled', 'The New Case row should expose an active Work Order.');
-
         WorkOrder pendingWorkOrder = [
             SELECT Id
             FROM WorkOrder
             WHERE Subject = 'Pending manager review'
             LIMIT 1
         ];
-
         ManagerOperationsCenterController.QueueItem pendingItem = findItemByRecordId(data.requiresReview, pendingWorkOrder.Id);
-
         System.assertNotEquals(null, pendingItem, 'The explicitly seeded Pending Work Order should be returned.');
         System.assertEquals('WORK_ORDER', pendingItem.rowType, 'The review row should be identified as a Work Order.');
         assertAction(pendingItem, 'LWC', 'REVIEW_WORK_ORDER', 'Review Work Order', null, pendingWorkOrder.Id);
-
         WorkOrder temporaryFixWorkOrder = [
             SELECT Id
             FROM WorkOrder
             WHERE Subject = 'Temporary repair needs follow-up'
             LIMIT 1
         ];
-
         ManagerOperationsCenterController.QueueItem followUpItem = findItemByRecordId(data.followUpRequired, temporaryFixWorkOrder.Id);
-
         System.assertNotEquals(null, followUpItem, 'The Temporary Fix Work Order should appear in Follow-Up Required.');
         System.assertEquals(null, findItemByRecordId(data.activeRepairs, temporaryFixWorkOrder.Id), 'Temporary Fix should no longer appear in Active Repairs.');
         System.assertEquals('Temporary Fix', followUpItem.status, 'The Follow-Up Required row should retain the Temporary Fix status.');
         assertAction(followUpItem, 'LWC', 'FOLLOW_UP_WORK_ORDER', 'Review Follow-Up', null, temporaryFixWorkOrder.Id);
-
         WorkOrder preDispatchWorkOrder = [
             SELECT Id
             FROM WorkOrder
             WHERE Subject = 'Pre-dispatch parts required'
             LIMIT 1
         ];
-
         ManagerOperationsCenterController.QueueItem preDispatchItem = findItemByRecordId(data.partsToOrder, preDispatchWorkOrder.Id);
-
         System.assertNotEquals(null, preDispatchItem, 'Parts to Order should contain the pre-dispatch Work Order.');
         System.assertEquals('WorkOrder', preDispatchItem.objectApiName);
         System.assertEquals('WORK_ORDER', preDispatchItem.rowType);
+        System.assertEquals(1, preDispatchItem.partRequestCount, 'A Work Order with one requested part should expose a count of one.');
+        System.assertEquals(false, preDispatchItem.hasMultipleParts, 'A single requested part must not be marked as multiple.');
+        System.assertNotEquals(null, preDispatchItem.partId, 'A single requested part should expose its Work Order Part ID.');
+        System.assertNotEquals(null, preDispatchItem.workOrderPartNumber, 'A single requested part should expose its WOP number.');
+        System.assertEquals('Spindle Bearings', preDispatchItem.partName, 'A single requested part should expose the Part Catalog name.');
+        System.assertEquals('SB-001', preDispatchItem.partNumber, 'A single requested part should expose the Part Catalog number.');
+        System.assertEquals(Decimal.valueOf('1'), preDispatchItem.quantity, 'A single requested part should expose its quantity.');
         assertAction(preDispatchItem, 'LWC', 'ORDER_REQUIRED_PARTS', 'Order Required Parts', null, preDispatchWorkOrder.Id);
-
         Work_Order_Part__c requestedPartRecord = [
             SELECT Id, Work_Order__c, Technician_Requested__c
             FROM Work_Order_Part__c
             WHERE Order_Status__c = 'Requested'
+              AND Technician_Requested__c = true
             LIMIT 1
         ];
-
         ManagerOperationsCenterController.QueueItem requestedPartItem = findItemByRecordId(data.partsToOrder, requestedPartRecord.Id);
-
         System.assertNotEquals(null, requestedPartItem, 'Parts to Order should contain the technician-created request.');
         System.assertEquals('Work_Order_Part__c', requestedPartItem.objectApiName);
         System.assertEquals('TECHNICIAN_REQUESTED_PART', requestedPartItem.rowType);
@@ -162,114 +140,124 @@ private class ManagerOperationsCenterControllerTest {
         System.assertEquals(requestedPartRecord.Work_Order__c, requestedPartItem.workOrderId, 'The row should expose the parent Work Order ID.');
         System.assertEquals(requestedPartRecord.Work_Order__c, requestedPartItem.relatedRecordId, 'The related record should be the parent Work Order.');
         System.assertEquals('Spindle Bearings', requestedPartItem.partName, 'The Part Catalog name should be returned.');
+        System.assertEquals('SB-001', requestedPartItem.partNumber, 'The Part Catalog number should be returned.');
+        System.assertNotEquals(null, requestedPartItem.workOrderPartNumber, 'The Work Order Part number should be returned.');
         System.assertEquals(Decimal.valueOf('1'), requestedPartItem.quantity, 'The controller should return Quantity__c.');
         System.assertEquals(requestedPartItem.quantity, requestedPartItem.quantityNeeded, 'The compatibility quantity field should match Quantity__c.');
         System.assertEquals('Technician-created test request', requestedPartItem.notes);
         System.assertEquals(true, requestedPartRecord.Technician_Requested__c, 'The requested test part should be stamped as technician-requested.');
         System.assertEquals(true, requestedPartItem.technicianRequested, 'The queue row should expose the technician-requested flag.');
         System.assertEquals('Technician Request', requestedPartItem.partSourceLabel, 'The queue row should expose the technician request source label.');
-
         assertAction(requestedPartItem, 'LWC', 'ORDER_TECHNICIAN_REQUESTED_PART', 'Order Requested Part', null, requestedPartRecord.Id);
-
         WorkOrder waitingWorkOrder = [
             SELECT Id
             FROM WorkOrder
             WHERE Subject = 'Waiting for ordered parts'
             LIMIT 1
         ];
-
         System.assertEquals(null, findItemByRecordId(data.waitingOnParts, waitingWorkOrder.Id), 'The Waiting on Parts queue should not contain the parent Work Order as a row.');
-
         Work_Order_Part__c orderedPartRecord = [
             SELECT Id, Work_Order__c, Technician_Requested__c
             FROM Work_Order_Part__c
             WHERE Order_Status__c = 'Ordered'
             LIMIT 1
         ];
-
         ManagerOperationsCenterController.QueueItem orderedPartItem = findItemByRecordId(data.waitingOnParts, orderedPartRecord.Id);
         assertWaitingPartItem(orderedPartItem, orderedPartRecord, 'Ordered');
-
         Work_Order_Part__c shippedPartRecord = [
             SELECT Id, Work_Order__c, Technician_Requested__c
             FROM Work_Order_Part__c
             WHERE Order_Status__c = 'Shipped'
             LIMIT 1
         ];
-
         ManagerOperationsCenterController.QueueItem shippedPartItem = findItemByRecordId(data.waitingOnParts, shippedPartRecord.Id);
         assertWaitingPartItem(shippedPartItem, shippedPartRecord, 'Shipped');
-
         WorkOrder readyWorkOrder = [
             SELECT Id
             FROM WorkOrder
             WHERE Subject = 'Ready for technician assignment'
             LIMIT 1
         ];
-
         ManagerOperationsCenterController.QueueItem readyItem = findItemByRecordId(data.readyToAssign, readyWorkOrder.Id);
-
         System.assertNotEquals(null, readyItem, 'The Ready to Assign Work Order should be returned.');
         System.assertEquals('Ready to Assign', readyItem.status, 'The LWC should receive the readable picklist label.');
         assertAction(readyItem, 'LWC', 'DISPATCH_TECHNICIAN', 'Dispatch Technician', null, readyWorkOrder.Id);
-
         WorkOrder upcomingAssignedWorkOrder = [
             SELECT Id
             FROM WorkOrder
             WHERE Subject = 'Upcoming assigned visit'
             LIMIT 1
         ];
-
         ManagerOperationsCenterController.QueueItem assignedItem = findItemByRecordId(data.assignedVisits, upcomingAssignedWorkOrder.Id);
-
         System.assertNotEquals(null, assignedItem, 'The upcoming Assigned visit should be returned.');
         assertAction(assignedItem, 'NAVIGATE', 'VIEW_WORK_ORDER', 'Open Work Order', null, upcomingAssignedWorkOrder.Id);
         System.assertEquals('Upcoming assigned visit', assignedItem.subject, 'The returned visit should be the future visit.');
         System.assertNotEquals(null, assignedItem.scheduledVisit, 'The upcoming visit should return its Date/Time value.');
-
         WorkOrder pastAssignedWorkOrder = [
             SELECT Id
             FROM WorkOrder
             WHERE Subject = 'Past assigned visit'
             LIMIT 1
         ];
-
         ManagerOperationsCenterController.QueueItem pastAssignedItem = findItemByRecordId(data.assignedVisits, pastAssignedWorkOrder.Id);
-
         System.assertNotEquals(null, pastAssignedItem, 'A past scheduled visit should remain visible while the Work Order is still Assigned.');
         System.assertEquals('Assigned', pastAssignedItem.status, 'The past scheduled visit should remain in Assigned Visits until its lifecycle status changes.');
         assertAction(pastAssignedItem, 'NAVIGATE', 'VIEW_WORK_ORDER', 'Open Work Order', null, pastAssignedWorkOrder.Id);
-
         WorkOrder completedWorkOrder = [
             SELECT Id
             FROM WorkOrder
             WHERE Subject = 'Completed visit with retained schedule'
             LIMIT 1
         ];
-
         System.assertEquals(null, findItemByRecordId(data.assignedVisits, completedWorkOrder.Id), 'A Completed Work Order must not appear in Assigned Visits even when Scheduled Visit remains populated.');
     }
-
+    @IsTest
+    static void partsToOrderSummarizesMultipleRequestedParts() {
+        Account accountRecord = [SELECT Id FROM Account WHERE Name = 'MillTrack Test Dental Lab' LIMIT 1];
+        Asset assetRecord = [SELECT Id FROM Asset WHERE SerialNumber = 'MT-TEST-001' LIMIT 1];
+        Case caseRecord = [SELECT Id FROM Case WHERE Subject = 'Test spindle vibration' LIMIT 1];
+        Part_Catalog__c secondCatalogPart = new Part_Catalog__c(
+            Name = 'Roland DWX Regulator', Part_Number__c = 'ROL-APR-008', Manufacturer__c = 'Roland', Compatible_Model__c = 'DWX-52D',
+            Parts_Category__c = 'Calibration & Sensors', Supplier_Name__c = 'Roland Supplier', Supplier_Phone__c = '555-123-4567',
+            Order_URL__c = 'https://example.com/regulator', Active__c = true, Keyword_Aliases__c = 'regulator air pressure calibration sensor'
+        );
+        insert secondCatalogPart;
+        Part_Catalog__c firstCatalogPart = [SELECT Id FROM Part_Catalog__c WHERE Part_Number__c = 'SB-001' LIMIT 1];
+        WorkOrder multiPartWorkOrder = buildWorkOrder('Multiple pre-dispatch parts required', 'Parts to Order', null, accountRecord.Id, assetRecord.Id, caseRecord.Id);
+        insert multiPartWorkOrder;
+        insert new List<Work_Order_Part__c>{
+            buildWorkOrderPart(multiPartWorkOrder.Id, assetRecord.Id, firstCatalogPart.Id, 1, 'Requested', false, 'First required part', null, null, null, null),
+            buildWorkOrderPart(multiPartWorkOrder.Id, assetRecord.Id, secondCatalogPart.Id, 1, 'Requested', false, 'Second required part', null, null, null, null)
+        };
+        Test.startTest();
+        ManagerOperationsCenterController.OperationsData data = ManagerOperationsCenterController.getOperationsData();
+        Test.stopTest();
+        ManagerOperationsCenterController.QueueItem item = findItemByRecordId(data.partsToOrder, multiPartWorkOrder.Id);
+        System.assertNotEquals(null, item, 'The multi-part Work Order should appear in Parts to Order.');
+        System.assertEquals(2, item.partRequestCount, 'The Work Order should expose the number of requested parts.');
+        System.assertEquals(true, item.hasMultipleParts, 'Two requested parts should be identified as multiple.');
+        System.assertEquals('Multiple', item.workOrderPartNumber, 'The WOP display should indicate multiple part requests.');
+        System.assertEquals('Multiple Parts to Order', item.partName, 'The Part display should use the multiple-parts label.');
+        System.assertEquals('2 requested parts', item.partNumber, 'The secondary part text should include the requested-part count.');
+        System.assertEquals(null, item.partId, 'A multi-part summary row should not point to one arbitrary Work Order Part.');
+        assertAction(item, 'LWC', 'ORDER_REQUIRED_PARTS', 'Order Required Parts', null, multiPartWorkOrder.Id);
+    }
     @IsTest
     static void excludesCompletedAndCancelledPartStatuses() {
         Test.startTest();
         ManagerOperationsCenterController.OperationsData data = ManagerOperationsCenterController.getOperationsData();
         Test.stopTest();
-
         Set<String> excludedStatuses = new Set<String>{'Received', 'Installed', 'Cancelled'};
-
         List<Work_Order_Part__c> excludedParts = [
             SELECT Id, Order_Status__c
             FROM Work_Order_Part__c
             WHERE Order_Status__c IN :excludedStatuses
         ];
-
         for (Work_Order_Part__c part : excludedParts) {
             System.assertEquals(null, findItemByRecordId(data.partsToOrder, part.Id), part.Order_Status__c + ' parts must not appear in Parts to Order.');
             System.assertEquals(null, findItemByRecordId(data.waitingOnParts, part.Id), part.Order_Status__c + ' parts must not appear in Waiting on Parts.');
         }
     }
-
     @IsTest
     static void getOperationsDataHandlesNullOptionalRelationships() {
         WorkOrder workOrderWithoutRelationships = new WorkOrder(
@@ -280,31 +268,24 @@ private class ManagerOperationsCenterControllerTest {
             Service_Manager__c = UserInfo.getUserId()
         );
         insert workOrderWithoutRelationships;
-
         Test.startTest();
         ManagerOperationsCenterController.OperationsData data = ManagerOperationsCenterController.getOperationsData();
         Test.stopTest();
-
         ManagerOperationsCenterController.QueueItem result = findItemByRecordId(data.activeRepairs, workOrderWithoutRelationships.Id);
-
         System.assertNotEquals(null, result, 'The Work Order should be returned without Account or Asset.');
         System.assertEquals(null, result.accountName, 'A missing Account should produce a null Account name.');
         System.assertEquals(null, result.assetName, 'A missing Asset should produce a null Asset name.');
         System.assertEquals(null, result.technicianName, 'A missing Assigned Technician should produce a null name.');
-
         assertAction(result, 'NAVIGATE', 'VIEW_WORK_ORDER', 'Open Work Order', null, workOrderWithoutRelationships.Id);
     }
-
     @IsTest
     static void getOperationsDataReturnsInitializedEmptyQueues() {
         delete [SELECT Id FROM Work_Order_Part__c];
         delete [SELECT Id FROM WorkOrder];
         delete [SELECT Id FROM Case];
-
         Test.startTest();
         ManagerOperationsCenterController.OperationsData data = ManagerOperationsCenterController.getOperationsData();
         Test.stopTest();
-
         System.assertEquals(0, data.openServiceCasesCount);
         System.assertEquals(0, data.newCasesCount);
         System.assertEquals(0, data.requiresReviewCount);
@@ -314,7 +295,6 @@ private class ManagerOperationsCenterControllerTest {
         System.assertEquals(0, data.readyToAssignCount);
         System.assertEquals(0, data.assignedVisitsCount);
         System.assertEquals(0, data.activeRepairsCount);
-
         System.assertNotEquals(null, data.newCases);
         System.assertNotEquals(null, data.requiresReview);
         System.assertNotEquals(null, data.followUpRequired);
@@ -324,33 +304,27 @@ private class ManagerOperationsCenterControllerTest {
         System.assertNotEquals(null, data.assignedVisits);
         System.assertNotEquals(null, data.activeRepairs);
     }
-
     private static WorkOrder buildWorkOrder(String subject, String dispatchStatus, Datetime scheduledVisit, Id accountId, Id assetId, Id caseId) {
         WorkOrder workOrder = new WorkOrder(
             Subject = subject, Status = 'New', Priority = 'High', Dispatch_Status__c = dispatchStatus, AccountId = accountId, AssetId = assetId, CaseId = caseId,
             Service_Manager__c = UserInfo.getUserId(), Problem_Summary__c = 'Test problem summary', Recommended_Solution__c = 'Test recommended solution',
             Recommended_Fix_Summary__c = 'Test recommended repair', Recommended_Tools__c = 'Test service tools', Recommended_Parts__c = 'Test recommended parts'
         );
-
         if (scheduledVisit != null) workOrder.Scheduled_Visit__c = scheduledVisit;
         if (dispatchStatus == 'Assigned') workOrder.Suggested_Technician__c = UserInfo.getUserId();
         if (dispatchStatus == 'Temporary Fix') workOrder.Technician_Notes__c = 'Temporary repair completed for testing.';
         if (dispatchStatus == 'Completed') workOrder.Technician_Notes__c = 'Completed repair notes for testing.';
-
         return workOrder;
     }
-
     private static Work_Order_Part__c buildWorkOrderPart(Id workOrderId, Id machineId, Id partCatalogId, Decimal quantity, String orderStatus, Boolean technicianRequested, String notes, String supplierName, String supplierPhone, String orderUrl, Id orderedById) {
         Work_Order_Part__c part = new Work_Order_Part__c(
             Work_Order__c = workOrderId, Machine__c = machineId, Part_Catalog__c = partCatalogId, Quantity__c = quantity,
             Order_Status__c = orderStatus, Technician_Requested__c = technicianRequested, Notes__c = notes,
             Supplier_Name__c = supplierName, Supplier_Phone__c = supplierPhone, Order_URL__c = orderUrl
         );
-
         if (orderedById != null) part.Ordered_By__c = orderedById;
         return part;
     }
-
     private static void assertWaitingPartItem(ManagerOperationsCenterController.QueueItem item, Work_Order_Part__c expectedPart, String expectedStatus) {
         System.assertNotEquals(null, item, expectedStatus + ' Work Order Part should appear in Waiting on Parts.');
         System.assertEquals('Work_Order_Part__c', item.objectApiName);
@@ -362,12 +336,12 @@ private class ManagerOperationsCenterControllerTest {
         System.assertEquals(expectedPart.Work_Order__c, item.workOrderId);
         System.assertEquals(expectedPart.Work_Order__c, item.relatedRecordId);
         System.assertEquals('Spindle Bearings', item.partName);
+        System.assertEquals('SB-001', item.partNumber);
+        System.assertNotEquals(null, item.workOrderPartNumber);
         System.assertNotEquals(null, item.supplierName, 'Ordered and Shipped rows should return supplier information.');
         System.assertNotEquals(null, item.orderedByName, 'Ordered and Shipped rows should return Ordered By.');
-
         assertAction(item, 'LWC', 'RECEIVE_PARTS', 'Receive Parts', null, expectedPart.Work_Order__c);
     }
-
     private static void assertCountsMatchLists(ManagerOperationsCenterController.OperationsData data) {
         System.assertEquals(data.newCases.size(), data.newCasesCount);
         System.assertEquals(data.requiresReview.size(), data.requiresReviewCount);
@@ -378,17 +352,13 @@ private class ManagerOperationsCenterControllerTest {
         System.assertEquals(data.assignedVisits.size(), data.assignedVisitsCount);
         System.assertEquals(data.activeRepairs.size(), data.activeRepairsCount);
     }
-
     private static Integer countDistinctWorkOrders(List<ManagerOperationsCenterController.QueueItem> items) {
         Set<Id> workOrderIds = new Set<Id>();
-
         for (ManagerOperationsCenterController.QueueItem item : items) {
             if (item != null && item.workOrderId != null) workOrderIds.add(item.workOrderId);
         }
-
         return workOrderIds.size();
     }
-
     private static void assertAction(ManagerOperationsCenterController.QueueItem item, String expectedType, String expectedName, String expectedLabel, String expectedFlowApiName, Id expectedActionRecordId) {
         System.assertEquals(expectedType, item.actionType, 'Unexpected action type.');
         System.assertEquals(expectedName, item.actionName, 'Unexpected action name.');
@@ -396,12 +366,10 @@ private class ManagerOperationsCenterControllerTest {
         System.assertEquals(expectedFlowApiName, item.flowApiName, 'Unexpected Flow API name.');
         System.assertEquals(expectedActionRecordId, item.actionRecordId, 'The action should receive the correct record ID.');
     }
-
     private static ManagerOperationsCenterController.QueueItem findItemByRecordId(List<ManagerOperationsCenterController.QueueItem> items, Id recordId) {
         for (ManagerOperationsCenterController.QueueItem item : items) {
             if (item.recordId == recordId) return item;
         }
-
         return null;
     }
 }

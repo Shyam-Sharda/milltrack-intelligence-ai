@@ -12,9 +12,6 @@ const CASE_FIELDS = [
     'Case.Origin',
     'Case.Description',
     'Case.Error_Code__c',
-    'Case.AI_Troubleshooting_Summary__c',
-    'Case.Recommended_Solution__c',
-    'Case.Recommended_Parts__c',
     'Case.AccountId',
     'Case.ContactId',
     'Case.AssetId',
@@ -359,8 +356,13 @@ export default class ManagerCaseSummary extends NavigationMixin(LightningElement
        General State
        ========================================================= */
 
-    get hasRecord() { return Boolean(this.caseRecord); }
-    get isLoading() { return !this.caseRecord && !this.errorMessage; }
+    get hasRecord() {
+        return Boolean(this.caseRecord);
+    }
+
+    get isLoading() {
+        return !this.caseRecord && !this.errorMessage;
+    }
 
     value(field) {
         return this.caseRecord ? getFieldValue(this.caseRecord, field) : null;
@@ -378,11 +380,37 @@ export default class ManagerCaseSummary extends NavigationMixin(LightningElement
        Case Hero
        ========================================================= */
 
-    get caseNumber() { return this.display(this.value('Case.CaseNumber')); }
-    get subject() { return this.display(this.value('Case.Subject'), 'No subject provided'); }
-    get status() { return this.display(this.value('Case.Status'), 'No Status'); }
-    get priority() { return this.display(this.value('Case.Priority'), 'No Priority'); }
-    get origin() { return this.display(this.value('Case.Origin'), 'Not specified'); }
+    get caseNumber() {
+        return this.display(this.value('Case.CaseNumber'));
+    }
+
+    get subject() {
+        return this.display(
+            this.value('Case.Subject'),
+            'No subject provided'
+        );
+    }
+
+    get status() {
+        return this.display(
+            this.value('Case.Status'),
+            'No Status'
+        );
+    }
+
+    get priority() {
+        return this.display(
+            this.value('Case.Priority'),
+            'No Priority'
+        );
+    }
+
+    get origin() {
+        return this.display(
+            this.value('Case.Origin'),
+            'Not specified'
+        );
+    }
 
     get statusClass() {
         const status = this.value('Case.Status');
@@ -414,45 +442,115 @@ export default class ManagerCaseSummary extends NavigationMixin(LightningElement
        Customer
        ========================================================= */
 
-    get accountId() { return this.value('Case.AccountId'); }
-    get accountName() { return this.display(this.value('Case.Account.Name'), 'No account'); }
-    get accountUrl() { return this.recordUrl('Account', this.accountId); }
+    get accountId() {
+        return this.value('Case.AccountId');
+    }
 
-    get contactId() { return this.value('Case.ContactId'); }
-    get contactName() { return this.display(this.value('Case.Contact.Name'), 'No contact'); }
-    get contactPhone() { return this.display(this.value('Case.Contact.Phone'), 'No phone number'); }
-    get contactEmail() { return this.display(this.value('Case.Contact.Email'), 'No email address'); }
-    get contactUrl() { return this.recordUrl('Contact', this.contactId); }
+    get accountName() {
+        return this.display(
+            this.value('Case.Account.Name'),
+            'No account'
+        );
+    }
+
+    get accountUrl() {
+        return this.recordUrl(
+            'Account',
+            this.accountId
+        );
+    }
+
+    get contactId() {
+        return this.value('Case.ContactId');
+    }
+
+    get contactName() {
+        return this.display(
+            this.value('Case.Contact.Name'),
+            'No contact'
+        );
+    }
+
+    get contactPhone() {
+        return this.display(
+            this.value('Case.Contact.Phone'),
+            'No phone number'
+        );
+    }
+
+    get contactEmail() {
+        return this.display(
+            this.value('Case.Contact.Email'),
+            'No email address'
+        );
+    }
+
+    get contactUrl() {
+        return this.recordUrl(
+            'Contact',
+            this.contactId
+        );
+    }
 
     /* =========================================================
        Asset / Machine
        ========================================================= */
 
-    get assetId() { return this.value('Case.AssetId'); }
-    get assetName() { return this.display(this.value('Case.Asset.Name'), 'No machine'); }
-    get assetUrl() { return this.recordUrl('Asset', this.assetId); }
+    get assetId() {
+        return this.value('Case.AssetId');
+    }
 
-    get manufacturer() { return this.value('Case.Asset.Manufacturer__c'); }
-    get model() { return this.value('Case.Asset.Model__c'); }
+    get assetName() {
+        return this.display(
+            this.value('Case.Asset.Name'),
+            'No machine'
+        );
+    }
+
+    get assetUrl() {
+        return this.recordUrl(
+            'Asset',
+            this.assetId
+        );
+    }
+
+    get manufacturer() {
+        return this.value('Case.Asset.Manufacturer__c');
+    }
+
+    get model() {
+        return this.value('Case.Asset.Model__c');
+    }
 
     get machineLabel() {
-        return [this.manufacturer, this.model].filter(Boolean).join(' ') || '—';
+        return [this.manufacturer, this.model]
+            .filter(Boolean)
+            .join(' ') || '—';
     }
 
     get serialNumber() {
-        return this.display(this.value('Case.Asset.Serial_Number__c'));
+        return this.display(
+            this.value('Case.Asset.Serial_Number__c')
+        );
     }
 
     get machineStatus() {
-        return this.display(this.value('Case.Asset.Machine_Status__c'), 'Unknown');
+        return this.display(
+            this.value('Case.Asset.Machine_Status__c'),
+            'Unknown'
+        );
     }
 
     get warrantyStart() {
-        return this.formatDate(this.value('Case.Asset.Warranty_Start_Date__c'));
+        return this.formatDate(
+            this.value('Case.Asset.Warranty_Start_Date__c')
+        );
     }
 
     get warrantyEnd() {
-        return this.formatDate(this.value('Case.Asset.Warranty_End_Date__c'));
+        return this.formatDate(
+            this.value('Case.Asset.Warranty_End_Date__c')
+        );
     }
 
     get machineStatusClass() {
@@ -484,37 +582,21 @@ export default class ManagerCaseSummary extends NavigationMixin(LightningElement
         );
     }
 
-    get aiTroubleshootingSummary() {
-        return this.display(
-            this.value('Case.AI_Troubleshooting_Summary__c'),
-            'No AI troubleshooting summary is available.'
-        );
-    }
-
-    get recommendedSolution() {
-        return this.display(
-            this.value('Case.Recommended_Solution__c'),
-            'No recommended solution is available.'
-        );
-    }
-
-    get recommendedParts() {
-        return this.display(
-            this.value('Case.Recommended_Parts__c'),
-            'No recommended parts are currently listed.'
-        );
-    }
-
     /* =========================================================
        Case Management
        ========================================================= */
 
     get ownerName() {
-        return this.display(this.value('Case.Owner.Name'), 'No owner');
+        return this.display(
+            this.value('Case.Owner.Name'),
+            'No owner'
+        );
     }
 
     get createdDate() {
-        return this.formatDateTime(this.value('Case.CreatedDate'));
+        return this.formatDateTime(
+            this.value('Case.CreatedDate')
+        );
     }
 
     get closedDate() {
@@ -525,11 +607,15 @@ export default class ManagerCaseSummary extends NavigationMixin(LightningElement
     }
 
     get lastModifiedDate() {
-        return this.formatDateTime(this.value('Case.LastModifiedDate'));
+        return this.formatDateTime(
+            this.value('Case.LastModifiedDate')
+        );
     }
 
     get isClosed() {
-        return Boolean(this.value('Case.IsClosed'));
+        return Boolean(
+            this.value('Case.IsClosed')
+        );
     }
 
     /* =========================================================
@@ -662,9 +748,17 @@ export default class ManagerCaseSummary extends NavigationMixin(LightningElement
 
     workOrderStatusClass(status) {
         if (status === 'Completed') return 'related-status related-success';
-        if (status === 'In Progress' || status === 'Assigned') return 'related-status related-progress';
-        if (status === 'Waiting on Parts' || status === 'Parts to Order') return 'related-status related-blue';
-        if (status === 'Temporary Fix') return 'related-status related-warning';
+        if (status === 'In Progress' || status === 'Assigned') {
+            return 'related-status related-progress';
+        }
+
+        if (status === 'Waiting on Parts' || status === 'Parts to Order') {
+            return 'related-status related-blue';
+        }
+
+        if (status === 'Temporary Fix') {
+            return 'related-status related-warning';
+        }
 
         return 'related-status related-neutral';
     }
@@ -794,11 +888,14 @@ export default class ManagerCaseSummary extends NavigationMixin(LightningElement
 
     navigateToRelationship(relationshipApiName) {
         if (!relationshipApiName) {
-            this.dispatchEvent(new ShowToastEvent({
-                title: 'Related List Unavailable',
-                message: 'Salesforce could not resolve this related list for the Case.',
-                variant: 'warning'
-            }));
+            this.dispatchEvent(
+                new ShowToastEvent({
+                    title: 'Related List Unavailable',
+                    message: 'Salesforce could not resolve this related list for the Case.',
+                    variant: 'warning'
+                })
+            );
+
             return;
         }
 
@@ -828,11 +925,13 @@ export default class ManagerCaseSummary extends NavigationMixin(LightningElement
     handleUploadFinished(event) {
         const count = event.detail.files?.length || 0;
 
-        this.dispatchEvent(new ShowToastEvent({
-            title: 'Files Uploaded',
-            message: `${count} ${count === 1 ? 'file was' : 'files were'} uploaded successfully.`,
-            variant: 'success'
-        }));
+        this.dispatchEvent(
+            new ShowToastEvent({
+                title: 'Files Uploaded',
+                message: `${count} ${count === 1 ? 'file was' : 'files were'} uploaded successfully.`,
+                variant: 'success'
+            })
+        );
     }
 
     /* =========================================================

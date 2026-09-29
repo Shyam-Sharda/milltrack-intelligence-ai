@@ -256,7 +256,7 @@ public with sharing class ParseWorkOrderProposalFields {
                 String displayLine = partName;
 
                 if (!String.isBlank(quantity)) {
-                    displayLine += ' â€” Quantity: ' + quantity;
+                    displayLine += ' — Quantity: ' + quantity;
                 }
 
                 readableParts.add(displayLine);
@@ -373,21 +373,34 @@ public with sharing class ParseWorkOrderProposalFields {
             return '';
         }
 
-        String cleaned = priorityText.trim();
+        String cleaned = priorityText
+            .replace('\r\n', '\n')
+            .replace('\r', '\n')
+            .trim();
 
-        if (cleaned.equalsIgnoreCase('Low')) {
+        Matcher priorityMatcher = Pattern.compile(
+            '(?i)^\\s*(Low|Medium|High|Critical)\\b'
+        ).matcher(cleaned);
+
+        if (!priorityMatcher.find()) {
+            return '';
+        }
+
+        String matchedPriority = priorityMatcher.group(1);
+
+        if (matchedPriority.equalsIgnoreCase('Low')) {
             return 'Low';
         }
 
-        if (cleaned.equalsIgnoreCase('Medium')) {
+        if (matchedPriority.equalsIgnoreCase('Medium')) {
             return 'Medium';
         }
 
-        if (cleaned.equalsIgnoreCase('High')) {
+        if (matchedPriority.equalsIgnoreCase('High')) {
             return 'High';
         }
 
-        if (cleaned.equalsIgnoreCase('Critical')) {
+        if (matchedPriority.equalsIgnoreCase('Critical')) {
             return 'Critical';
         }
 

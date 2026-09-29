@@ -1,350 +1,230 @@
 <template>
-
     <div class="wizard-shell">
-
         <!-- =====================================================
              LOADING
              ===================================================== -->
-
         <template if:true={isLoading}>
             <div class="loading-state">
                 <lightning-spinner alternative-text="Loading technician dispatch" size="medium"></lightning-spinner>
             </div>
         </template>
-
         <!-- =====================================================
              LOADED
              ===================================================== -->
-
         <template if:false={isLoading}>
-
             <!-- ERROR -->
-
             <template if:true={errorMessage}>
-
                 <div class="error-state">
                     <lightning-icon icon-name="utility:error" size="small"></lightning-icon>
-
                     <div>
                         <h2>Unable to Dispatch Technician</h2>
                         <p>{errorMessage}</p>
                     </div>
                 </div>
-
                 <footer class="wizard-footer">
                     <button type="button" class="secondary-button" onclick={handleCancel}>Close</button>
                 </footer>
-
             </template>
-
             <!-- =====================================================
                  MAIN WIZARD
                  ===================================================== -->
-
             <template if:false={errorMessage}>
-
                 <!-- HEADER -->
-
                 <header class="wizard-header">
-
                     <div class="header-content">
-
                         <div class="header-icon">
                             <lightning-icon icon-name="standard:work_order" size="small"></lightning-icon>
                         </div>
-
                         <div>
-
                             <p class="eyebrow">Manager Dispatch</p>
-
                             <h1>Dispatch Technician</h1>
-
                             <p class="header-subtitle">
                                 Assign an available technician, schedule the service visit,
                                 and move this Work Order into assigned service.
                             </p>
-
                             <div class="header-meta">
-
                                 <span class="work-order-number">{workOrderNumber}</span>
                                 <span class="header-meta-divider"></span>
-
                                 <span class="header-machine">
                                     <lightning-icon icon-name="standard:asset_object" size="xx-small"></lightning-icon>
                                     <span>{assetName}</span>
                                 </span>
-
                                 <span class="header-meta-divider"></span>
-
                                 <span class="status-badge dispatch-status-badge">{dispatchStatus}</span>
                                 <span class="status-badge priority-badge">{priority}</span>
-
                             </div>
-
                         </div>
-
                     </div>
-
                 </header>
-
                 <!-- =====================================================
                      PROGRESS
                      ===================================================== -->
-
                 <div class="progress-shell">
-
                     <div class={stepOneClass}>
                         <div class="step-circle">1</div>
-
                         <div>
                             <strong>Build Assignment</strong>
                             <span>Select technician &amp; visit</span>
                         </div>
                     </div>
-
                     <div class="progress-line"></div>
-
                     <div class={stepTwoClass}>
                         <div class="step-circle">2</div>
-
                         <div>
                             <strong>Review &amp; Dispatch</strong>
                             <span>Confirm next step</span>
                         </div>
                     </div>
-
                 </div>
-
                 <!-- =====================================================
                      STEP 1
                      ===================================================== -->
-
                 <template if:true={isStepOne}>
-
                     <main class="wizard-content">
-
                         <div class="step-heading">
                             <p class="eyebrow">Step 1 of 2</p>
                             <h2>Build Technician Assignment</h2>
-
                             <p>
                                 Review the approved repair, verify required parts,
                                 then select the technician and scheduled visit.
                             </p>
                         </div>
-
                         <div class="review-notice">
                             <lightning-icon icon-name="utility:info" size="xx-small"></lightning-icon>
-
                             <span>
                                 Nothing is updated yet. The Work Order will remain
                                 Ready to Assign until you review the assignment and
                                 click Dispatch Technician.
                             </span>
                         </div>
-
                         <!-- JOB SUMMARY -->
-
                         <section class="content-card job-card">
-
                             <div class="card-heading-row">
-
                                 <div>
                                     <p class="section-kicker">Service Assignment</p>
                                     <h3>Approved Repair</h3>
-
                                     <p class="field-helper">
                                         Review the customer, machine, and approved repair plan before scheduling.
                                     </p>
                                 </div>
-
                                 <span class="count-badge">{priority} Priority</span>
-
                             </div>
-
                             <div class="job-meta-grid">
-
                                 <div class="job-meta-item">
                                     <span>Work Order</span>
                                     <strong>{workOrderNumber}</strong>
                                 </div>
-
                                 <div class="job-meta-item">
                                     <span>Customer</span>
                                     <strong>{accountName}</strong>
                                 </div>
-
                                 <div class="job-meta-item">
                                     <span>Machine</span>
                                     <strong>{assetName}</strong>
                                 </div>
-
                                 <div class="job-meta-item">
                                     <span>Current Stage</span>
                                     <strong>{dispatchStatus}</strong>
                                 </div>
-
                             </div>
-
                             <div class="repair-summary-grid">
-
                                 <div class="repair-summary-block">
-
                                     <div class="summary-label-row">
                                         <lightning-icon icon-name="utility:warning" size="xx-small"></lightning-icon>
                                         <span>Problem Summary</span>
                                     </div>
-
                                     <p>{problemSummary}</p>
-
                                 </div>
-
                                 <div class="repair-summary-block repair-fix-block">
-
                                     <div class="summary-label-row">
                                         <lightning-icon icon-name="utility:check" size="xx-small"></lightning-icon>
                                         <span>Approved Fix</span>
                                     </div>
-
                                     <p>{recommendedFixSummary}</p>
-
                                 </div>
-
                             </div>
-
                         </section>
-
                         <!-- PARTS -->
-
                         <section class="content-card parts-card">
-
                             <div class="card-heading-row">
-
                                 <div>
                                     <p class="section-kicker parts-kicker">Repair Readiness</p>
                                     <h3>Parts for This Repair</h3>
-
                                     <p class="field-helper">
                                         Required parts should already be received before technician dispatch.
                                     </p>
                                 </div>
-
                                 <template if:true={hasParts}>
                                     <span class="count-badge">{partCountLabel}</span>
                                 </template>
-
                             </div>
-
                             <template if:true={hasParts}>
-
                                 <div class="parts-list">
-
                                     <template for:each={displayParts} for:item="part">
-
                                         <article key={part.id} class="part-row">
-
                                             <div class="part-main">
-
                                                 <div class="part-icon">
                                                     <lightning-icon icon-name="standard:product_item" size="xx-small"></lightning-icon>
                                                 </div>
-
                                                 <div>
-
                                                     <strong>{part.partName}</strong>
-
                                                     <div class="part-meta">
-
                                                         <template if:true={part.partNumber}>
                                                             <span>{part.partNumber}</span>
                                                         </template>
-
                                                         <template if:true={part.recordNumber}>
                                                             <span class="meta-dot">•</span>
                                                             <span>{part.recordNumber}</span>
                                                         </template>
-
                                                     </div>
-
                                                 </div>
-
                                             </div>
-
                                             <div class="part-right">
-
                                                 <span class={part.statusClass}>{part.status}</span>
-
                                                 <div class="quantity-badge">
                                                     <span>Qty</span>
                                                     <strong>{part.quantity}</strong>
                                                 </div>
-
                                             </div>
-
                                         </article>
-
                                     </template>
-
                                 </div>
-
                             </template>
-
                             <template if:false={hasParts}>
-
                                 <div class="no-parts-state">
-
                                     <lightning-icon icon-name="utility:check" size="xx-small"></lightning-icon>
-
                                     <div>
                                         <strong>No parts required</strong>
                                         <span>This repair can be scheduled without replacement parts.</span>
                                     </div>
-
                                 </div>
-
                             </template>
-
                             <template if:true={hasBlockingParts}>
-
                                 <div class="blocking-parts-warning">
                                     <lightning-icon icon-name="utility:warning" size="xx-small"></lightning-icon>
                                     <span>{blockingPartMessage}</span>
                                 </div>
-
                             </template>
-
                         </section>
-
                         <!-- ASSIGNMENT -->
-
                         <section class="content-card assignment-card">
-
                             <div class="card-heading-row">
-
                                 <div>
                                     <p class="section-kicker assignment-kicker">Schedule Service</p>
                                     <h3>Technician &amp; Visit</h3>
-
                                     <p class="field-helper">
                                         Select the technician who will own this Work Order and when the visit will occur.
                                     </p>
                                 </div>
-
                             </div>
-
                             <template if:false={hasTechnicians}>
-
                                 <div class="inline-error">
                                     <lightning-icon icon-name="utility:error" size="xx-small"></lightning-icon>
                                     <span>No active MillTrack technicians are available for assignment.</span>
                                 </div>
-
                             </template>
-
                             <div class="assignment-grid">
-
                                 <div class="assignment-field">
-
                                     <lightning-combobox
                                         name="technician"
                                         label="Assigned Technician"
@@ -355,146 +235,259 @@
                                         disabled={isSaving}
                                         onchange={handleTechnicianChange}>
                                     </lightning-combobox>
-
                                     <p class="input-helper">
                                         Only active MillTrack technicians are available.
                                     </p>
-
                                 </div>
-
                                 <div class="assignment-field">
-
                                     <lightning-input
                                         type="date"
                                         name="scheduledDate"
                                         label="Scheduled Date"
                                         value={scheduledDate}
+                                        min={todayDate}
                                         required
                                         disabled={isSaving}
                                         onchange={handleScheduledDateChange}>
                                     </lightning-input>
-
                                 </div>
-
                                 <div class="assignment-field">
-
-                                    <lightning-input
-                                        type="time"
-                                        name="scheduledTime"
-                                        label="Time"
-                                        value={scheduledTime}
-                                        required
-                                        disabled={isSaving}
-                                        onchange={handleScheduledTimeChange}>
+                                    <lightning-input type="time" name="scheduledTime" label="Time" value={scheduledTime} required disabled={isSaving} onchange={handleScheduledTimeChange}>
                                     </lightning-input>
-
                                 </div>
-
                             </div>
-
                             <template if:true={scheduledVisitInPast}>
-
                                 <p class="input-error schedule-error">
                                     Select a visit date and time in the future.
                                 </p>
-
                             </template>
-
+                            <template if:true={hasSelectedTechnician}>
+                                <section class="availability-calendar">
+                                    <div class="availability-header">
+                                        <div class="availability-title">
+                                            <div class="availability-icon">
+                                                <lightning-icon icon-name="utility:event" size="x-small" alternative-text="">
+                                                </lightning-icon>
+                                            </div>
+                                            <div>
+                                                <p class="availability-eyebrow">
+                                                    Technician Availability
+                                                </p>
+                                                <h4>
+                                                    {selectedTechnicianName}'s Schedule
+                                                </h4>
+                                                <p>
+                                                    Scheduled, in-progress, and completed visits are shown below. Select today or a future date. Times within 30 minutes of another active appointment are unavailable.
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <template if:false={isScheduleLoading}>
+                                            <span class="availability-count">
+                                                {displayedMonthVisitLabel}
+                                            </span>
+                                        </template>
+                                    </div>
+                                    <template if:true={isScheduleLoading}>
+                                        <div class="availability-loading">
+                                            <lightning-spinner alternative-text="Loading technician availability" size="small">
+                                            </lightning-spinner>
+                                            <span>
+                                                Loading technician schedule...
+                                            </span>
+                                        </div>
+                                    </template>
+                                    <template if:true={hasScheduleError}>
+                                        <div class="availability-error">
+                                            <lightning-icon icon-name="utility:error" size="xx-small">
+                                            </lightning-icon>
+                                            <span>
+                                                {scheduleErrorMessage}
+                                            </span>
+                                        </div>
+                                    </template>
+                                    <template if:true={showScheduleCalendar}>
+                                        <div class="availability-month-toolbar">
+                                            <button type="button" class="availability-nav-button" title="Previous month" disabled={isScheduleLoading} onclick={handlePreviousMonth}>
+                                                <lightning-icon icon-name="utility:chevronleft" size="xx-small" alternative-text="Previous month">
+                                                </lightning-icon>
+                                            </button>
+                                            <h5>
+                                                {monthLabel}
+                                            </h5>
+                                            <button type="button" class="availability-nav-button" title="Next month" disabled={isScheduleLoading} onclick={handleNextMonth}>
+                                                <lightning-icon icon-name="utility:chevronright" size="xx-small" alternative-text="Next month">
+                                                </lightning-icon>
+                                            </button>
+                                            <button type="button" class="availability-today-button" disabled={isScheduleLoading} onclick={handleToday}>
+                                                Today
+                                            </button>
+                                        </div>
+                                        <div class="availability-key">
+                                            <span>
+                                                <span class="availability-key-dot availability-key-scheduled"></span>
+                                                Scheduled
+                                            </span>
+                                            <span>
+                                                <span class="availability-key-dot availability-key-progress"></span>
+                                                In Progress
+                                            </span>
+                                            <span><span class="availability-key-dot availability-key-completed"></span>Completed</span>
+                                        </div>
+                                        <div class="availability-weekdays">
+                                            <template for:each={weekdayLabels} for:item="weekday">
+                                                <div key={weekday.key} class="availability-weekday">
+                                                    {weekday.label}
+                                                </div>
+                                            </template>
+                                        </div>
+                                        <div class="availability-grid">
+                                            <template for:each={calendarDays} for:item="day">
+                                                <template if:true={day.isBlank}>
+                                                    <div key={day.key} class="availability-day availability-day-blank">
+                                                    </div>
+                                                </template>
+                                                <template if:false={day.isBlank}>
+                                                    <button
+                                                        key={day.key}
+                                                        type="button"
+                                                        class={day.dayClass}
+                                                        data-date={day.dateKey}
+                                                        disabled={day.isDisabled}
+                                                        onclick={handleCalendarDaySelect}>
+                                                        <div class="availability-day-number-row">
+                                                            <span class="availability-day-number">
+                                                                {day.dayNumber}
+                                                            </span>
+                                                            <template if:true={day.isToday}>
+                                                                <span class="availability-today-label">
+                                                                    Today
+                                                                </span>
+                                                            </template>
+                                                        </div>
+                                                        <template if:true={day.hasVisits}>
+                                                            <div class="availability-events">
+                                                                <template for:each={day.visibleVisits} for:item="visit">
+                                                                    <span key={visit.visitKey} class={visit.chipClass}>
+                                                                        <span class="availability-event-dot"></span>
+                                                                        <span class="availability-event-label">
+                                                                            {visit.timeLabel}
+                                                                        </span>
+                                                                    </span>
+                                                                </template>
+                                                                <template if:true={day.hasMoreVisits}>
+                                                                    <span class="availability-more">
+                                                                        +{day.moreVisitCount} more
+                                                                    </span>
+                                                                </template>
+                                                            </div>
+                                                        </template>
+                                                    </button>
+                                                </template>
+                                            </template>
+                                        </div>
+                                        <template if:true={selectedDateHasVisits}>
+                                            <div class="same-day-warning">
+                                                <div class="same-day-warning-heading">
+                                                    <lightning-icon icon-name="utility:warning" size="xx-small">
+                                                    </lightning-icon>
+                                                    <div>
+                                                        <strong>
+                                                            {selectedDateVisitCountLabel}
+                                                        </strong>
+                                                        <span>
+                                                            {selectedDateDisplay}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                                <div class="same-day-visits">
+                                                    <template for:each={selectedDateVisits} for:item="visit">
+                                                        <div key={visit.workOrderId} class="same-day-visit">
+                                                            <span class="same-day-time">
+                                                                {visit.timeLabel}
+                                                            </span>
+                                                            <div>
+                                                                <strong>
+                                                                    {visit.displayAccount}
+                                                                </strong>
+                                                                <span>
+                                                                    {visit.displayMachine}
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                    </template>
+                                                </div>
+                                                <p>
+                                                    Another visit can still be scheduled on this day as long as the selected time is more than 30 minutes before or after every existing visit.
+                                                </p>
+                                            </div>
+                                        </template>
+                                        <template if:true={hasScheduleConflict}>
+                                            <div class="schedule-conflict-warning">
+                                                <lightning-icon icon-name="utility:error" size="xx-small">
+                                                </lightning-icon>
+                                                <div>
+                                                    <strong>
+                                                        Scheduling conflict
+                                                    </strong>
+                                                    <span>
+                                                        {scheduleConflictMessage}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </template>
+                                    </template>
+                                </section>
+                            </template>
                             <label class="readiness-confirmation">
-
-                                <input
-                                    type="checkbox"
-                                    class="confirmation-checkbox"
-                                    checked={readyConfirmed}
-                                    disabled={hasBlockingParts}
-                                    onchange={handleReadyChange}>
-
+                                <input type="checkbox" class="confirmation-checkbox" checked={readyConfirmed} disabled={hasBlockingParts} onchange={handleReadyChange}>
                                 <span class="confirmation-copy">
-
                                     <strong>I confirm this repair is ready to schedule.</strong>
-
                                     <span>
                                         Required parts are received or no parts are required,
                                         and the approved repair can proceed.
                                     </span>
-
                                 </span>
-
                             </label>
-
                         </section>
-
                     </main>
-
                     <footer class="wizard-footer">
-
                         <button type="button" class="secondary-button" onclick={handleCancel}>
                             Cancel
                         </button>
-
-                        <button
-                            type="button"
-                            class="primary-button"
-                            disabled={isContinueDisabled}
-                            onclick={handleContinue}>
-
+                        <button type="button" class="primary-button" disabled={isContinueDisabled} onclick={handleContinue}>
                             Continue to Review
-
                             <lightning-icon icon-name="utility:chevronright" size="xx-small"></lightning-icon>
-
                         </button>
-
                     </footer>
-
                 </template>
-
                 <!-- =====================================================
                      STEP 2
                      ===================================================== -->
-
                 <template if:true={isStepTwo}>
-
                     <main class="wizard-content">
-
                         <div class="step-heading">
-
                             <p class="eyebrow">Step 2 of 2</p>
-
                             <h2>Dispatch Summary</h2>
-
                             <p>
                                 Review the technician assignment and scheduled visit before dispatching.
                             </p>
-
                         </div>
-
                         <div class="review-notice">
-
                             <lightning-icon icon-name="utility:info" size="xx-small"></lightning-icon>
-
                             <span>
                                 No Work Order, Case, or assignment records will
                                 be updated until you click Dispatch Technician.
                             </span>
-
                         </div>
-
                         <!-- NEXT STEP -->
-
                         <section class="content-card summary-green-card dispatch-confirmation-card">
-
                             <div class="summary-title-row">
-
                                 <div class="summary-card-icon summary-green-icon">
                                     <lightning-icon icon-name="utility:success" size="small"></lightning-icon>
                                 </div>
-
                                 <div class="summary-heading">
-
                                     <p class="section-kicker summary-green-kicker">Next Step</p>
-
                                     <h3>Technician Scheduled Visit</h3>
-
                                     <p class="next-step-message">
                                         <strong>{selectedTechnicianName}</strong>
                                         will be assigned this Work Order and is scheduled to visit
@@ -503,143 +496,80 @@
                                         <strong>{scheduledVisitDisplay}</strong>
                                         to perform the approved repair.
                                     </p>
-
                                 </div>
-
                             </div>
-
                             <div class="next-step-detail">
-
                                 <lightning-icon icon-name="utility:info_alt" size="xx-small"></lightning-icon>
-
                                 <span>
                                     After dispatch, the Work Order will appear in
                                     <strong>{selectedTechnicianName}'s</strong>
                                     assigned service work for the scheduled visit.
                                 </span>
-
                             </div>
-
                         </section>
-
                         <template if:true={saveErrorMessage}>
-
                             <div class="save-error">
                                 <lightning-icon icon-name="utility:error" size="xx-small"></lightning-icon>
                                 <span>{saveErrorMessage}</span>
                             </div>
-
                         </template>
-
                     </main>
-
                     <footer class="wizard-footer">
-
                         <button type="button" class="secondary-button" onclick={handleCancel}>
                             Cancel
                         </button>
-
                         <div class="footer-actions">
-
-                            <button
-                                type="button"
-                                class="secondary-button"
-                                disabled={isSaving}
-                                onclick={handleBack}>
-
+                            <button type="button" class="secondary-button" disabled={isSaving} onclick={handleBack}>
                                 <lightning-icon icon-name="utility:chevronleft" size="xx-small"></lightning-icon>
                                 Back
-
                             </button>
-
-                            <button
-                                type="button"
-                                class="done-button"
-                                disabled={isDispatchDisabled}
-                                onclick={handleDispatch}>
-
+                            <button type="button" class="done-button" disabled={isDispatchDisabled} onclick={handleDispatch}>
                                 <template if:false={isSaving}>
                                     <lightning-icon icon-name="utility:success" size="xx-small"></lightning-icon>
                                     Dispatch Technician
                                 </template>
-
                                 <template if:true={isSaving}>
-
                                     <span class="saving-content">
                                         <lightning-spinner alternative-text="Dispatching technician" size="small"></lightning-spinner>
                                         <span>Dispatching...</span>
                                     </span>
-
                                 </template>
-
                             </button>
-
                         </div>
-
                     </footer>
-
                 </template>
-
                 <!-- =====================================================
                      SUCCESS OVERLAY
                      ===================================================== -->
-
                 <template if:true={showSuccessConfirmation}>
-
                     <div class="completion-overlay">
-
                         <div class="completion-backdrop"></div>
-
-                        <section
-                            class="completion-dialog"
-                            role="alertdialog"
-                            aria-modal="true"
-                            aria-label="Technician dispatch completed">
-
+                        <section class="completion-dialog" role="alertdialog" aria-modal="true" aria-label="Technician dispatch completed">
                             <div class="completion-icon">
                                 <lightning-icon icon-name="utility:success" size="medium"></lightning-icon>
                             </div>
-
                             <p class="completion-eyebrow">Dispatch Complete</p>
-
                             <h2>{successHeading}</h2>
-
                             <p class="completion-message">{successMessage}</p>
-
                             <div class="completion-result">
                                 <span class="completion-result-label">Work Order Stage</span>
                                 <span class="success-status-pill">{successWorkOrderStatus}</span>
                             </div>
-
                             <div class="completion-result">
                                 <span class="completion-result-label">Case Status</span>
                                 <span class="success-status-pill">{successCaseStatus}</span>
                             </div>
-
                             <div class="completion-next-step">
                                 <strong>Next: Technician Service Visit</strong>
                                 <p>{successNextStepMessage}</p>
                             </div>
-
-                            <button
-                                type="button"
-                                class="completion-button"
-                                onclick={handleSuccessClose}>
-
+                            <button type="button" class="completion-button" onclick={handleSuccessClose}>
                                 Close
-
                             </button>
-
                         </section>
-
                     </div>
-
                 </template>
-
             </template>
-
         </template>
-
     </div>
-
 </template>

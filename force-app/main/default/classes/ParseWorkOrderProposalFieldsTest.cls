@@ -29,23 +29,44 @@ private class ParseWorkOrderProposalFieldsTest {
         Test.stopTest();
 
         System.assertEquals(1, results.size());
-        System.assert(
-            results[0].problemSummary.contains('Machine stopped')
-        );
-        System.assert(
-            results[0].recommendedSolution.contains('Inspect collet')
-        );
-        System.assertEquals(
-            'Bring diagnostic tools.',
-            results[0].technicianNotes
-        );
-        System.assertEquals(
-            'None identified',
-            results[0].recommendedParts
-        );
+        System.assert(results[0].problemSummary.contains('Machine stopped'));
+        System.assert(results[0].recommendedSolution.contains('Inspect collet'));
+        System.assertEquals('Bring diagnostic tools.', results[0].technicianNotes);
+        System.assertEquals('None identified', results[0].recommendedParts);
         System.assertEquals('', results[0].recommendedPartsJson);
         System.assertEquals(false, results[0].previousFailure);
         System.assertEquals('High', results[0].priority);
+    }
+
+    @IsTest
+    static void parsesPriorityWhenTrailingTextIsPresent() {
+        ParseWorkOrderProposalFields.Request request =
+            new ParseWorkOrderProposalFields.Request();
+        request.proposalText =
+            'PROBLEM SUMMARY:\nStep in cuts persisted after automatic correction.\n\n' +
+            'RECOMMENDED FIX SUMMARY:\nPerform manual correction.\n\n' +
+            'RECOMMENDED SOLUTION:\n- Perform manual correction in VPanel.\n\n' +
+            'TECHNICIAN NOTES:\n- Automatic correction was already attempted.\n\n' +
+            'RECOMMENDED TOOLS:\nDigital micrometer\n\n' +
+            'RECOMMENDED PARTS:\n{"parts":[]}\n\n' +
+            'PREVIOUS FAILURE:\nfalse\n\n' +
+            'PRIORITY:\nMedium\n\n' +
+            'I appreciate your prompt review and direction on this draft work order.';
+
+        Test.startTest();
+        List<ParseWorkOrderProposalFields.Response> results =
+            ParseWorkOrderProposalFields.parseProposalFields(
+                new List<ParseWorkOrderProposalFields.Request>{
+                    request
+                }
+            );
+        Test.stopTest();
+
+        System.assertEquals(1, results.size());
+        System.assertEquals('Medium', results[0].priority);
+        System.assertEquals(false, results[0].previousFailure);
+        System.assertEquals('Digital micrometer', results[0].recommendedTools);
+        System.assertEquals('{"parts":[]}', results[0].recommendedPartsJson);
     }
 
     @IsTest
@@ -63,16 +84,11 @@ private class ParseWorkOrderProposalFieldsTest {
         Test.startTest();
         List<ParseWorkOrderProposalFields.Response> results =
             ParseWorkOrderProposalFields.parseProposalFields(
-                new List<ParseWorkOrderProposalFields.Request>{
-                    request
-                }
+                new List<ParseWorkOrderProposalFields.Request>{ request }
             );
         Test.stopTest();
 
-        System.assertEquals(
-            '- Spindle assembly',
-            results[0].recommendedParts
-        );
+        System.assertEquals('- Spindle assembly', results[0].recommendedParts);
         System.assertEquals('', results[0].recommendedPartsJson);
         System.assertEquals(true, results[0].previousFailure);
         System.assertEquals('Critical', results[0].priority);
@@ -94,43 +110,29 @@ private class ParseWorkOrderProposalFieldsTest {
         Test.startTest();
         List<ParseWorkOrderProposalFields.Response> results =
             ParseWorkOrderProposalFields.parseProposalFields(
-                new List<ParseWorkOrderProposalFields.Request>{
-                    request
-                }
+                new List<ParseWorkOrderProposalFields.Request>{ request }
             );
         Test.stopTest();
 
-        System.assert(
-            results[0].recommendedParts.contains('Spindle assembly')
-        );
-        System.assert(
-            results[0].recommendedParts.contains('Quantity: 2')
-        );
-        System.assert(
-            results[0].recommendedPartsJson.contains('"parts"')
-        );
+        System.assert(results[0].recommendedParts.contains('Spindle assembly'));
+        System.assert(results[0].recommendedParts.contains('Quantity: 2'));
+        System.assert(results[0].recommendedPartsJson.contains('"parts"'));
     }
 
     @IsTest
     static void handlesMissingSectionsWithoutFailing() {
         ParseWorkOrderProposalFields.Request request =
             new ParseWorkOrderProposalFields.Request();
-        request.proposalText =
-            'PROBLEM SUMMARY:\nOnly summary exists.';
+        request.proposalText = 'PROBLEM SUMMARY:\nOnly summary exists.';
 
         Test.startTest();
         List<ParseWorkOrderProposalFields.Response> results =
             ParseWorkOrderProposalFields.parseProposalFields(
-                new List<ParseWorkOrderProposalFields.Request>{
-                    request
-                }
+                new List<ParseWorkOrderProposalFields.Request>{ request }
             );
         Test.stopTest();
 
-        System.assertEquals(
-            'Only summary exists.',
-            results[0].problemSummary
-        );
+        System.assertEquals('Only summary exists.', results[0].problemSummary);
         System.assertEquals('', results[0].recommendedSolution);
         System.assertEquals('', results[0].technicianNotes);
         System.assertEquals('', results[0].recommendedParts);
@@ -148,9 +150,7 @@ private class ParseWorkOrderProposalFieldsTest {
         Test.startTest();
         List<ParseWorkOrderProposalFields.Response> results =
             ParseWorkOrderProposalFields.parseProposalFields(
-                new List<ParseWorkOrderProposalFields.Request>{
-                    request
-                }
+                new List<ParseWorkOrderProposalFields.Request>{ request }
             );
         Test.stopTest();
 

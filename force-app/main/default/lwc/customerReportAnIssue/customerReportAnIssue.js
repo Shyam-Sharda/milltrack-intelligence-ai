@@ -1,41 +1,28 @@
 import { LightningElement } from 'lwc';
 import { NavigationMixin } from 'lightning/navigation';
-
-import getReportIssueData
-    from '@salesforce/apex/CustomerReportAnIssueController.getReportIssueData';
-
-import submitServiceRequest
-    from '@salesforce/apex/CustomerReportAnIssueController.submitServiceRequest';
-
-import MACHINE_MEDIA
-    from '@salesforce/resourceUrl/MillTrack_Machine_Media';
+import getReportIssueData from '@salesforce/apex/CustomerReportAnIssueController.getReportIssueData';
+import submitServiceRequest from '@salesforce/apex/CustomerReportAnIssueController.submitServiceRequest';
+import MACHINE_MEDIA from '@salesforce/resourceUrl/MillTrack_Machine_Media';
 
 export default class CustomerReportAnIssue extends NavigationMixin(LightningElement) {
     machines = [];
     priorities = [];
-
     isLoading = true;
     isSubmitting = false;
-
     loadError;
     stepError;
     submissionError;
-
     currentStep = 1;
-
     selectedAssetId;
     subject = '';
     description = '';
     errorCode = '';
     priority = 'Medium';
-    technicianRequested = false;
-
     submissionResult;
 
     connectedCallback() {
         this.loadData();
     }
-
 
     // =========================================================
     // Load
@@ -47,55 +34,24 @@ export default class CustomerReportAnIssue extends NavigationMixin(LightningElem
 
         try {
             const data = await getReportIssueData();
-
             this.priority = data?.defaultPriority || 'Medium';
 
             this.machines = (data?.machines || []).map(machine => ({
                 ...machine,
-
-                serialDisplay:
-                    machine.serialNumber ||
-                    'Not available',
-
-                statusDisplay:
-                    machine.status ||
-                    'Status unavailable',
-
-                manufacturerModelDisplay:
-                    this.getManufacturerModelDisplay(machine),
-
-                statusClass:
-                    this.getMachineStatusClass(machine.status),
-
-                imageUrl:
-                    this.buildStaticResourceUrl(
-                        MACHINE_MEDIA,
-                        machine.portalImagePath
-                    ),
-
-                hasImage:
-                    !!machine.portalImagePath?.trim(),
-
-                cardClass:
-                    'machine-card',
-
-                selected:
-                    false
+                serialDisplay: machine.serialNumber || 'Not available',
+                statusDisplay: machine.status || 'Status unavailable',
+                manufacturerModelDisplay: this.getManufacturerModelDisplay(machine),
+                statusClass: this.getMachineStatusClass(machine.status),
+                imageUrl: this.buildStaticResourceUrl(MACHINE_MEDIA, machine.portalImagePath),
+                hasImage: !!machine.portalImagePath?.trim(),
+                cardClass: 'machine-card',
+                selected: false
             }));
 
             this.priorities = (data?.priorities || []).map(option => ({
                 ...option,
-
-                choiceClass:
-                    this.getPriorityChoiceClass(
-                        option.value,
-                        this.priority
-                    ),
-
-                ariaChecked:
-                    option.value === this.priority
-                        ? 'true'
-                        : 'false'
+                choiceClass: this.getPriorityChoiceClass(option.value, this.priority),
+                ariaChecked: option.value === this.priority ? 'true' : 'false'
             }));
         } catch (error) {
             this.loadError = this.getErrorMessage(
@@ -106,7 +62,6 @@ export default class CustomerReportAnIssue extends NavigationMixin(LightningElem
             this.isLoading = false;
         }
     }
-
 
     // =========================================================
     // General State
@@ -144,7 +99,6 @@ export default class CustomerReportAnIssue extends NavigationMixin(LightningElem
         return this.currentStep === 3;
     }
 
-
     // =========================================================
     // Progress
     // =========================================================
@@ -156,9 +110,7 @@ export default class CustomerReportAnIssue extends NavigationMixin(LightningElem
     }
 
     get stepTwoClass() {
-        if (this.currentStep === 2) {
-            return 'progress-step active';
-        }
+        if (this.currentStep === 2) return 'progress-step active';
 
         return this.currentStep > 2
             ? 'progress-step complete'
@@ -183,7 +135,6 @@ export default class CustomerReportAnIssue extends NavigationMixin(LightningElem
             : '2';
     }
 
-
     // =========================================================
     // Review State
     // =========================================================
@@ -195,19 +146,11 @@ export default class CustomerReportAnIssue extends NavigationMixin(LightningElem
     }
 
     get subjectDisplay() {
-        return this.subject?.trim() ||
-            'No subject provided';
+        return this.subject?.trim() || '';
     }
 
     get errorCodeDisplay() {
-        return this.errorCode?.trim() ||
-            'Not provided';
-    }
-
-    get technicianRequestedDisplay() {
-        return this.technicianRequested
-            ? 'Yes'
-            : 'No';
+        return this.errorCode?.trim() || 'Not provided';
     }
 
     get priorityPillClass() {
@@ -243,7 +186,6 @@ export default class CustomerReportAnIssue extends NavigationMixin(LightningElem
         return this.submissionResult?.caseNumber || '';
     }
 
-
     // =========================================================
     // Machine Formatting
     // =========================================================
@@ -251,17 +193,9 @@ export default class CustomerReportAnIssue extends NavigationMixin(LightningElem
     getManufacturerModelDisplay(machine) {
         const manufacturer = machine?.manufacturer;
         const model = machine?.model;
+        const label = [manufacturer, model].filter(Boolean).join(' ');
 
-        const label = [
-            manufacturer,
-            model
-        ]
-            .filter(Boolean)
-            .join(' ');
-
-        return label ||
-            machine?.name ||
-            'Machine';
+        return label || machine?.name || 'Machine';
     }
 
     getMachineStatusClass(status) {
@@ -287,9 +221,7 @@ export default class CustomerReportAnIssue extends NavigationMixin(LightningElem
     }
 
     buildStaticResourceUrl(baseUrl, relativePath) {
-        if (!baseUrl || !relativePath) {
-            return null;
-        }
+        if (!baseUrl || !relativePath) return null;
 
         const normalizedPath = relativePath
             .replace(/^\/+/, '')
@@ -298,45 +230,32 @@ export default class CustomerReportAnIssue extends NavigationMixin(LightningElem
         return `${baseUrl}/${normalizedPath}`;
     }
 
-
     // =========================================================
     // Priority
     // =========================================================
 
     getPriorityChoiceClass(value, selectedValue) {
-        const classes = [
-            'priority-choice'
-        ];
+        const classes = ['priority-choice'];
 
         switch (value) {
             case 'Critical':
-                classes.push(
-                    'priority-choice-critical'
-                );
+                classes.push('priority-choice-critical');
                 break;
 
             case 'High':
-                classes.push(
-                    'priority-choice-high'
-                );
+                classes.push('priority-choice-high');
                 break;
 
             case 'Medium':
-                classes.push(
-                    'priority-choice-medium'
-                );
+                classes.push('priority-choice-medium');
                 break;
 
             case 'Low':
-                classes.push(
-                    'priority-choice-low'
-                );
+                classes.push('priority-choice-low');
                 break;
 
             default:
-                classes.push(
-                    'priority-choice-neutral'
-                );
+                classes.push('priority-choice-neutral');
         }
 
         if (value === selectedValue) {
@@ -346,112 +265,74 @@ export default class CustomerReportAnIssue extends NavigationMixin(LightningElem
         return classes.join(' ');
     }
 
-
     // =========================================================
     // Machine Selection
     // =========================================================
 
     handleMachineSelect(event) {
-        const assetId =
-            event.currentTarget.dataset.id;
-
-        this.selectMachine(assetId);
+        this.selectMachine(event.currentTarget.dataset.id);
     }
 
     handleMachineKeydown(event) {
-        if (
-            event.key !== 'Enter' &&
-            event.key !== ' '
-        ) {
-            return;
-        }
+        if (event.key !== 'Enter' && event.key !== ' ') return;
 
         event.preventDefault();
-
-        const assetId =
-            event.currentTarget.dataset.id;
-
-        this.selectMachine(assetId);
+        this.selectMachine(event.currentTarget.dataset.id);
     }
 
     selectMachine(assetId) {
-        if (!assetId) {
-            return;
-        }
+        if (!assetId) return;
 
         this.selectedAssetId = assetId;
         this.stepError = undefined;
 
         this.machines = this.machines.map(machine => {
-            const selected =
-                machine.id === this.selectedAssetId;
+            const selected = machine.id === this.selectedAssetId;
 
             return {
                 ...machine,
-
                 selected,
-
-                cardClass:
-                    selected
-                        ? 'machine-card selected'
-                        : 'machine-card'
+                cardClass: selected
+                    ? 'machine-card selected'
+                    : 'machine-card'
             };
         });
     }
-
 
     // =========================================================
     // Form
     // =========================================================
 
     handleSubjectChange(event) {
-        this.subject =
-            event.target.value || '';
-
+        this.subject = event.target.value || '';
         this.stepError = undefined;
     }
 
     handleDescriptionChange(event) {
-        this.description =
-            event.target.value || '';
-
+        this.description = event.target.value || '';
         this.stepError = undefined;
     }
 
     handleErrorCodeChange(event) {
-        this.errorCode =
-            event.target.value || '';
-
+        this.errorCode = event.target.value || '';
         this.stepError = undefined;
     }
 
     handlePrioritySelect(event) {
-        this.priority =
-            event.currentTarget.dataset.value;
-
+        this.priority = event.currentTarget.dataset.value;
         this.stepError = undefined;
 
         this.priorities = this.priorities.map(option => ({
             ...option,
-
-            choiceClass:
-                this.getPriorityChoiceClass(
-                    option.value,
-                    this.priority
-                ),
-
-            ariaChecked:
-                option.value === this.priority
-                    ? 'true'
-                    : 'false'
+            choiceClass: this.getPriorityChoiceClass(
+                option.value,
+                this.priority
+            ),
+            ariaChecked: option.value === this.priority
+                ? 'true'
+                : 'false'
         }));
     }
-
-    handleTechnicianRequestedChange(event) {
-        this.technicianRequested =
-            event.target.checked;
-    }
-
 
     // =========================================================
     // Wizard Navigation
@@ -459,45 +340,38 @@ export default class CustomerReportAnIssue extends NavigationMixin(LightningElem
 
     handleContinueFromMachine() {
         if (!this.selectedAssetId) {
-            this.stepError =
-                'Please select the machine experiencing the issue.';
-
+            this.stepError = 'Please select the machine experiencing the issue.';
             return;
         }
 
         this.stepError = undefined;
         this.currentStep = 2;
-
         this.scrollToWizardTop();
     }
 
     handleContinueToReview() {
-        if (!this.description?.trim()) {
-            this.stepError =
-                'Please describe the problem you are experiencing.';
-
+        if (!this.subject?.trim()) {
+            this.stepError = 'Please enter a subject for your service request.';
             return;
         }
 
-        if (
-            this.subject?.trim().length >
-            255
-        ) {
-            this.stepError =
-                'Subject cannot exceed 255 characters.';
+        if (!this.description?.trim()) {
+            this.stepError = 'Please describe the problem you are experiencing.';
+            return;
+        }
 
+        if (this.subject.trim().length > 255) {
+            this.stepError = 'Subject cannot exceed 255 characters.';
             return;
         }
 
         this.stepError = undefined;
         this.currentStep = 3;
-
         this.scrollToWizardTop();
     }
 
     handleBack() {
         this.stepError = undefined;
-
         this.currentStep = Math.max(
             1,
             this.currentStep - 1
@@ -509,17 +383,14 @@ export default class CustomerReportAnIssue extends NavigationMixin(LightningElem
     handleEditMachine() {
         this.stepError = undefined;
         this.currentStep = 1;
-
         this.scrollToWizardTop();
     }
 
     handleEditDetails() {
         this.stepError = undefined;
         this.currentStep = 2;
-
         this.scrollToWizardTop();
     }
-
 
     // =========================================================
     // Submit
@@ -529,6 +400,7 @@ export default class CustomerReportAnIssue extends NavigationMixin(LightningElem
         if (
             this.isSubmitting ||
             !this.selectedAssetId ||
+            !this.subject?.trim() ||
             !this.description?.trim()
         ) {
             return;
@@ -538,30 +410,14 @@ export default class CustomerReportAnIssue extends NavigationMixin(LightningElem
         this.submissionError = undefined;
 
         try {
-            const result =
-                await submitServiceRequest({
-                    assetId:
-                        this.selectedAssetId,
-
-                    subject:
-                        this.normalizeText(
-                            this.subject
-                        ),
-
-                    description:
-                        this.description.trim(),
-
-                    errorCode:
-                        this.normalizeText(
-                            this.errorCode
-                        ),
-
-                    priority:
-                        this.priority,
-
-                    technicianRequested:
-                        this.technicianRequested
-                });
+            const result = await submitServiceRequest({
+                assetId: this.selectedAssetId,
+                subject: this.normalizeText(this.subject),
+                description: this.description.trim(),
+                errorCode: this.normalizeText(this.errorCode),
+                priority: this.priority,
+                technicianRequested: false
+            });
 
             if (!result?.success) {
                 this.submissionError =
@@ -577,57 +433,44 @@ export default class CustomerReportAnIssue extends NavigationMixin(LightningElem
                 this.scrollToComponentTop();
             });
         } catch (error) {
-            this.submissionError =
-                this.getErrorMessage(
-                    error,
-                    'We could not submit your service request. Please try again.'
-                );
+            this.submissionError = this.getErrorMessage(
+                error,
+                'We could not submit your service request. Please try again.'
+            );
         } finally {
             this.isSubmitting = false;
         }
     }
-
 
     // =========================================================
     // Navigation
     // =========================================================
 
     handleViewServiceRequest() {
-        const caseId =
-            this.submissionResult?.caseId;
+        const caseId = this.submissionResult?.caseId;
 
-        if (!caseId) {
-            return;
-        }
+        if (!caseId) return;
 
         this[NavigationMixin.Navigate]({
             type: 'standard__recordPage',
-
             attributes: {
-                recordId:
-                    caseId,
-
-                objectApiName:
-                    'Case',
-
-                actionName:
-                    'view'
+                recordId: caseId,
+                objectApiName: 'Case',
+                actionName: 'view'
             }
         });
     }
 
     async handleBackHome() {
         try {
-            const homeUrl =
-                await this[
-                    NavigationMixin.GenerateUrl
-                ]({
-                    type: 'comm__namedPage',
-
-                    attributes: {
-                        name: 'Home'
-                    }
-                });
+            const homeUrl = await this[
+                NavigationMixin.GenerateUrl
+            ]({
+                type: 'comm__namedPage',
+                attributes: {
+                    name: 'Home'
+                }
+            });
 
             window.location.assign(homeUrl);
         } catch (error) {
@@ -635,7 +478,6 @@ export default class CustomerReportAnIssue extends NavigationMixin(LightningElem
                 NavigationMixin.Navigate
             ]({
                 type: 'comm__namedPage',
-
                 attributes: {
                     name: 'Home'
                 }
@@ -647,24 +489,20 @@ export default class CustomerReportAnIssue extends NavigationMixin(LightningElem
         this.loadData();
     }
 
-
     // =========================================================
     // Helpers
     // =========================================================
 
     normalizeText(value) {
-        const normalized =
-            value?.trim();
-
+        const normalized = value?.trim();
         return normalized || null;
     }
 
     scrollToWizardTop() {
         requestAnimationFrame(() => {
-            const wizard =
-                this.template.querySelector(
-                    '.wizard-shell'
-                );
+            const wizard = this.template.querySelector(
+                '.wizard-shell'
+            );
 
             if (wizard) {
                 wizard.scrollIntoView({
@@ -676,10 +514,9 @@ export default class CustomerReportAnIssue extends NavigationMixin(LightningElem
     }
 
     scrollToComponentTop() {
-        const shell =
-            this.template.querySelector(
-                '.report-shell'
-            );
+        const shell = this.template.querySelector(
+            '.report-shell'
+        );
 
         if (shell) {
             shell.scrollIntoView({
@@ -689,10 +526,7 @@ export default class CustomerReportAnIssue extends NavigationMixin(LightningElem
         }
     }
 
-    getErrorMessage(
-        error,
-        fallbackMessage
-    ) {
+    getErrorMessage(error, fallbackMessage) {
         if (error?.body?.message) {
             return error.body.message;
         }

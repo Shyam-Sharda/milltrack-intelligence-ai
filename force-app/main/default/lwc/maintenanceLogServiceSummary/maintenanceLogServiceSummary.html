@@ -459,55 +459,11 @@
 
 
             <!-- =================================================
-                 RELATED CONTEXT
+                 SERVICE CONTEXT
                  ================================================= -->
             <template if:true={showRelatedContext}>
 
                 <section class="context-grid">
-
-
-                    <!-- WORK ORDER -->
-                    <template if:true={hasWorkOrder}>
-
-                        <button
-                            class="context-card"
-                            onclick={handleWorkOrderOpen}>
-
-                            <div class="context-top">
-
-                                <div class="context-icon">
-
-                                    <lightning-icon
-                                        icon-name="standard:work_order"
-                                        size="small">
-                                    </lightning-icon>
-
-                                </div>
-
-
-                                <span class="context-label">
-                                    WORK ORDER
-                                </span>
-
-                            </div>
-
-
-                            <strong>
-                                {workOrderNumber}
-                            </strong>
-
-
-                            <template if:true={dispatchStatus}>
-
-                                <span class="context-status">
-                                    {dispatchStatus}
-                                </span>
-
-                            </template>
-
-                        </button>
-
-                    </template>
 
 
                     <!-- MACHINE -->
@@ -541,31 +497,127 @@
                             </strong>
 
 
-                            <template if:true={serialNumber}>
+                            <div class="context-detail-row">
 
-                                <p>
-                                    Serial: {serialNumber}
-                                </p>
+                                <template if:true={machineDetails}>
 
-                            </template>
+                                    <span>
+                                        {machineDetails}
+                                    </span>
 
-
-                            <template if:true={machineDetails}>
-
-                                <p>
-                                    {machineDetails}
-                                </p>
-
-                            </template>
+                                </template>
 
 
-                            <template if:true={machineStatus}>
+                                <template if:true={serialNumber}>
 
-                                <span class="context-status">
-                                    {machineStatus}
+                                    <span>
+                                        Serial: {serialNumber}
+                                    </span>
+
+                                </template>
+
+
+                                <template if:true={machineStatus}>
+
+                                    <span class="context-status-inline">
+                                        {machineStatus}
+                                    </span>
+
+                                </template>
+
+                            </div>
+
+                        </button>
+
+                    </template>
+
+
+                    <!-- ACCOUNT -->
+                    <template if:true={hasAccount}>
+
+                        <button
+                            class="context-card"
+                            onclick={handleAccountOpen}>
+
+                            <div class="context-top">
+
+                                <div class="context-icon">
+
+                                    <lightning-icon
+                                        icon-name="standard:account"
+                                        size="small">
+                                    </lightning-icon>
+
+                                </div>
+
+
+                                <span class="context-label">
+                                    ACCOUNT
                                 </span>
 
-                            </template>
+                            </div>
+
+
+                            <strong>
+                                {accountName}
+                            </strong>
+
+                        </button>
+
+                    </template>
+
+
+                    <!-- CONTACT -->
+                    <template if:true={hasContact}>
+
+                        <button
+                            class="context-card"
+                            onclick={handleContactOpen}>
+
+                            <div class="context-top">
+
+                                <div class="context-icon">
+
+                                    <lightning-icon
+                                        icon-name="standard:contact"
+                                        size="small">
+                                    </lightning-icon>
+
+                                </div>
+
+
+                                <span class="context-label">
+                                    CONTACT
+                                </span>
+
+                            </div>
+
+
+                            <strong>
+                                {contactName}
+                            </strong>
+
+
+                            <div class="context-detail-row">
+
+                                <template if:true={contactPhone}>
+
+                                    <span>
+                                        {contactPhone}
+                                    </span>
+
+                                </template>
+
+
+                                <template if:true={contactEmail}>
+
+                                    <span>
+                                        {contactEmail}
+                                    </span>
+
+                                </template>
+
+                            </div>
 
                         </button>
 

@@ -1,6 +1,6 @@
 public with sharing class TechnicianAIChatController {
-    private static final String AGENT_API_NAME =
-        'MillTrack_Technician_Agent';
+
+    private static final String AGENT_API_NAME = 'MillTrack_Technician_Agent';
     private static final Integer MAX_MESSAGE_LENGTH = 4000;
 
     /**
@@ -24,48 +24,30 @@ public with sharing class TechnicianAIChatController {
     ) {
         validateRequest(workOrderId, userMessage);
 
-        WorkOrder currentWorkOrder =
-            getAccessibleWorkOrder(workOrderId);
-        String agentMessage = buildAgentMessage(
-            currentWorkOrder,
-            userMessage.trim()
-        );
+        WorkOrder currentWorkOrder = getAccessibleWorkOrder(workOrderId);
+        String agentMessage = buildAgentMessage(currentWorkOrder, userMessage.trim());
 
         lastAgentMessage = agentMessage;
         lastRequestedSessionId = sessionId;
 
         try {
-            if (
-                Test.isRunningTest() &&
-                testOutputParameters != null
-            ) {
-                return processAgentOutput(
-                    testOutputParameters,
-                    sessionId
-                );
+            if (Test.isRunningTest() && testOutputParameters != null) {
+                return processAgentOutput(testOutputParameters, sessionId);
             }
 
-            Invocable.Action agentAction =
-                Invocable.Action.createCustomAction(
-                    'generateAiAgentResponse',
-                    AGENT_API_NAME
-                );
-
-            agentAction.setInvocationParameter(
-                'userMessage',
-                agentMessage
+            Invocable.Action agentAction = Invocable.Action.createCustomAction(
+                'generateAiAgentResponse',
+                AGENT_API_NAME
             );
+
+            agentAction.setInvocationParameter('userMessage', agentMessage);
 
             // Salesforce creates the ID for a new conversation.
             if (String.isNotBlank(sessionId)) {
-                agentAction.setInvocationParameter(
-                    'sessionId',
-                    sessionId
-                );
+                agentAction.setInvocationParameter('sessionId', sessionId);
             }
 
-            List<Invocable.Action.Result> results =
-                agentAction.invoke();
+            List<Invocable.Action.Result> results = agentAction.invoke();
 
             return processAgentResult(results, sessionId);
         } catch (AuraHandledException handledException) {
@@ -73,20 +55,16 @@ public with sharing class TechnicianAIChatController {
         } catch (Exception exceptionDetails) {
             System.debug(
                 LoggingLevel.ERROR,
-                'Technician AI invocation failed: ' +
-                exceptionDetails.getMessage()
+                'Technician AI invocation failed: ' + exceptionDetails.getMessage()
             );
 
             throw new AuraHandledException(
-                'Technician AI could not complete the request. ' +
-                'Please try again.'
+                'Technician AI could not complete the request. Please try again.'
             );
         }
     }
 
-    private static WorkOrder getAccessibleWorkOrder(
-        Id workOrderId
-    ) {
+    private static WorkOrder getAccessibleWorkOrder(Id workOrderId) {
         try {
             return [
                 SELECT
@@ -95,6 +73,8 @@ public with sharing class TechnicianAIChatController {
                     Subject,
                     Dispatch_Status__c,
                     AssetId,
+                    Asset.Manufacturer__c,
+                    Asset.Model__c,
                     CaseId
                 FROM WorkOrder
                 WHERE Id = :workOrderId
@@ -116,48 +96,64 @@ public with sharing class TechnicianAIChatController {
         List<String> contextLines = new List<String>{
             'SYSTEM-PROVIDED SALESFORCE RECORD CONTEXT',
             '',
-            'Current Work Order ID: ' +
-                String.valueOf(currentWorkOrder.Id),
-            'Current Work Order Number: ' +
-                currentWorkOrder.WorkOrderNumber
+            'Current Work Order ID: ' + String.valueOf(currentWorkOrder.Id),
+            'Current Work Order Number: ' + currentWorkOrder.WorkOrderNumber
         };
 
         if (String.isNotBlank(currentWorkOrder.Subject)) {
-            contextLines.add(
-                'Current Work Order Subject: ' +
-                currentWorkOrder.Subject
-            );
+            contextLines.add('Current Work Order Subject: ' + currentWorkOrder.Subject);
         }
 
-        if (
-            String.isNotBlank(
-                currentWorkOrder.Dispatch_Status__c
-            )
-        ) {
+        if (String.isNotBlank(currentWorkOrder.Dispatch_Status__c)) {
             contextLines.add(
-                'Current Dispatch Status: ' +
-                currentWorkOrder.Dispatch_Status__c
+                'Current Dispatch Status: ' + currentWorkOrder.Dispatch_Status__c
             );
         }
 
         if (currentWorkOrder.AssetId != null) {
             contextLines.add(
-                'Current Asset ID: ' +
-                String.valueOf(currentWorkOrder.AssetId)
+                'Current Asset ID: ' + String.valueOf(currentWorkOrder.AssetId)
             );
+
+            if (
+                currentWorkOrder.Asset != null &&
+                String.isNotBlank(currentWorkOrder.Asset.Manufacturer__c)
+            ) {
+                contextLines.add(
+                    'Current Machine Manufacturer: ' +
+                    currentWorkOrder.Asset.Manufacturer__c
+                );
+            }
+
+            if (
+                currentWorkOrder.Asset != null &&
+                String.isNotBlank(currentWorkOrder.Asset.Model__c)
+            ) {
+                contextLines.add(
+                    'Current Machine Model: ' + currentWorkOrder.Asset.Model__c
+                );
+            }
         }
 
         if (currentWorkOrder.CaseId != null) {
             contextLines.add(
-                'Current Case ID: ' +
-                String.valueOf(currentWorkOrder.CaseId)
+                'Current Case ID: ' + String.valueOf(currentWorkOrder.CaseId)
             );
         }
 
         contextLines.add('');
         contextLines.add(
-            'Use the Current Work Order ID when invoking Work Order ' +
-            'Assistance or any Salesforce grounding action.'
+            'Use the Salesforce record context above to understand the ' +
+            'current job and machine.'
+        );
+        contextLines.add(
+            'Determine the technician\'s primary intent from the actual ' +
+            'TECHNICIAN QUESTION and use the appropriate agent capability.'
+        );
+        contextLines.add(
+            'The presence of a Work Order, Asset, Case, or other Salesforce ' +
+            'record provides context and does not by itself mean the request ' +
+            'is Work Order Assistance.'
         );
         contextLines.add('');
         contextLines.add('TECHNICIAN QUESTION');
@@ -181,8 +177,7 @@ public with sharing class TechnicianAIChatController {
         if (!result.isSuccess()) {
             System.debug(
                 LoggingLevel.ERROR,
-                'Technician AI action errors: ' +
-                String.valueOf(result.getErrors())
+                'Technician AI action errors: ' + String.valueOf(result.getErrors())
             );
 
             throw new AuraHandledException(
@@ -190,10 +185,7 @@ public with sharing class TechnicianAIChatController {
             );
         }
 
-        return processAgentOutput(
-            result.getOutputParameters(),
-            requestedSessionId
-        );
+        return processAgentOutput(result.getOutputParameters(), requestedSessionId);
     }
 
     private static ChatResponse processAgentOutput(
@@ -206,8 +198,7 @@ public with sharing class TechnicianAIChatController {
             );
         }
 
-        Object agentResponseValue =
-            outputParameters.get('agentResponse');
+        Object agentResponseValue = outputParameters.get('agentResponse');
 
         if (agentResponseValue == null) {
             throw new AuraHandledException(
@@ -224,35 +215,26 @@ public with sharing class TechnicianAIChatController {
             );
         }
 
-        Object returnedSessionId =
-            outputParameters.get('sessionId');
-        String returnedSessionText =
-            returnedSessionId == null
+        Object returnedSessionId = outputParameters.get('sessionId');
+        String returnedSessionText = returnedSessionId == null
             ? null
             : String.valueOf(returnedSessionId);
 
-        response.sessionId =
-            String.isNotBlank(returnedSessionText)
+        response.sessionId = String.isNotBlank(returnedSessionText)
             ? returnedSessionText
             : requestedSessionId;
 
         return response;
     }
 
-    private static void validateRequest(
-        Id workOrderId,
-        String userMessage
-    ) {
+    private static void validateRequest(Id workOrderId, String userMessage) {
         if (workOrderId == null) {
             throw new AuraHandledException(
                 'A Work Order ID was not supplied to Technician AI.'
             );
         }
 
-        if (
-            workOrderId.getSObjectType() !=
-            WorkOrder.SObjectType
-        ) {
+        if (workOrderId.getSObjectType() != WorkOrder.SObjectType) {
             throw new AuraHandledException(
                 'The supplied record ID is not a Work Order.'
             );
@@ -273,18 +255,15 @@ public with sharing class TechnicianAIChatController {
         }
     }
 
-    private static String extractAgentText(
-        Object agentResponseValue
-    ) {
+    private static String extractAgentText(Object agentResponseValue) {
         if (agentResponseValue == null) {
             return null;
         }
 
-        if (
-            agentResponseValue instanceof Map<String, Object>
-        ) {
+        if (agentResponseValue instanceof Map<String, Object>) {
             Map<String, Object> responseEnvelope =
                 (Map<String, Object>) agentResponseValue;
+
             Object envelopeValue = responseEnvelope.get('value');
 
             if (
@@ -295,21 +274,17 @@ public with sharing class TechnicianAIChatController {
             }
         }
 
-        String rawResponse =
-            String.valueOf(agentResponseValue).trim();
+        String rawResponse = String.valueOf(agentResponseValue).trim();
 
         if (String.isBlank(rawResponse)) {
             return null;
         }
 
-        if (
-            rawResponse.startsWith('{') &&
-            rawResponse.endsWith('}')
-        ) {
+        if (rawResponse.startsWith('{') && rawResponse.endsWith('}')) {
             try {
                 Map<String, Object> responseEnvelope =
-                    (Map<String, Object>)
-                    JSON.deserializeUntyped(rawResponse);
+                    (Map<String, Object>) JSON.deserializeUntyped(rawResponse);
+
                 Object value = responseEnvelope.get('value');
 
                 if (

@@ -1,0 +1,364 @@
+<template>
+    <div class="page-shell">
+        <template if:true={isLoading}>
+            <div class="loading-container">
+                <lightning-spinner
+                    alternative-text="Loading service request"
+                    size="medium">
+                </lightning-spinner>
+            </div>
+        </template>
+
+        <template if:true={errorMessage}>
+            <div class="error-card">
+                <div class="error-icon">
+                    <lightning-icon
+                        icon-name="utility:error"
+                        size="small"
+                        alternative-text="Error">
+                    </lightning-icon>
+                </div>
+
+                <div>
+                    <h2>We couldn't load this service request</h2>
+                    <p>{errorMessage}</p>
+                </div>
+            </div>
+        </template>
+
+        <template if:true={hasData}>
+            <section class="request-hero">
+                <div class="hero-top">
+                    <div class="hero-title-area">
+                        <p class="eyebrow">SERVICE REQUEST</p>
+                        <h1>{serviceRequest.subjectDisplay}</h1>
+                        <p class="request-number">
+                            Request #{serviceRequest.requestNumberDisplay}
+                        </p>
+                    </div>
+
+                    <div class="hero-status-area">
+                        <span class={serviceRequest.statusClass}>
+                            {serviceRequest.customerStatusDisplay}
+                        </span>
+                    </div>
+                </div>
+            </section>
+
+            <template if:true={hasProgress}>
+                <section class="content-card progress-card">
+                    <div class="section-heading progress-heading">
+                        <div>
+                            <p class="section-eyebrow">
+                                SERVICE PROGRESS
+                            </p>
+                            <h2>Where Your Request Stands</h2>
+                        </div>
+                    </div>
+
+                    <div class="progress-track-container">
+                        <div class="progress-track">
+                            <template
+                                for:each={progress.stages}
+                                for:item="stage">
+
+                                <div
+                                    key={stage.key}
+                                    class={stage.cssClass}>
+
+                                    <div class="progress-marker-wrap">
+                                        <div class={stage.markerClass}>
+                                            <template if:true={stage.isCompleted}>
+                                                <lightning-icon
+                                                    icon-name="utility:check"
+                                                    size="xx-small"
+                                                    alternative-text="Completed">
+                                                </lightning-icon>
+                                            </template>
+
+                                            <template if:false={stage.isCompleted}>
+                                                <span>{stage.number}</span>
+                                            </template>
+                                        </div>
+
+                                        <div class={stage.lineClass}></div>
+                                    </div>
+
+                                    <div class="progress-label">
+                                        {stage.label}
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+
+                    <div class="progress-message">
+                        <div class="message-icon">
+                            <lightning-icon
+                                icon-name="utility:info"
+                                size="small"
+                                alternative-text="Status information">
+                            </lightning-icon>
+                        </div>
+
+                        <div>
+                            <span class="message-label">
+                                What's happening now
+                            </span>
+                            <p>{progress.message}</p>
+                        </div>
+                    </div>
+                </section>
+            </template>
+
+            <div class="two-column-grid">
+                <template if:true={hasMachine}>
+                    <section class="content-card machine-card">
+                        <div class="section-heading machine-heading">
+                            <div>
+                                <p class="section-eyebrow">
+                                    AFFECTED MACHINE
+                                </p>
+                                <h2>{machine.name}</h2>
+                            </div>
+
+                            <div class="machine-badges">
+                                <span class={serviceRequest.priorityClass}>
+                                    Priority: {serviceRequest.priorityDisplay}
+                                </span>
+
+                                <span class={machine.statusClass}>
+                                    {machine.statusDisplay}
+                                </span>
+                            </div>
+                        </div>
+
+                        <template if:true={hasMachineImage}>
+                            <div class="machine-image-frame">
+                                <img
+                                    src={machine.imageUrl}
+                                    alt={machine.name}
+                                    class="machine-image" />
+                            </div>
+                        </template>
+
+                        <div class="machine-detail-grid">
+                            <div class="detail-item">
+                                <span class="detail-label">
+                                    Manufacturer
+                                </span>
+                                <span class="detail-value">
+                                    {machine.manufacturerDisplay}
+                                </span>
+                            </div>
+
+                            <div class="detail-item">
+                                <span class="detail-label">
+                                    Model
+                                </span>
+                                <span class="detail-value">
+                                    {machine.modelDisplay}
+                                </span>
+                            </div>
+
+                            <div class="detail-item">
+                                <span class="detail-label">
+                                    Serial Number
+                                </span>
+                                <span class="detail-value">
+                                    {machine.serialNumberDisplay}
+                                </span>
+                            </div>
+
+                            <div class="detail-item">
+                                <span class="detail-label">
+                                    Error Code
+                                </span>
+                                <span class="error-code">
+                                    {serviceRequest.errorCodeDisplay}
+                                </span>
+                            </div>
+                        </div>
+                    </section>
+                </template>
+
+                <section class="content-card issue-card">
+                    <div class="section-heading issue-heading">
+                        <div>
+                            <p class="section-eyebrow">
+                                WHAT YOU REPORTED
+                            </p>
+                            <h2>Reported Issue</h2>
+                        </div>
+                    </div>
+
+                    <div class="issue-description">
+                        <span class="detail-label">
+                            Description
+                        </span>
+                        <p>{serviceRequest.descriptionDisplay}</p>
+                    </div>
+
+                    <div class="service-visit-layout">
+                        <div class="service-visit-heading-row">
+                            <h3>Service Visit Details</h3>
+                        </div>
+
+                        <div class="service-visit-field-spacer"></div>
+
+                        <div class="visit-field">
+                            <span class="detail-label">
+                                Scheduled Visit
+                            </span>
+
+                            <template if:true={hasServiceVisit}>
+                                <template if:true={serviceVisit.hasScheduledVisit}>
+                                    <span class="visit-value">
+                                        <lightning-formatted-date-time
+                                            value={serviceVisit.scheduledVisitDisplay}
+                                            year="numeric"
+                                            month="short"
+                                            day="2-digit"
+                                            hour="numeric"
+                                            minute="2-digit">
+                                        </lightning-formatted-date-time>
+                                    </span>
+                                </template>
+
+                                <template if:false={serviceVisit.hasScheduledVisit}>
+                                    <span class="visit-value muted">
+                                        Not scheduled
+                                    </span>
+                                </template>
+                            </template>
+
+                            <template if:false={hasServiceVisit}>
+                                <span class="visit-value muted">
+                                    Not scheduled
+                                </span>
+                            </template>
+                        </div>
+
+                        <div class="visit-field">
+                            <span class="detail-label">
+                                Service Completed
+                            </span>
+
+                            <template if:true={hasServiceVisit}>
+                                <template if:true={serviceVisit.hasWorkEnded}>
+                                    <span class="visit-value">
+                                        <lightning-formatted-date-time
+                                            value={serviceVisit.workEndedDisplay}
+                                            year="numeric"
+                                            month="short"
+                                            day="2-digit"
+                                            hour="numeric"
+                                            minute="2-digit">
+                                        </lightning-formatted-date-time>
+                                    </span>
+                                </template>
+
+                                <template if:false={serviceVisit.hasWorkEnded}>
+                                    <span class="visit-value muted">
+                                        Not completed
+                                    </span>
+                                </template>
+                            </template>
+
+                            <template if:false={hasServiceVisit}>
+                                <span class="visit-value muted">
+                                    Not completed
+                                </span>
+                            </template>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <section class={resolutionCardClass}>
+                <div class="resolution-header">
+                    <div class="resolution-title">
+                        <div class={resolutionIconClass}>
+                            <lightning-icon
+                                icon-name={resolutionIconName}
+                                size="small"
+                                alternative-text={resolutionStatus}>
+                            </lightning-icon>
+                        </div>
+
+                        <div>
+                            <p class="section-eyebrow resolution-eyebrow">
+                                {resolutionEyebrow}
+                            </p>
+                            <h2>{resolutionTitle}</h2>
+                        </div>
+                    </div>
+
+                    <span class={resolutionStatusClass}>
+                        {resolutionStatus}
+                    </span>
+                </div>
+
+                <template if:true={hasResolution}>
+                    <div class="resolution-grid">
+                        <div class="resolution-section">
+                            <span class="resolution-label">
+                                What We Found
+                            </span>
+                            <p>{resolution.rootCauseDisplay}</p>
+                        </div>
+
+                        <div class="resolution-section">
+                            <span class="resolution-label">
+                                Repair Performed
+                            </span>
+                            <p>{resolution.summaryDisplay}</p>
+                        </div>
+                    </div>
+
+                    <div class="resolution-footer">
+                        <div class="resolution-stat">
+                            <span class="resolution-label">
+                                Parts Used
+                            </span>
+                            <span class="resolution-value">
+                                {resolution.partsUsedDisplay}
+                            </span>
+                        </div>
+
+                        <div class="resolution-stat">
+                            <span class="resolution-label">
+                                Service Time
+                            </span>
+                            <span class="resolution-value">
+                                {resolution.laborHoursDisplay}
+                            </span>
+                        </div>
+
+                        <div class="resolution-stat">
+                            <span class="resolution-label">
+                                Service Date
+                            </span>
+                            <span class="resolution-value">
+                                <lightning-formatted-date-time
+                                    value={resolution.maintenanceDate}
+                                    year="numeric"
+                                    month="short"
+                                    day="2-digit">
+                                </lightning-formatted-date-time>
+                            </span>
+                        </div>
+                    </div>
+                </template>
+
+                <template if:false={hasResolution}>
+                    <div class="pending-resolution-body">
+                        <p>
+                            Resolution details will appear here once the service has been completed.
+                        </p>
+                    </div>
+                </template>
+            </section>
+        </template>
+    </div>
+</template>

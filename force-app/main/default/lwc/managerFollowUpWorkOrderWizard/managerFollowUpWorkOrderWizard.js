@@ -3,6 +3,7 @@ import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 
 import getFollowUpData from '@salesforce/apex/ManagerFollowUpWorkOrderController.getFollowUpData';
 import approveFollowUp from '@salesforce/apex/ManagerFollowUpWorkOrderController.approveFollowUp';
+import getToolCatalog from '@salesforce/apex/ManagerFollowUpWorkOrderController.getToolCatalog';
 import getCompatibleParts from '@salesforce/apex/ManagerPartCatalogController.getCompatibleParts';
 
 export default class ManagerFollowUpWorkOrderWizard extends LightningElement {
@@ -17,7 +18,11 @@ export default class ManagerFollowUpWorkOrderWizard extends LightningElement {
     // Step 2 - New follow-up plan.
     recommendedFixSummary = '';
     recommendedTools = [];
-    newToolName = '';
+    toolCatalog = [];
+    selectedToolId = '';
+    selectedToolName = '';
+    toolSearchTerm = '';
+    isToolDropdownOpen = false;
     planErrorMessage = '';
 
     // Step 3 - Additional parts.
@@ -49,11 +54,23 @@ export default class ManagerFollowUpWorkOrderWizard extends LightningElement {
             this.recommendedFixSummary = '';
             this.recommendedTools = [];
 
-            await this.loadCompatibleParts();
+            await Promise.all([
+                this.loadToolCatalog(),
+                this.loadCompatibleParts()
+            ]);
         } catch (error) {
             this.errorMessage = this.getErrorMessage(error);
         } finally {
             this.isLoading = false;
+        }
+    }
+
+    async loadToolCatalog() {
+        try {
+            this.toolCatalog = await getToolCatalog() || [];
+        } catch (error) {
+            this.toolCatalog = [];
+            throw error;
         }
     }
 
@@ -67,9 +84,11 @@ export default class ManagerFollowUpWorkOrderWizard extends LightningElement {
 
     get priorityClass() {
         const priority = (this.priority || '').toLowerCase();
+
         if (priority === 'critical') return 'status-badge priority-critical';
         if (priority === 'high') return 'status-badge priority-high';
         if (priority === 'medium') return 'status-badge priority-medium';
+
         return 'status-badge priority-low';
     }
 
@@ -111,6 +130,7 @@ export default class ManagerFollowUpWorkOrderWizard extends LightningElement {
     get machineLabel() {
         const manufacturer = this.followUpData?.manufacturer;
         const model = this.followUpData?.model;
+
         return [manufacturer, model].filter(Boolean).join(' ') || this.assetName;
     }
 
@@ -138,26 +158,29 @@ export default class ManagerFollowUpWorkOrderWizard extends LightningElement {
     get maintenanceType() { return this.followUpData?.maintenanceType || 'Service Visit'; }
     get technicianName() { return this.followUpData?.technicianName || 'Technician not available'; }
     get laborHours() { return this.followUpData?.laborHours ?? 0; }
-    get previousRecommendedFix() { return this.followUpData?.previousRecommendedFix || 'No previous Recommended Fix was recorded.'; }
-    get visitSummary() { return this.followUpData?.visitSummary || 'No visit summary was recorded.'; }
 
-    get previousTools() {
-        return this.parseTools(this.followUpData?.previousTools);
+    get previousRecommendedFix() {
+        return this.followUpData?.previousRecommendedFix || 'No previous Recommended Fix was recorded.';
     }
 
-    get hasPreviousTools() {
-        return this.previousTools.length > 0;
+    get visitSummary() {
+        return this.followUpData?.visitSummary || 'No visit summary was recorded.';
     }
+
+    get previousTools() { return this.parseTools(this.followUpData?.previousTools); }
+    get hasPreviousTools() { return this.previousTools.length > 0; }
 
     get visitOutcomeLabel() {
         if (this.followUpData?.followUpRequired) return 'Follow-Up Required';
         if (this.followUpData?.issueResolved) return 'Resolved';
+
         return 'Unresolved';
     }
 
     get visitOutcomeClass() {
         if (this.followUpData?.followUpRequired) return 'visit-outcome visit-outcome-follow-up';
         if (this.followUpData?.issueResolved) return 'visit-outcome visit-outcome-resolved';
+
         return 'visit-outcome visit-outcome-neutral';
     }
 
@@ -165,13 +188,8 @@ export default class ManagerFollowUpWorkOrderWizard extends LightningElement {
     // Existing Work Order Parts
     // =========================================================
 
-    get existingParts() {
-        return this.followUpData?.existingParts || [];
-    }
-
-    get hasExistingParts() {
-        return this.existingParts.length > 0;
-    }
+    get existingParts() { return this.followUpData?.existingParts || []; }
+    get hasExistingParts() { return this.existingParts.length > 0; }
 
     get existingPartCountLabel() {
         const count = this.existingParts.length;
@@ -204,9 +222,7 @@ export default class ManagerFollowUpWorkOrderWizard extends LightningElement {
     // Step 2 - Follow-Up Fix / Tools
     // =========================================================
 
-    get recommendedFixSummaryLength() {
-        return this.recommendedFixSummary.length;
-    }
+    get recommendedFixSummaryLength() { return this.recommendedFixSummary.length; }
 
     get recommendedFixSummaryCounterClass() {
         return this.recommendedFixSummaryLength >= 240
@@ -214,16 +230,11 @@ export default class ManagerFollowUpWorkOrderWizard extends LightningElement {
             : 'character-count';
     }
 
-    get hasRecommendedTools() {
-        return this.recommendedTools.length > 0;
-    }
+    get hasRecommendedTools() { return this.recommendedTools.length > 0; }
 
     handleRecommendedFixChange(event) {
         this.recommendedFixSummary = event.target.value || '';
-
-        if (this.recommendedFixSummary.trim()) {
-            this.planErrorMessage = '';
-        }
+        if (this.recommendedFixSummary.trim()) this.planErrorMessage = '';
     }
 
     syncRecommendedFixSummaryInput() {
@@ -233,33 +244,89 @@ export default class ManagerFollowUpWorkOrderWizard extends LightningElement {
         });
     }
 
-    handleNewToolChange(event) {
-        this.newToolName = event.target.value || '';
+    get availableToolOptions() {
+        const selectedIds = new Set(this.recommendedTools.map(tool => tool.id));
+        const searchTerm = (this.toolSearchTerm || '').trim().toLowerCase();
+
+        return this.toolCatalog.filter(tool => {
+            if (selectedIds.has(tool.id)) return false;
+            if (!searchTerm) return true;
+
+            return (tool.name || '').toLowerCase().includes(searchTerm);
+        });
+    }
+
+    get hasAvailableToolOptions() { return this.availableToolOptions.length > 0; }
+    get toolPickerLabel() { return this.selectedToolName || 'Select a tool...'; }
+
+    get toolPickerClass() {
+        return this.isToolDropdownOpen ? 'tool-picker tool-picker-open' : 'tool-picker';
+    }
+
+    get toolPickerChevronClass() {
+        return this.isToolDropdownOpen
+            ? 'tool-picker-chevron tool-picker-chevron-open'
+            : 'tool-picker-chevron';
+    }
+
+    get isAddToolDisabled() { return !this.selectedToolId; }
+
+    handleToggleToolDropdown() {
+        this.isToolDropdownOpen = !this.isToolDropdownOpen;
+
+        if (this.isToolDropdownOpen) {
+            this.toolSearchTerm = '';
+
+            requestAnimationFrame(() => {
+                const searchInput = this.template.querySelector('.tool-picker-search-input');
+                if (searchInput) searchInput.focus();
+            });
+        }
+    }
+
+    handleToolSearchChange(event) {
+        this.toolSearchTerm = event.target.value || '';
+    }
+
+    handleToolSearchKeyDown(event) {
+        if (event.key !== 'Escape') return;
+
+        event.preventDefault();
+        this.isToolDropdownOpen = false;
+        this.toolSearchTerm = '';
+    }
+
+    handleToolOptionClick(event) {
+        const toolId = event.currentTarget.dataset.id;
+        const selectedTool = this.toolCatalog.find(tool => tool.id === toolId);
+
+        if (!selectedTool) return;
+
+        this.selectedToolId = selectedTool.id;
+        this.selectedToolName = selectedTool.name;
+        this.toolSearchTerm = '';
+        this.isToolDropdownOpen = false;
     }
 
     handleAddTool() {
-        const toolName = this.newToolName.trim();
-        if (!toolName) return;
+        if (!this.selectedToolId) return;
 
-        const alreadyExists = this.recommendedTools.some(
-            tool => tool.name.toLowerCase() === toolName.toLowerCase()
-        );
+        const selectedTool = this.toolCatalog.find(tool => tool.id === this.selectedToolId);
+        if (!selectedTool) return;
+
+        const alreadyExists = this.recommendedTools.some(tool => tool.id === selectedTool.id);
 
         if (!alreadyExists) {
             this.recommendedTools = [
                 ...this.recommendedTools,
-                { id: this.createToolId(toolName), name: toolName }
+                { id: selectedTool.id, name: selectedTool.name }
             ];
         }
 
-        this.newToolName = '';
-    }
-
-    handleToolKeyDown(event) {
-        if (event.key === 'Enter') {
-            event.preventDefault();
-            this.handleAddTool();
-        }
+        this.selectedToolId = '';
+        this.selectedToolName = '';
+        this.toolSearchTerm = '';
+        this.isToolDropdownOpen = false;
     }
 
     handleRemoveTool(event) {
@@ -278,7 +345,9 @@ export default class ManagerFollowUpWorkOrderWizard extends LightningElement {
             .filter(Boolean)
             .filter(tool => {
                 const key = tool.toLowerCase();
+
                 if (seen.has(key)) return false;
+
                 seen.add(key);
                 return true;
             })
@@ -310,6 +379,7 @@ export default class ManagerFollowUpWorkOrderWizard extends LightningElement {
 
         try {
             const parts = await getCompatibleParts({ manufacturer, model });
+
             const activeExistingPartIds = new Set(
                 this.existingParts
                     .filter(part => (part.status || '').toLowerCase() !== 'cancelled')
@@ -339,7 +409,6 @@ export default class ManagerFollowUpWorkOrderWizard extends LightningElement {
 
     get filteredCatalogParts() {
         const searchTerm = (this.partSearchTerm || '').trim().toLowerCase();
-
         if (!searchTerm) return this.catalogParts;
 
         return this.catalogParts.filter(part =>
@@ -364,13 +433,8 @@ export default class ManagerFollowUpWorkOrderWizard extends LightningElement {
         return `Showing ${this.visibleCatalogParts.length} of ${this.filteredCatalogParts.length}`;
     }
 
-    get hasCatalogParts() {
-        return this.filteredCatalogParts.length > 0;
-    }
-
-    get hasSelectedParts() {
-        return this.selectedParts.length > 0;
-    }
+    get hasCatalogParts() { return this.filteredCatalogParts.length > 0; }
+    get hasSelectedParts() { return this.selectedParts.length > 0; }
 
     get selectedPartCountLabel() {
         const count = this.selectedParts.length;
@@ -568,9 +632,7 @@ export default class ManagerFollowUpWorkOrderWizard extends LightningElement {
         const nextStep = Math.max(1, this.currentStep - 1);
         this.currentStep = nextStep;
 
-        if (nextStep === 2) {
-            this.syncRecommendedFixSummaryInput();
-        }
+        if (nextStep === 2) this.syncRecommendedFixSummaryInput();
     }
 
     handleContinueToParts() {
@@ -598,6 +660,7 @@ export default class ManagerFollowUpWorkOrderWizard extends LightningElement {
     getErrorMessage(error) {
         if (error?.body?.message) return error.body.message;
         if (error?.message) return error.message;
+
         return 'The Work Order follow-up could not be loaded.';
     }
 }

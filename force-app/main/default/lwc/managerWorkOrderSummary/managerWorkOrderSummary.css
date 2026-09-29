@@ -103,6 +103,11 @@ a:hover { text-decoration: underline; }
 .repair-item-wide { grid-column: 1 / -1; }
 .repair-item-heading { display: flex; align-items: center; gap: .4rem; margin-bottom: .45rem; color: var(--milltrack-navy); font-size: .76rem; font-weight: 800; letter-spacing: .035em; text-transform: uppercase; }
 
+.repair-item-heading lightning-icon {
+    flex-shrink: 0;
+    --slds-c-icon-color-foreground-default: #5f6b7a;
+}
+
 .previous-failure-compact { display: inline-flex; align-items: center; gap: .55rem; padding: .35rem .45rem .35rem .7rem; border: 1px solid #dfe6ee; border-radius: 999px; background: white; color: #5f6b7a; font-size: .72rem; white-space: nowrap; }
 
 .status-chip { display: inline-flex; align-items: center; justify-content: center; padding: .22rem .65rem; border-radius: 999px; font-size: .72rem; font-weight: 800; white-space: nowrap; }

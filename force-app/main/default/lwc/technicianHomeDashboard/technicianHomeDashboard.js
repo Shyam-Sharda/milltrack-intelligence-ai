@@ -2,16 +2,16 @@ import { LightningElement, wire } from 'lwc';
 import { NavigationMixin } from 'lightning/navigation';
 import { refreshApex } from '@salesforce/apex';
 import getHomeData from '@salesforce/apex/TechnicianHomeController.getHomeData';
-import 	MillTrack_Intelligence_noBackground from '@salesforce/resourceUrl/MillTrack_Intelligence_noBackground';
+import MillTrack_Intelligence_noBackground from '@salesforce/resourceUrl/MillTrack_Intelligence_noBackground';
 
 export default class TechnicianHomeDashboard extends NavigationMixin(LightningElement) {
     homeData;
     currentVisit;
     upcomingVisits = [];
     serviceManuals = [];
+    manualSearchTerm = '';
     similarRepairs = [];
     technicianAvatarUrl = MillTrack_Intelligence_noBackground;
-
     wiredHomeResult;
     errorMessage;
     isLoading = true;
@@ -67,8 +67,13 @@ export default class TechnicianHomeDashboard extends NavigationMixin(LightningEl
 
     prepareVisit(visit) {
         const scheduledDate = visit.scheduledVisit ? new Date(visit.scheduledVisit) : null;
-        const rawSimilarRepairs = visit.similarRepairs?.length ? visit.similarRepairs : (visit.similarRepair ? [visit.similarRepair] : []);
-        const similarRepairs = rawSimilarRepairs.map((repair, index) => this.prepareUpcomingSimilarRepair(repair, index));
+        const rawSimilarRepairs = visit.similarRepairs?.length
+            ? visit.similarRepairs
+            : (visit.similarRepair ? [visit.similarRepair] : []);
+
+        const similarRepairs = rawSimilarRepairs.map(
+            (repair, index) => this.prepareUpcomingSimilarRepair(repair, index)
+        );
 
         return {
             ...visit,
@@ -77,32 +82,41 @@ export default class TechnicianHomeDashboard extends NavigationMixin(LightningEl
             dispatchStatusDisplay: visit.dispatchStatus || visit.status || 'Scheduled',
             priorityClass: this.getPriorityClass(visit.priority),
             statusClass: this.getVisitStatusClass(visit.dispatchStatus),
-
             accountNameDisplay: visit.accountName || 'Customer not available',
             machineLabelDisplay: visit.machineLabel || visit.assetName || 'Machine not available',
             serialNumberDisplay: visit.serialNumber ? `S/N ${visit.serialNumber}` : 'Serial number unavailable',
-
             contactNameDisplay: visit.contactName || 'Contact not available',
             contactPhoneDisplay: visit.contactPhone || visit.contactEmail || 'Contact details unavailable',
-
             caseNumberDisplay: visit.caseNumber ? `Case ${visit.caseNumber}` : 'No linked Service Case',
             caseSubjectDisplay: visit.caseSubject || 'Case details unavailable',
-
             fullAddressDisplay: visit.fullAddress || 'Service location not available',
             cityDisplay: visit.city || 'Location not available',
             hasAddress: Boolean(visit.fullAddress),
-
             problemSummaryDisplay: visit.problemSummary || 'No problem summary has been recorded.',
             recommendedFixDisplay: visit.recommendedFixSummary || 'No recommended fix summary has been recorded.',
-            recommendedToolsDisplay: visit.recommendedTools || 'No specific tools identified.',
-
-            monthLabel: scheduledDate ? scheduledDate.toLocaleString('en-US', { month: 'short' }).toUpperCase() : 'TBD',
+            recommendedToolsDisplay: this.formatRecommendedTools(visit.recommendedTools),
+            monthLabel: scheduledDate
+                ? scheduledDate.toLocaleString('en-US', { month: 'short' }).toUpperCase()
+                : 'TBD',
             dayLabel: scheduledDate ? scheduledDate.getDate() : '--',
-            timeLabel: scheduledDate ? scheduledDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) : 'Time TBD',
-
+            timeLabel: scheduledDate
+                ? scheduledDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
+                : 'Time TBD',
             similarRepairs,
             hasSimilarRepairs: similarRepairs.length > 0
         };
+    }
+
+    formatRecommendedTools(value) {
+        if (!value || value.trim().toLowerCase() === 'none identified') {
+            return 'No specific tools identified.';
+        }
+
+        return value
+            .split(/\r?\n|,|;/)
+            .map(tool => tool.trim())
+            .filter(Boolean)
+            .join(', ');
     }
 
     prepareUpcomingSimilarRepair(repair, index) {
@@ -127,8 +141,10 @@ export default class TechnicianHomeDashboard extends NavigationMixin(LightningEl
 
     getManualBrand(title) {
         const normalizedTitle = (title || '').toLowerCase();
+
         if (normalizedTitle.includes('ceramill')) return 'CERAMILL';
         if (normalizedTitle.includes('dwx') || normalizedTitle.includes('roland')) return 'ROLAND';
+
         return 'SERVICE MANUAL';
     }
 
@@ -145,13 +161,35 @@ export default class TechnicianHomeDashboard extends NavigationMixin(LightningEl
     get currentVisitHeading() {
         if (!this.currentVisit) return 'Service Visit';
         if (this.currentVisit.isInProgress) return 'Current Service Visit';
-        if (this.isToday(this.currentVisit.scheduledVisit)) return 'Today’s Next Service Visit';
         return 'Next Service Visit';
     }
 
     get currentVisitEyebrow() {
         if (!this.currentVisit) return 'YOUR SERVICE SCHEDULE';
-        return this.currentVisit.isInProgress ? 'ACTIVE JOB' : 'UP NEXT';
+
+        return this.currentVisit.isInProgress
+            ? 'ACTIVE JOB'
+            : 'UP NEXT';
+    }
+
+    get filteredServiceManuals() {
+        const searchTerm = (this.manualSearchTerm || '').trim().toLowerCase();
+
+        if (!searchTerm) return this.serviceManuals;
+
+        return this.serviceManuals.filter(manual =>
+            [manual.title, manual.brandLabel].some(value =>
+                (value || '').toLowerCase().includes(searchTerm)
+            )
+        );
+    }
+
+    get hasFilteredServiceManuals() {
+        return this.filteredServiceManuals.length > 0;
+    }
+
+    handleManualSearchChange(event) {
+        this.manualSearchTerm = event.target.value || '';
     }
 
     // =========================================================
@@ -160,19 +198,32 @@ export default class TechnicianHomeDashboard extends NavigationMixin(LightningEl
 
     getPriorityClass(priority) {
         switch ((priority || '').toLowerCase()) {
-            case 'critical': return 'badge priority-critical';
-            case 'high': return 'badge priority-high';
-            case 'medium': return 'badge priority-medium';
-            case 'low': return 'badge priority-low';
-            default: return 'badge priority-default';
+            case 'critical':
+                return 'badge priority-critical';
+
+            case 'high':
+                return 'badge priority-high';
+
+            case 'medium':
+                return 'badge priority-medium';
+
+            case 'low':
+                return 'badge priority-low';
+
+            default:
+                return 'badge priority-default';
         }
     }
 
     getVisitStatusClass(status) {
         const normalizedStatus = (status || '').toLowerCase();
+
         if (normalizedStatus === 'in progress') return 'badge status-progress';
-        if (normalizedStatus === 'ready_to_assign' || normalizedStatus === 'ready to assign') return 'badge status-ready';
+        if (normalizedStatus === 'ready_to_assign' || normalizedStatus === 'ready to assign') {
+            return 'badge status-ready';
+        }
         if (normalizedStatus === 'waiting on parts') return 'badge status-waiting';
+
         return 'badge status-scheduled';
     }
 
@@ -182,12 +233,20 @@ export default class TechnicianHomeDashboard extends NavigationMixin(LightningEl
 
     handleToggleSimilarRepair(event) {
         const maintenanceLogId = event.currentTarget.dataset.id;
+
         if (!maintenanceLogId) return;
 
         this.similarRepairs = this.similarRepairs.map(repair => {
             const isTarget = repair.maintenanceLogId === maintenanceLogId;
             const isExpanded = isTarget ? !repair.isExpanded : false;
-            return { ...repair, isExpanded, toggleIcon: isExpanded ? 'utility:chevrondown' : 'utility:chevronright' };
+
+            return {
+                ...repair,
+                isExpanded,
+                toggleIcon: isExpanded
+                    ? 'utility:chevrondown'
+                    : 'utility:chevronright'
+            };
         });
     }
 
@@ -197,50 +256,73 @@ export default class TechnicianHomeDashboard extends NavigationMixin(LightningEl
 
     handleOpenWorkOrder(event) {
         const workOrderId = event.currentTarget.dataset.id;
+
         if (!workOrderId) return;
 
         this[NavigationMixin.Navigate]({
             type: 'standard__recordPage',
-            attributes: { recordId: workOrderId, objectApiName: 'WorkOrder', actionName: 'view' }
+            attributes: {
+                recordId: workOrderId,
+                objectApiName: 'WorkOrder',
+                actionName: 'view'
+            }
         });
     }
 
     handleOpenHistoricalRepair(event) {
         const maintenanceLogId = event.currentTarget.dataset.id;
+
         if (!maintenanceLogId) return;
 
         this[NavigationMixin.Navigate]({
             type: 'standard__recordPage',
-            attributes: { recordId: maintenanceLogId, objectApiName: 'Maintenance_Log__c', actionName: 'view' }
+            attributes: {
+                recordId: maintenanceLogId,
+                objectApiName: 'Maintenance_Log__c',
+                actionName: 'view'
+            }
         });
     }
 
     handleViewAllWorkOrders() {
         this[NavigationMixin.Navigate]({
             type: 'standard__objectPage',
-            attributes: { objectApiName: 'WorkOrder', actionName: 'list' },
-            state: { filterName: 'My_Assigned_Work_Orders' }
+            attributes: {
+                objectApiName: 'WorkOrder',
+                actionName: 'list'
+            },
+            state: {
+                filterName: 'My_Assigned_Work_Orders'
+            }
         });
     }
 
     handleDirections(event) {
         const address = event.currentTarget.dataset.address;
+
         if (!address) return;
 
         this[NavigationMixin.Navigate]({
             type: 'standard__webPage',
-            attributes: { url: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}` }
+            attributes: {
+                url: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`
+            }
         });
     }
 
     handleOpenManual(event) {
         const contentDocumentId = event.currentTarget.dataset.documentId;
+
         if (!contentDocumentId) return;
 
         this[NavigationMixin.Navigate]({
             type: 'standard__namedPage',
-            attributes: { pageName: 'filePreview' },
-            state: { selectedRecordId: contentDocumentId }
+            attributes: {
+                pageName: 'filePreview'
+            },
+            state: {
+                selectedRecordId: contentDocumentId
+            }
         });
     }
 
@@ -266,17 +348,8 @@ export default class TechnicianHomeDashboard extends NavigationMixin(LightningEl
     // Misc
     // =========================================================
 
-    handleThumbnailError(event) { event.target.classList.add('thumbnail-hidden'); }
-
-    isToday(dateValue) {
-        if (!dateValue) return false;
-
-        const value = new Date(dateValue);
-        const today = new Date();
-
-        return value.getFullYear() === today.getFullYear()
-            && value.getMonth() === today.getMonth()
-            && value.getDate() === today.getDate();
+    handleThumbnailError(event) {
+        event.target.classList.add('thumbnail-hidden');
     }
 
     reduceError(error) {
@@ -284,6 +357,7 @@ export default class TechnicianHomeDashboard extends NavigationMixin(LightningEl
         if (Array.isArray(error.body)) return error.body.map(item => item.message).join(', ');
         if (error.body?.message) return error.body.message;
         if (error.message) return error.message;
+
         return 'An unexpected error occurred while loading the Technician Workspace.';
     }
 }

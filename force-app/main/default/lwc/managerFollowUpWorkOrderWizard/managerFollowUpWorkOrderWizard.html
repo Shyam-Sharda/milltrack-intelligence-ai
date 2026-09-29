@@ -489,19 +489,130 @@
 
                             <div class="add-tool-row">
 
-                                <div class="add-tool-input-wrap">
-                                    <lightning-icon icon-name="utility:add" size="xx-small"></lightning-icon>
+                                <div class="tool-picker-shell">
 
-                                    <input
-                                        type="text"
-                                        class="add-tool-input"
-                                        placeholder="Add a tool..."
-                                        value={newToolName}
-                                        oninput={handleNewToolChange}
-                                        onkeydown={handleToolKeyDown}>
+                                    <div class={toolPickerClass}>
+
+                                        <button
+                                            type="button"
+                                            class="tool-picker-trigger"
+                                            aria-haspopup="listbox"
+                                            aria-expanded={isToolDropdownOpen}
+                                            onclick={handleToggleToolDropdown}>
+
+                                            <span class="tool-picker-trigger-main">
+                                                <span class="tool-picker-trigger-icon">
+                                                    <lightning-icon
+                                                        icon-name="utility:setup"
+                                                        size="xx-small">
+                                                    </lightning-icon>
+                                                </span>
+
+                                                <span class="tool-picker-trigger-label">
+                                                    {toolPickerLabel}
+                                                </span>
+                                            </span>
+
+                                            <lightning-icon
+                                                class={toolPickerChevronClass}
+                                                icon-name="utility:chevrondown"
+                                                size="xx-small">
+                                            </lightning-icon>
+
+                                        </button>
+
+                                        <template if:true={isToolDropdownOpen}>
+
+                                            <div class="tool-picker-menu">
+
+                                                <div class="tool-picker-search-wrap">
+                                                    <lightning-icon
+                                                        icon-name="utility:search"
+                                                        size="xx-small">
+                                                    </lightning-icon>
+
+                                                    <input
+                                                        type="search"
+                                                        class="tool-picker-search-input"
+                                                        placeholder="Search tools..."
+                                                        value={toolSearchTerm}
+                                                        oninput={handleToolSearchChange}
+                                                        onkeydown={handleToolSearchKeyDown}
+                                                        aria-label="Search tools">
+                                                </div>
+
+                                                <div
+                                                    class="tool-picker-options"
+                                                    role="listbox"
+                                                    aria-label="Available tools">
+
+                                                    <template if:true={hasAvailableToolOptions}>
+
+                                                        <template
+                                                            for:each={availableToolOptions}
+                                                            for:item="tool">
+
+                                                            <button
+                                                                key={tool.id}
+                                                                type="button"
+                                                                class="tool-picker-option"
+                                                                data-id={tool.id}
+                                                                role="option"
+                                                                onclick={handleToolOptionClick}>
+
+                                                                <span class="tool-picker-option-main">
+                                                                    <span class="tool-picker-option-icon">
+                                                                        <lightning-icon
+                                                                            icon-name="utility:setup"
+                                                                            size="xx-small">
+                                                                        </lightning-icon>
+                                                                    </span>
+
+                                                                    <span class="tool-picker-option-name">
+                                                                        {tool.name}
+                                                                    </span>
+                                                                </span>
+
+                                                                <lightning-icon
+                                                                    class="tool-picker-add-icon"
+                                                                    icon-name="utility:add"
+                                                                    size="xx-small">
+                                                                </lightning-icon>
+
+                                                            </button>
+
+                                                        </template>
+
+                                                    </template>
+
+                                                    <template if:false={hasAvailableToolOptions}>
+
+                                                        <div class="tool-picker-empty">
+                                                            <lightning-icon
+                                                                icon-name="utility:info_alt"
+                                                                size="xx-small">
+                                                            </lightning-icon>
+
+                                                            <span>No matching tools available.</span>
+                                                        </div>
+
+                                                    </template>
+
+                                                </div>
+
+                                            </div>
+
+                                        </template>
+
+                                    </div>
+
                                 </div>
 
-                                <button type="button" class="add-tool-button" onclick={handleAddTool}>
+                                <button
+                                    type="button"
+                                    class="add-tool-button"
+                                    disabled={isAddToolDisabled}
+                                    onclick={handleAddTool}>
                                     Add Tool
                                 </button>
 

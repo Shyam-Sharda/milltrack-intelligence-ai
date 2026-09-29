@@ -4,7 +4,7 @@ private class ManagerFollowUpWorkOrderControllerTest {
     private static final String WO_SUBJECT = 'Follow-Up Test Work Order';
     private static final String PROBLEM = 'Machine produces excessive vibration during milling.';
     private static final String PREVIOUS_FIX = 'Inspect the spindle and correction jig under load before replacing components.';
-    private static final String PREVIOUS_TOOLS = 'Dial indicator; calibration jig; torque driver';
+    private static final String PREVIOUS_TOOLS = 'Allen Keys\nMultimeter';
     private static final String LATEST_VISIT = 'Inspected the correction jig and spindle. Temporary stabilization reduced vibration, but permanent follow-up repair is required.';
     private static final String EXISTING_PART_NUMBER = 'FUP-EXIST-001';
     private static final String NEW_PART_NUMBER = 'FUP-NEW-001';
@@ -14,10 +14,24 @@ private class ManagerFollowUpWorkOrderControllerTest {
         Account account = new Account(Name = 'Follow-Up Test Dental Lab');
         insert account;
 
-        Contact contact = new Contact(FirstName = 'Jamie', LastName = 'Followup', AccountId = account.Id, Email = 'followup@milltrack.test', Phone = '555-111-2222', Title = 'Lab Manager');
+        Contact contact = new Contact(
+            FirstName = 'Jamie',
+            LastName = 'Followup',
+            AccountId = account.Id,
+            Email = 'followup@milltrack.test',
+            Phone = '555-111-2222',
+            Title = 'Lab Manager'
+        );
         insert contact;
 
-        Asset asset = new Asset(Name = 'Follow-Up Test DWX-52D', AccountId = account.Id, Manufacturer__c = 'Roland', Model__c = 'DWX-52D', Serial_Number__c = 'FUP-001', Machine_Status__c = 'Needs Service');
+        Asset asset = new Asset(
+            Name = 'Follow-Up Test DWX-52D',
+            AccountId = account.Id,
+            Manufacturer__c = 'Roland',
+            Model__c = 'DWX-52D',
+            Serial_Number__c = 'FUP-001',
+            Machine_Status__c = 'Needs Service'
+        );
         insert asset;
 
         Case serviceCase = new Case(
@@ -66,6 +80,12 @@ private class ManagerFollowUpWorkOrderControllerTest {
             Notes__c = 'Part received before the previous technician visit.'
         );
 
+        insert new List<Tool_Catalog__c>{
+            new Tool_Catalog__c(Name = 'Multimeter'),
+            new Tool_Catalog__c(Name = 'Allen Keys'),
+            new Tool_Catalog__c(Name = 'Phillips Head Screwdriver')
+        };
+
         Maintenance_Log__c olderLog = new Maintenance_Log__c(
             Asset__c = asset.Id,
             Work_Order__c = workOrder.Id,
@@ -102,6 +122,23 @@ private class ManagerFollowUpWorkOrderControllerTest {
     }
 
     @IsTest
+    static void testGetToolCatalogReturnsAlphabeticalTools() {
+        Test.startTest();
+        List<ManagerFollowUpWorkOrderController.ToolOption> tools = ManagerFollowUpWorkOrderController.getToolCatalog();
+        Test.stopTest();
+
+        System.assertEquals(3, tools.size(), 'The Tool Catalog should return all test tools.');
+        System.assertEquals('Allen Keys', tools[0].name);
+        System.assertEquals('Multimeter', tools[1].name);
+        System.assertEquals('Phillips Head Screwdriver', tools[2].name);
+
+        for (ManagerFollowUpWorkOrderController.ToolOption tool : tools) {
+            System.assertNotEquals(null, tool.id, 'Each tool should include its Tool Catalog ID.');
+            System.assertNotEquals(null, tool.name, 'Each tool should include its Tool Catalog name.');
+        }
+    }
+
+    @IsTest
     static void testGetFollowUpDataReturnsLatestVisit() {
         WorkOrder workOrder = getWorkOrder();
 
@@ -116,18 +153,15 @@ private class ManagerFollowUpWorkOrderControllerTest {
         System.assertEquals('Medium', data.priority);
         System.assertEquals('Temporary Fix', data.dispatchStatus);
         System.assertEquals(PROBLEM, data.problemSummary);
-
         System.assertEquals('Follow-Up Test Dental Lab', data.accountName);
         System.assertEquals('Excessive milling vibration', data.caseSubject);
         System.assertEquals('Follow-Up Required', data.caseStatus);
         System.assertEquals('Jamie Followup', data.contactName);
-
         System.assertEquals('Follow-Up Test DWX-52D', data.assetName);
         System.assertEquals('Roland', data.manufacturer);
         System.assertEquals('DWX-52D', data.model);
         System.assertEquals('FUP-001', data.serialNumber);
         System.assertEquals('Temporary Fix Applied', data.machineStatus);
-
         System.assertNotEquals(null, data.maintenanceLogId);
         System.assertEquals(Date.today().addDays(-1), data.maintenanceDate);
         System.assertEquals('Temporary Repair', data.maintenanceType);
@@ -139,7 +173,6 @@ private class ManagerFollowUpWorkOrderControllerTest {
         System.assertEquals(false, data.issueResolved);
         System.assertEquals(true, data.followUpRequired);
         System.assertNotEquals(null, data.technicianName);
-
         System.assertEquals(1, data.existingParts.size(), 'Existing Work Order parts should be returned.');
         System.assertEquals('Existing Correction Jig', data.existingParts[0].partName);
         System.assertEquals(Decimal.valueOf('1'), data.existingParts[0].quantity);
@@ -153,10 +186,12 @@ private class ManagerFollowUpWorkOrderControllerTest {
         WorkOrder workOrder = getWorkOrder();
         Id assetId = workOrder.AssetId;
         String newFix = 'Replace the worn correction jig, recalibrate the machine, and verify milling stability under load.';
-        String newTools = 'Calibration jig; dial indicator; torque driver';
+        String submittedTools = 'allen keys\nMULTIMETER\nAllen Keys';
+        String expectedTools = 'Allen Keys\nMultimeter';
 
         Test.startTest();
-        ManagerFollowUpWorkOrderController.ApprovalResult result = ManagerFollowUpWorkOrderController.approveFollowUp(workOrder.Id, newFix, newTools, '[]');
+        ManagerFollowUpWorkOrderController.ApprovalResult result =
+            ManagerFollowUpWorkOrderController.approveFollowUp(workOrder.Id, newFix, submittedTools, '[]');
         Test.stopTest();
 
         System.assertEquals(true, result.success);
@@ -166,12 +201,13 @@ private class ManagerFollowUpWorkOrderControllerTest {
 
         WorkOrder updated = [
             SELECT Dispatch_Status__c, Recommended_Fix_Summary__c, Recommended_Tools__c, Service_Manager__c
-            FROM WorkOrder WHERE Id = :workOrder.Id
+            FROM WorkOrder
+            WHERE Id = :workOrder.Id
         ];
 
         System.assertEquals('Ready_to_Assign', updated.Dispatch_Status__c);
         System.assertEquals(newFix, updated.Recommended_Fix_Summary__c);
-        System.assertEquals(newTools, updated.Recommended_Tools__c);
+        System.assertEquals(expectedTools, updated.Recommended_Tools__c, 'Tools should be deduplicated and normalized to Tool Catalog names.');
         System.assertEquals(UserInfo.getUserId(), updated.Service_Manager__c);
 
         Case serviceCase = [SELECT Status FROM Case WHERE Id = :workOrder.CaseId];
@@ -179,13 +215,13 @@ private class ManagerFollowUpWorkOrderControllerTest {
 
         Asset asset = [SELECT Machine_Status__c FROM Asset WHERE Id = :assetId];
         System.assertEquals('Temporary Fix Applied', asset.Machine_Status__c, 'Manager approval must not change the physical machine state.');
-
         System.assertEquals(1, [SELECT COUNT() FROM Work_Order_Part__c WHERE Work_Order__c = :workOrder.Id], 'No new part request should be created.');
 
         Maintenance_Log__c visit = [
             SELECT Recommended_Fix_Snapshot__c, Tools_To_Bring_Snapshot__c
             FROM Maintenance_Log__c
-            WHERE Work_Order__c = :workOrder.Id AND Maintenance_Date__c = :Date.today().addDays(-1)
+            WHERE Work_Order__c = :workOrder.Id
+              AND Maintenance_Date__c = :Date.today().addDays(-1)
             LIMIT 1
         ];
 
@@ -197,6 +233,7 @@ private class ManagerFollowUpWorkOrderControllerTest {
     static void testApproveFollowUpWithParts() {
         WorkOrder workOrder = getWorkOrder();
         Part_Catalog__c selectedPart = getCatalogPart(NEW_PART_NUMBER);
+
         String selectedPartsJson = JSON.serialize(new List<Object>{
             new Map<String, Object>{ 'partCatalogId' => selectedPart.Id, 'quantity' => 2 }
         });
@@ -205,7 +242,7 @@ private class ManagerFollowUpWorkOrderControllerTest {
         ManagerFollowUpWorkOrderController.ApprovalResult result = ManagerFollowUpWorkOrderController.approveFollowUp(
             workOrder.Id,
             'Replace the spindle belt and verify spindle stability under milling load.',
-            'Torque driver; belt tension gauge',
+            'Phillips Head Screwdriver\nMultimeter',
             selectedPartsJson
         );
         Test.stopTest();
@@ -214,10 +251,15 @@ private class ManagerFollowUpWorkOrderControllerTest {
         System.assertEquals('Parts to Order', result.dispatchStatus);
         System.assertEquals(1, result.requestedPartCount);
 
-        WorkOrder updated = [SELECT Dispatch_Status__c, Recommended_Fix_Summary__c, Recommended_Tools__c FROM WorkOrder WHERE Id = :workOrder.Id];
+        WorkOrder updated = [
+            SELECT Dispatch_Status__c, Recommended_Fix_Summary__c, Recommended_Tools__c
+            FROM WorkOrder
+            WHERE Id = :workOrder.Id
+        ];
+
         System.assertEquals('Parts to Order', updated.Dispatch_Status__c);
         System.assertEquals('Replace the spindle belt and verify spindle stability under milling load.', updated.Recommended_Fix_Summary__c);
-        System.assertEquals('Torque driver; belt tension gauge', updated.Recommended_Tools__c);
+        System.assertEquals('Phillips Head Screwdriver\nMultimeter', updated.Recommended_Tools__c);
 
         Case serviceCase = [SELECT Status FROM Case WHERE Id = :workOrder.CaseId];
         System.assertEquals('In Progress', serviceCase.Status);
@@ -228,7 +270,8 @@ private class ManagerFollowUpWorkOrderControllerTest {
         Work_Order_Part__c newRequest = [
             SELECT Work_Order__c, Machine__c, Part_Catalog__c, Quantity__c, Order_Status__c, Technician_Requested__c
             FROM Work_Order_Part__c
-            WHERE Work_Order__c = :workOrder.Id AND Part_Catalog__c = :selectedPart.Id
+            WHERE Work_Order__c = :workOrder.Id
+              AND Part_Catalog__c = :selectedPart.Id
             LIMIT 1
         ];
 
@@ -238,6 +281,35 @@ private class ManagerFollowUpWorkOrderControllerTest {
         System.assertEquals(Decimal.valueOf('2'), newRequest.Quantity__c);
         System.assertEquals('Requested', newRequest.Order_Status__c);
         System.assertEquals(false, newRequest.Technician_Requested__c);
+    }
+
+    @IsTest
+    static void testRejectsInvalidToolCatalogEntry() {
+        WorkOrder workOrder = getWorkOrder();
+        Boolean exceptionThrown = false;
+
+        Test.startTest();
+
+        try {
+            ManagerFollowUpWorkOrderController.approveFollowUp(
+                workOrder.Id,
+                'Complete the permanent follow-up repair.',
+                'Allen Keys\nImaginary Laser Wrench',
+                '[]'
+            );
+        } catch (AuraHandledException e) {
+            exceptionThrown = true;
+            System.assert(e.getMessage().contains('not valid Tool Catalog entries'), 'Expected invalid Tool Catalog validation.');
+            System.assert(e.getMessage().contains('Imaginary Laser Wrench'), 'The invalid tool should be identified in the error.');
+        }
+
+        Test.stopTest();
+
+        System.assertEquals(true, exceptionThrown, 'A non-catalog tool must be rejected.');
+
+        WorkOrder unchanged = [SELECT Dispatch_Status__c, Recommended_Tools__c FROM WorkOrder WHERE Id = :workOrder.Id];
+        System.assertEquals('Temporary Fix', unchanged.Dispatch_Status__c);
+        System.assertEquals(PREVIOUS_TOOLS, unchanged.Recommended_Tools__c, 'Rejected approval must not modify the saved tools.');
     }
 
     @IsTest
@@ -263,7 +335,12 @@ private class ManagerFollowUpWorkOrderControllerTest {
         Test.startTest();
 
         try {
-            ManagerFollowUpWorkOrderController.approveFollowUp(workOrder.Id, 'Replace the spindle belt.', 'Torque driver', selectedPartsJson);
+            ManagerFollowUpWorkOrderController.approveFollowUp(
+                workOrder.Id,
+                'Replace the spindle belt.',
+                'Allen Keys',
+                selectedPartsJson
+            );
         } catch (AuraHandledException e) {
             exceptionThrown = true;
             System.assert(e.getMessage().contains('already has an active part request'), 'Expected duplicate part request validation.');
@@ -283,7 +360,8 @@ private class ManagerFollowUpWorkOrderControllerTest {
         workOrder.Dispatch_Status__c = 'Ready_to_Assign';
         update workOrder;
 
-        Boolean loadRejected = false, approvalRejected = false;
+        Boolean loadRejected = false;
+        Boolean approvalRejected = false;
 
         Test.startTest();
 
@@ -295,7 +373,12 @@ private class ManagerFollowUpWorkOrderControllerTest {
         }
 
         try {
-            ManagerFollowUpWorkOrderController.approveFollowUp(workOrder.Id, 'Updated follow-up repair.', 'Diagnostic tools', '[]');
+            ManagerFollowUpWorkOrderController.approveFollowUp(
+                workOrder.Id,
+                'Updated follow-up repair.',
+                'Allen Keys',
+                '[]'
+            );
         } catch (AuraHandledException e) {
             approvalRejected = true;
             System.assert(e.getMessage().contains('no longer awaiting follow-up review'));
@@ -310,7 +393,8 @@ private class ManagerFollowUpWorkOrderControllerTest {
     @IsTest
     static void testRejectsBlankAndLongRecommendedFix() {
         WorkOrder workOrder = getWorkOrder();
-        Boolean blankRejected = false, longRejected = false;
+        Boolean blankRejected = false;
+        Boolean longRejected = false;
 
         String longFix = '';
         while (longFix.length() <= 255) longFix += 'Follow-up repair instruction ';
@@ -318,14 +402,14 @@ private class ManagerFollowUpWorkOrderControllerTest {
         Test.startTest();
 
         try {
-            ManagerFollowUpWorkOrderController.approveFollowUp(workOrder.Id, '   ', 'Tools', '[]');
+            ManagerFollowUpWorkOrderController.approveFollowUp(workOrder.Id, '   ', 'Allen Keys', '[]');
         } catch (AuraHandledException e) {
             blankRejected = true;
             System.assert(e.getMessage().contains('Recommended Fix Summary is required'));
         }
 
         try {
-            ManagerFollowUpWorkOrderController.approveFollowUp(workOrder.Id, longFix, 'Tools', '[]');
+            ManagerFollowUpWorkOrderController.approveFollowUp(workOrder.Id, longFix, 'Allen Keys', '[]');
         } catch (AuraHandledException e) {
             longRejected = true;
             System.assert(e.getMessage().contains('255 characters or fewer'));
@@ -341,6 +425,7 @@ private class ManagerFollowUpWorkOrderControllerTest {
     static void testRejectsInvalidPartQuantity() {
         WorkOrder workOrder = getWorkOrder();
         Part_Catalog__c selectedPart = getCatalogPart(NEW_PART_NUMBER);
+
         String selectedPartsJson = JSON.serialize(new List<Object>{
             new Map<String, Object>{ 'partCatalogId' => selectedPart.Id, 'quantity' => 0 }
         });
@@ -350,7 +435,12 @@ private class ManagerFollowUpWorkOrderControllerTest {
         Test.startTest();
 
         try {
-            ManagerFollowUpWorkOrderController.approveFollowUp(workOrder.Id, 'Replace the spindle belt.', 'Torque driver', selectedPartsJson);
+            ManagerFollowUpWorkOrderController.approveFollowUp(
+                workOrder.Id,
+                'Replace the spindle belt.',
+                'Allen Keys',
+                selectedPartsJson
+            );
         } catch (AuraHandledException e) {
             exceptionThrown = true;
             System.assert(e.getMessage().contains('whole numbers greater than zero'));
@@ -371,7 +461,12 @@ private class ManagerFollowUpWorkOrderControllerTest {
     }
 
     private static Part_Catalog__c getCatalogPart(String partNumber) {
-        return [SELECT Id, Name, Part_Number__c FROM Part_Catalog__c WHERE Part_Number__c = :partNumber LIMIT 1];
+        return [
+            SELECT Id, Name, Part_Number__c
+            FROM Part_Catalog__c
+            WHERE Part_Number__c = :partNumber
+            LIMIT 1
+        ];
     }
 
     private static Part_Catalog__c buildCatalogPart(String name, String partNumber) {
@@ -390,7 +485,10 @@ private class ManagerFollowUpWorkOrderControllerTest {
     }
 
     private static String getFirstActivePicklistValue(Schema.DescribeFieldResult fieldDescribe) {
-        for (Schema.PicklistEntry entry : fieldDescribe.getPicklistValues()) if (entry.isActive()) return entry.getValue();
+        for (Schema.PicklistEntry entry : fieldDescribe.getPicklistValues()) {
+            if (entry.isActive()) return entry.getValue();
+        }
+
         return null;
     }
 }

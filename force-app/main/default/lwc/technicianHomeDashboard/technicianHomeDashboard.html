@@ -1,40 +1,32 @@
 <template>
     <div class="dashboard">
-
         <!-- =====================================================
              HERO
              ===================================================== -->
         <section class="hero">
             <div class="hero-orb hero-orb-one"></div>
             <div class="hero-orb hero-orb-two"></div>
-
             <div class="hero-content">
                 <div class="hero-left">
                     <div class="hero-copy">
                         <div class="hero-brand-row">
                             <img src={technicianAvatarUrl} alt="MillTrack Intelligence" class="hero-brand-logo" />
                         </div>
-
                         <h1>Technician Service Workspace</h1>
-
                         <p class="hero-welcome">Welcome Back, {technicianFirstName}</p>
                         <p class="hero-subtitle">
                             Your service visits, job preparation, repair intelligence, and field manuals in one place.
                         </p>
                     </div>
                 </div>
-
                 <button class="refresh-button" onclick={handleRefresh} disabled={isLoading}>
                     <lightning-icon icon-name="utility:refresh" size="x-small" alternative-text=""></lightning-icon>
                     <span>Refresh</span>
                 </button>
             </div>
-
             <div class="hero-wave hero-wave-back"></div>
             <div class="hero-wave hero-wave-front"></div>
         </section>
-
-
         <!-- =====================================================
              LOADING
              ===================================================== -->
@@ -44,8 +36,6 @@
                 <p>Preparing your service workspace...</p>
             </div>
         </template>
-
-
         <!-- =====================================================
              ERROR
              ===================================================== -->
@@ -54,23 +44,18 @@
                 <div class="error-icon">
                     <lightning-icon icon-name="utility:error" size="small" alternative-text="Error"></lightning-icon>
                 </div>
-
                 <div>
                     <h2>We couldn't load the Technician Workspace</h2>
                     <p>{errorMessage}</p>
                 </div>
             </div>
         </template>
-
-
         <template if:false={isLoading}>
             <template if:false={hasError}>
-
                 <!-- =================================================
                      CURRENT JOB + SIMILAR REPAIRS
                      ================================================= -->
                 <div class="top-grid">
-
                     <!-- CURRENT JOB -->
                     <section class="panel visit-panel">
                         <div class="section-header visit-section-header">
@@ -78,11 +63,9 @@
                                 <div class="section-icon blue-icon">
                                     <lightning-icon icon-name="utility:event" size="small" alternative-text=""></lightning-icon>
                                 </div>
-
                                 <div>
                                     <p class="section-eyebrow">{currentVisitEyebrow}</p>
                                     <h2>{currentVisitHeading}</h2>
-
                                     <template if:true={currentVisit}>
                                         <p class="current-account-banner">
                                             {currentVisit.accountNameDisplay}
@@ -90,7 +73,6 @@
                                     </template>
                                 </div>
                             </div>
-
                             <template if:true={currentVisit}>
                                 <div class="current-header-actions">
                                     <template if:true={currentVisit.isInProgress}>
@@ -99,7 +81,6 @@
                                             Work is currently in progress
                                         </div>
                                     </template>
-
                                     <template if:false={currentVisit.isInProgress}>
                                         <div class="ready-job-note header-active-note">
                                             Prepare for this service visit before departure.
@@ -108,35 +89,29 @@
                                 </div>
                             </template>
                         </div>
-
                         <template if:true={currentVisit}>
                             <div class="visit-body">
-
                                 <div class="visit-main-heading">
                                     <div class="visit-title-block">
-
                                         <div class="visit-work-order-row">
-                                            <button
+                                            <span class="work-order-prefix">Work Order:</span>
+                                        <button
                                                 class="work-order-link"
                                                 data-id={currentVisit.workOrderId}
                                                 onclick={handleOpenWorkOrder}>
                                                 {currentVisit.workOrderNumber}
                                             </button>
-
                                             <div class="inline-badges priority-work-order-badges">
                                                 <span class={currentVisit.priorityClass}>
                                                     {currentVisit.priorityDisplay}
                                                 </span>
-
                                                 <span class={currentVisit.statusClass}>
                                                     {currentVisit.dispatchStatusDisplay}
                                                 </span>
                                             </div>
                                         </div>
-
                                         <h3>{currentVisit.subjectDisplay}</h3>
                                     </div>
-
                                     <button
                                         class="primary-button current-open-button"
                                         data-id={currentVisit.workOrderId}
@@ -149,49 +124,41 @@
                                         </lightning-icon>
                                     </button>
                                 </div>
-
                                 <div class="visit-info-grid">
                                     <div class="info-cell">
                                         <div class="info-icon">
                                             <lightning-icon icon-name="utility:case" size="x-small" alternative-text=""></lightning-icon>
                                         </div>
-
                                         <div>
                                             <span class="info-label">Service Case</span>
                                             <strong>{currentVisit.caseNumberDisplay}</strong>
                                             <span class="info-secondary">{currentVisit.caseSubjectDisplay}</span>
                                         </div>
                                     </div>
-
                                     <div class="info-cell">
                                         <div class="info-icon">
                                             <lightning-icon icon-name="utility:settings" size="x-small" alternative-text=""></lightning-icon>
                                         </div>
-
                                         <div>
                                             <span class="info-label">Machine</span>
                                             <strong>{currentVisit.machineLabelDisplay}</strong>
                                             <span class="info-secondary">{currentVisit.serialNumberDisplay}</span>
                                         </div>
                                     </div>
-
                                     <div class="info-cell">
                                         <div class="info-icon">
                                             <lightning-icon icon-name="utility:user" size="x-small" alternative-text=""></lightning-icon>
                                         </div>
-
                                         <div>
                                             <span class="info-label">Contact</span>
                                             <strong>{currentVisit.contactNameDisplay}</strong>
                                             <span class="info-secondary">{currentVisit.contactPhoneDisplay}</span>
                                         </div>
                                     </div>
-
                                     <div class="info-cell">
                                         <div class="info-icon">
                                             <lightning-icon icon-name="utility:event" size="x-small" alternative-text=""></lightning-icon>
                                         </div>
-
                                         <div>
                                             <span class="info-label">Scheduled Visit</span>
                                             <div class="scheduled-info-value">
@@ -207,21 +174,17 @@
                                             </div>
                                         </div>
                                     </div>
-
                                 </div>
-
                                 <div class="location-row">
                                     <div class="location-left">
                                         <div class="location-icon">
                                             <lightning-icon icon-name="utility:checkin" size="small" alternative-text=""></lightning-icon>
                                         </div>
-
                                         <div>
                                             <span class="info-label">Service Location</span>
                                             <strong>{currentVisit.fullAddressDisplay}</strong>
                                         </div>
                                     </div>
-
                                     <template if:true={currentVisit.hasAddress}>
                                         <button
                                             class="secondary-button"
@@ -236,9 +199,7 @@
                                         </button>
                                     </template>
                                 </div>
-
                                 <div class="prep-grid">
-
                                     <article class="prep-card problem-card">
                                         <div class="prep-heading">
                                             <lightning-icon icon-name="utility:warning" size="x-small" alternative-text=""></lightning-icon>
@@ -246,7 +207,6 @@
                                         </div>
                                         <p>{currentVisit.problemSummaryDisplay}</p>
                                     </article>
-
                                     <article class="prep-card fix-card">
                                         <div class="prep-heading">
                                             <lightning-icon icon-name="utility:knowledge_base" size="x-small" alternative-text=""></lightning-icon>
@@ -254,7 +214,6 @@
                                         </div>
                                         <p>{currentVisit.recommendedFixDisplay}</p>
                                     </article>
-
                                     <article class="prep-card tools-card">
                                         <div class="prep-heading">
                                             <lightning-icon icon-name="utility:setup_assistant_guide" size="x-small" alternative-text=""></lightning-icon>
@@ -265,84 +224,66 @@
                                 </div>
                             </div>
                         </template>
-
                         <template if:false={currentVisit}>
                             <div class="empty-current">
                                 <div class="empty-current-icon">
                                     <lightning-icon icon-name="utility:success" size="medium" alternative-text=""></lightning-icon>
                                 </div>
-
                                 <h3>No assigned service visits</h3>
                                 <p>You don't currently have an active or upcoming assigned Work Order.</p>
                             </div>
                         </template>
                     </section>
-
-
                     <!-- SIMILAR REPAIRS -->
                     <section class="panel similar-panel">
-
                         <div class="section-header similar-section-header">
                             <div class="section-title-wrap">
                                 <div class="section-icon intelligence-icon">
                                     <lightning-icon icon-name="utility:einstein" size="small" alternative-text=""></lightning-icon>
                                 </div>
-
                                 <div>
                                     <p class="section-eyebrow">REPAIR INTELLIGENCE</p>
                                     <h2>Similar Repairs</h2>
                                 </div>
                             </div>
                         </div>
-
                         <p class="similar-intro">
                             Successful prior service records with similar symptoms.
                         </p>
-
                         <template if:true={hasSimilarRepairs}>
                             <div class="similar-list">
-
                                 <template for:each={similarRepairs} for:item="repair">
                                     <article class="similar-card" key={repair.key}>
-
                                         <button
                                             class="similar-collapse-header"
                                             data-id={repair.maintenanceLogId}
                                             aria-expanded={repair.isExpanded}
                                             onclick={handleToggleSimilarRepair}>
-
                                             <div class="similar-collapse-title">
                                                 <span class="repair-record-label">Maintenance Log</span>
                                                 <strong>{repair.maintenanceLogNameDisplay}</strong>
                                             </div>
-
                                             <lightning-icon
                                                 icon-name={repair.toggleIcon}
                                                 size="x-small"
                                                 alternative-text="Toggle repair details">
                                             </lightning-icon>
                                         </button>
-
                                         <template if:true={repair.isExpanded}>
                                             <div class="similar-repair-details">
-
                                                 <div class="similar-summary-block similar-problem-summary">
                                                     <span class="similar-detail-label">Problem Summary</span>
                                                     <p>{repair.problemSummaryDisplay}</p>
                                                 </div>
-
                                                 <div class="similar-summary-block similar-repair-summary">
                                                     <span class="similar-detail-label">Repair Summary</span>
                                                     <p>{repair.repairSummaryDisplay}</p>
                                                 </div>
-
                                                 <button
                                                     class="small-link"
                                                     data-id={repair.maintenanceLogId}
                                                     onclick={handleOpenHistoricalRepair}>
-
                                                     View Maintenance Log
-
                                                     <lightning-icon
                                                         icon-name="utility:chevronright"
                                                         size="xx-small"
@@ -351,11 +292,9 @@
                                                 </button>
                                             </div>
                                         </template>
-
                                     </article>
                                 </template>
                             </div>
-
                             <div class="evidence-note">
                                 <lightning-icon icon-name="utility:info" size="xx-small" alternative-text=""></lightning-icon>
                                 <span>
@@ -363,50 +302,38 @@
                                 </span>
                             </div>
                         </template>
-
                         <template if:false={hasSimilarRepairs}>
                             <div class="similar-empty">
                                 <div class="similar-empty-icon">
                                     <lightning-icon icon-name="utility:search" size="small" alternative-text=""></lightning-icon>
                                 </div>
-
                                 <h3>No similar repairs found</h3>
                                 <p>
                                     MillTrack didn't find a strong enough successful repair precedent for the current job.
                                 </p>
                             </div>
                         </template>
-
                     </section>
                 </div>
-
-
                 <!-- =================================================
                      UPCOMING SERVICE VISITS
                      ================================================= -->
                 <section class="panel upcoming-panel">
-
                     <div class="section-header upcoming-section-header">
                         <div class="section-title-wrap">
-
                             <div class="section-icon upcoming-icon">
                                 <lightning-icon icon-name="utility:date_time" size="small" alternative-text=""></lightning-icon>
                             </div>
-
                             <div>
                                 <p class="section-eyebrow">YOUR SCHEDULE</p>
                                 <h2>Upcoming Service Visits</h2>
-
                                 <p class="section-helper">
                                     Review upcoming problems, recommended fixes, tools, and relevant repair history before departure.
                                 </p>
                             </div>
                         </div>
-
-
                         <button class="view-all-button" onclick={handleViewAllWorkOrders}>
                             <span>View All</span>
-
                             <lightning-icon
                                 icon-name="utility:chevronright"
                                 size="xx-small"
@@ -414,59 +341,43 @@
                             </lightning-icon>
                         </button>
                     </div>
-
-
                     <template if:true={hasUpcomingVisits}>
                         <div class="upcoming-cards">
-
                             <template for:each={upcomingVisits} for:item="visit">
                                 <article class="upcoming-card" key={visit.workOrderId}>
-
                                     <!-- HEADER -->
                                     <div class="upcoming-card-top">
-
                                         <div class="upcoming-date">
                                             <span class="date-month">{visit.monthLabel}</span>
                                             <strong>{visit.dayLabel}</strong>
                                             <span class="date-time">{visit.timeLabel}</span>
                                         </div>
-
-
                                         <div class="upcoming-title-area">
-
                                             <div class="upcoming-work-order-row">
+                                                <span class="work-order-prefix">Work Order:</span>
                                                 <button
                                                     class="work-order-link upcoming-work-order-link"
                                                     data-id={visit.workOrderId}
                                                     onclick={handleOpenWorkOrder}>
-
                                                     {visit.workOrderNumber}
                                                 </button>
-
                                                 <div class="inline-badges upcoming-inline-badges">
                                                     <span class={visit.priorityClass}>{visit.priorityDisplay}</span>
                                                     <span class={visit.statusClass}>{visit.dispatchStatusDisplay}</span>
                                                 </div>
                                             </div>
-
                                             <div class="upcoming-account-line">
                                                 <h3>{visit.accountNameDisplay}</h3>
                                             </div>
-
-
                                             <p class="upcoming-subject">
                                                 {visit.subjectDisplay}
                                             </p>
                                         </div>
-
-
                                         <button
                                             class="primary-button upcoming-open-button"
                                             data-id={visit.workOrderId}
                                             onclick={handleOpenWorkOrder}>
-
                                             <span>Open Work Order</span>
-
                                             <lightning-icon
                                                 icon-name="utility:forward"
                                                 size="xx-small"
@@ -474,115 +385,85 @@
                                             </lightning-icon>
                                         </button>
                                     </div>
-
-
                                     <!-- MACHINE / LOCATION -->
                                     <div class="upcoming-meta-grid">
-
                                         <div class="upcoming-meta-cell">
                                             <div class="upcoming-meta-icon">
                                                 <lightning-icon icon-name="utility:settings" size="x-small" alternative-text=""></lightning-icon>
                                             </div>
-
                                             <div>
                                                 <span class="info-label">Machine</span>
                                                 <strong>{visit.machineLabelDisplay}</strong>
                                                 <span class="info-secondary">{visit.serialNumberDisplay}</span>
                                             </div>
                                         </div>
-
-
                                         <div class="upcoming-meta-cell">
                                             <div class="upcoming-meta-icon">
                                                 <lightning-icon icon-name="utility:checkin" size="x-small" alternative-text=""></lightning-icon>
                                             </div>
-
                                             <div>
                                                 <span class="info-label">Service Location</span>
                                                 <strong>{visit.fullAddressDisplay}</strong>
                                             </div>
                                         </div>
-
-
                                         <div class="upcoming-meta-actions">
                                             <template if:true={visit.hasAddress}>
                                                 <button
                                                     class="secondary-button upcoming-directions-button"
                                                     data-address={visit.fullAddress}
                                                     onclick={handleDirections}>
-
                                                     <lightning-icon
                                                         icon-name="utility:routing_offline"
                                                         size="x-small"
                                                         alternative-text="">
                                                     </lightning-icon>
-
                                                     <span>Get Directions</span>
                                                 </button>
                                             </template>
                                         </div>
                                     </div>
-
-
                                     <!-- JOB PREPARATION -->
                                     <div class="upcoming-prep-grid">
-
                                         <article class="upcoming-prep-item upcoming-problem-card">
                                             <div class="upcoming-prep-title problem-title">
                                                 <lightning-icon icon-name="utility:warning" size="xx-small" alternative-text=""></lightning-icon>
                                                 <span>Problem</span>
                                             </div>
-
                                             <p>{visit.problemSummaryDisplay}</p>
                                         </article>
-
-
                                         <article class="upcoming-prep-item upcoming-fix-card">
                                             <div class="upcoming-prep-title fix-title">
                                                 <lightning-icon icon-name="utility:knowledge_base" size="xx-small" alternative-text=""></lightning-icon>
                                                 <span>Recommended Fix</span>
                                             </div>
-
                                             <p>{visit.recommendedFixDisplay}</p>
                                         </article>
-
-
                                         <article class="upcoming-prep-item upcoming-tools-card">
                                             <div class="upcoming-prep-title tools-title">
                                                 <lightning-icon icon-name="utility:setup_assistant_guide" size="xx-small" alternative-text=""></lightning-icon>
                                                 <span>Tools to Bring</span>
                                             </div>
-
                                             <p>{visit.recommendedToolsDisplay}</p>
                                         </article>
                                     </div>
-
-
                                     <!-- SIMILAR REPAIRS -->
                                     <template if:true={visit.hasSimilarRepairs}>
                                         <div class="upcoming-history">
-
                                             <div class="upcoming-history-icon">
                                                 <lightning-icon icon-name="utility:einstein" size="small" alternative-text=""></lightning-icon>
                                             </div>
-
                                             <div class="upcoming-history-content">
                                                 <span class="history-label">Similar Repairs</span>
-
                                                 <div class="upcoming-history-grid">
                                                     <template for:each={visit.similarRepairs} for:item="repair">
                                                         <article class="upcoming-history-record" key={repair.key}>
-
                                                             <span class="upcoming-history-record-label">Maintenance Log</span>
                                                             <strong class="upcoming-history-record-name">{repair.maintenanceLogNameDisplay}</strong>
-
                                                             <button
                                                                 class="small-link upcoming-history-link"
                                                                 data-id={repair.maintenanceLogId}
                                                                 onclick={handleOpenHistoricalRepair}>
-
                                                                 View Historical Maintenance Log
-
                                                                 <lightning-icon
                                                                     icon-name="utility:chevronright"
                                                                     size="xx-small"
@@ -595,28 +476,21 @@
                                             </div>
                                         </div>
                                     </template>
-
-
                                     <template if:false={visit.hasSimilarRepairs}>
                                         <div class="upcoming-history-empty">
                                             <lightning-icon icon-name="utility:search" size="x-small" alternative-text=""></lightning-icon>
-
                                             <span>
                                                 No strong successful repair precedent was found for this upcoming job.
                                             </span>
                                         </div>
                                     </template>
-
                                 </article>
                             </template>
                         </div>
                     </template>
-
-
                     <template if:false={hasUpcomingVisits}>
                         <div class="section-empty">
                             <lightning-icon icon-name="utility:event" size="small" alternative-text=""></lightning-icon>
-
                             <div>
                                 <h3>No additional visits scheduled</h3>
                                 <p>Your upcoming assigned visits will appear here.</p>
@@ -624,73 +498,57 @@
                         </div>
                     </template>
                 </section>
-
-
                 <!-- =================================================
                      QUICK SERVICE MANUALS
                      ================================================= -->
                 <section class="panel manuals-panel">
-
-                    <div class="section-header">
+                    <div class="section-header manuals-section-header">
                         <div class="section-title-wrap">
-
                             <div class="section-icon manuals-icon">
                                 <lightning-icon icon-name="utility:knowledge_base" size="small" alternative-text=""></lightning-icon>
                             </div>
-
                             <div>
                                 <p class="section-eyebrow">FIELD REFERENCE</p>
                                 <h2>Quick Service Manuals</h2>
-
-                                <p class="section-helper">
-                                    Frequently used manuals for field service.
-                                </p>
+                                <p class="section-helper">Frequently used manuals for field service.</p>
                             </div>
                         </div>
+                        <template if:true={hasServiceManuals}>
+                            <div class="manual-search">
+                                <lightning-icon icon-name="utility:search" size="x-small" alternative-text=""></lightning-icon>
+                                <input type="search" class="manual-search-input" value={manualSearchTerm} placeholder="Search manuals..." oninput={handleManualSearchChange} aria-label="Search Quick Service Manuals" />
+                            </div>
+                        </template>
                     </div>
-
-
-                    <template if:true={hasServiceManuals}>
+                    <template if:true={hasFilteredServiceManuals}>
                         <div class="manual-grid">
-
-                            <template for:each={serviceManuals} for:item="manual">
+                            <template for:each={filteredServiceManuals} for:item="manual">
                                 <article class="manual-card" key={manual.contentDocumentId}>
-
                                     <button
                                         class="manual-preview"
                                         data-document-id={manual.contentDocumentId}
                                         onclick={handleOpenManual}
                                         title={manual.title}>
-
                                         <div class="manual-fallback">
                                             <lightning-icon icon-name="doctype:pdf" size="large" alternative-text="PDF"></lightning-icon>
                                         </div>
-
                                         <img
                                             src={manual.thumbnailUrl}
                                             alt={manual.title}
                                             onerror={handleThumbnailError} />
-
                                         <span class="pdf-pill">PDF</span>
                                     </button>
-
-
                                     <div class="manual-body">
                                         <span class="manual-brand">{manual.brandLabel}</span>
-
                                         <h3>{manual.title}</h3>
-
                                         <p>
                                             Open the complete PDF for field reference.
                                         </p>
-
                                         <button
                                             class="manual-link"
                                             data-document-id={manual.contentDocumentId}
                                             onclick={handleOpenManual}>
-
                                             View Manual
-
                                             <lightning-icon
                                                 icon-name="utility:open"
                                                 size="xx-small"
@@ -702,29 +560,33 @@
                             </template>
                         </div>
                     </template>
-
-
+                    <template if:true={hasServiceManuals}>
+                        <template if:false={hasFilteredServiceManuals}>
+                            <div class="section-empty manual-search-empty">
+                                <lightning-icon icon-name="utility:search" size="small" alternative-text=""></lightning-icon>
+                                <div>
+                                    <h3>No manuals match your search</h3>
+                                    <p>Try a different machine, manufacturer, or manual name.</p>
+                                </div>
+                            </div>
+                        </template>
+                    </template>
                     <template if:false={hasServiceManuals}>
                         <div class="section-empty">
                             <lightning-icon icon-name="doctype:pdf" size="small" alternative-text=""></lightning-icon>
-
                             <div>
                                 <h3>No quick manuals available</h3>
                                 <p>Featured service manuals will appear here when available.</p>
                             </div>
                         </div>
                     </template>
-
-
                     <div class="knowledge-library-note">
                         <lightning-icon icon-name="utility:einstein" size="xx-small" alternative-text=""></lightning-icon>
-
                         <span>
                             Technician AI can search the complete service knowledge library.
                         </span>
                     </div>
                 </section>
-
             </template>
         </template>
     </div>

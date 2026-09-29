@@ -3,1191 +3,443 @@
         <!-- =====================================================
              LOADING
              ===================================================== -->
-
         <template if:true={isLoading}>
             <div class="loading-state">
-                <lightning-spinner
-                    alternative-text="Loading Report an Issue"
-                    size="medium">
-                </lightning-spinner>
+                <lightning-spinner alternative-text="Loading Report an Issue" size="medium"></lightning-spinner>
             </div>
         </template>
-
 
         <!-- =====================================================
              LOADED
              ===================================================== -->
-
         <template if:false={isLoading}>
-
             <!-- =================================================
                  LOAD ERROR
                  ================================================= -->
-
             <template if:true={hasLoadError}>
                 <section class="state-card state-card-error">
-
-                    <div class="state-icon error-icon">
-                        !
-                    </div>
-
-                    <h2>
-                        We couldn't load Report an Issue
-                    </h2>
-
-                    <p>
-                        {loadError}
-                    </p>
-
-                    <button
-                        type="button"
-                        class="primary-button"
-                        onclick={handleRetryLoad}>
-                        Try Again
-                    </button>
-
+                    <div class="state-icon error-icon">!</div>
+                    <h2>We couldn't load Report an Issue</h2>
+                    <p>{loadError}</p>
+                    <button type="button" class="primary-button" onclick={handleRetryLoad}>Try Again</button>
                 </section>
             </template>
-
 
             <!-- =================================================
                  MAIN EXPERIENCE
                  ================================================= -->
-
             <template if:false={hasLoadError}>
-
                 <!-- =============================================
                      NO MACHINES
                      ============================================= -->
-
                 <template if:false={hasMachines}>
                     <section class="state-card">
-
                         <div class="state-icon machine-empty-icon">
-
-                            <svg
-                                viewBox="0 0 24 24"
-                                aria-hidden="true">
-
-                                <circle
-                                    cx="12"
-                                    cy="12"
-                                    r="3">
-                                </circle>
-
-                                <circle
-                                    cx="12"
-                                    cy="12"
-                                    r="7">
-                                </circle>
-
-                                <path
-                                    d="M12 2.5v2M12 19.5v2M21.5 12h-2M4.5 12h-2">
-                                </path>
-
+                            <svg viewBox="0 0 24 24" aria-hidden="true">
+                                <circle cx="12" cy="12" r="3"></circle>
+                                <circle cx="12" cy="12" r="7"></circle>
+                                <path d="M12 2.5v2M12 19.5v2M21.5 12h-2M4.5 12h-2"></path>
                             </svg>
-
                         </div>
-
-                        <h2>
-                            No machines are available
-                        </h2>
-
-                        <p>
-                            No milling machines are currently linked to your
-                            MillTrack account. Please contact MillTrack support
-                            before submitting a service request.
-                        </p>
-
-                        <button
-                            type="button"
-                            class="secondary-button"
-                            onclick={handleBackHome}>
-                            Back to Home
-                        </button>
-
+                        <h2>No machines are available</h2>
+                        <p>No milling machines are currently linked to your MillTrack account. Please contact MillTrack support before submitting a service request.</p>
+                        <button type="button" class="secondary-button" onclick={handleBackHome}>Back to Home</button>
                     </section>
                 </template>
-
 
                 <!-- =============================================
                      WIZARD
                      ============================================= -->
-
                 <template if:true={hasMachines}>
-
                     <template if:false={hasSubmitted}>
-
                         <div class="wizard-shell">
-
                             <!-- ===============================
                                  PROGRESS
                                  =============================== -->
-
                             <div class="progress-shell">
-
                                 <div class={stepOneClass}>
-
-                                    <div class="step-circle">
-                                        {stepOneMarker}
-                                    </div>
-
+                                    <div class="step-circle">{stepOneMarker}</div>
                                     <div class="step-copy">
-                                        <strong>
-                                            Choose Machine
-                                        </strong>
-
-                                        <span>
-                                            Select the affected machine
-                                        </span>
+                                        <strong>Choose Machine</strong>
+                                        <span>Select the affected machine</span>
                                     </div>
-
                                 </div>
 
-
                                 <div class="progress-line"></div>
-
 
                                 <div class={stepTwoClass}>
-
-                                    <div class="step-circle">
-                                        {stepTwoMarker}
-                                    </div>
-
+                                    <div class="step-circle">{stepTwoMarker}</div>
                                     <div class="step-copy">
-                                        <strong>
-                                            Issue Details
-                                        </strong>
-
-                                        <span>
-                                            Tell us what's happening
-                                        </span>
+                                        <strong>Issue Details</strong>
+                                        <span>Tell us what's happening</span>
                                     </div>
-
                                 </div>
-
 
                                 <div class="progress-line"></div>
 
-
                                 <div class={stepThreeClass}>
-
-                                    <div class="step-circle">
-                                        3
-                                    </div>
-
+                                    <div class="step-circle">3</div>
                                     <div class="step-copy">
-                                        <strong>
-                                            Review &amp; Submit
-                                        </strong>
-
-                                        <span>
-                                            Confirm your request
-                                        </span>
+                                        <strong>Review &amp; Submit</strong>
+                                        <span>Confirm your request</span>
                                     </div>
-
                                 </div>
-
                             </div>
-
 
                             <!-- ===============================
                                  STEP 1
                                  =============================== -->
-
                             <template if:true={isStepOne}>
-
                                 <main class="wizard-content">
-
                                     <div class="step-heading">
-
-                                        <p class="eyebrow">
-                                            Step 1 of 3
-                                        </p>
-
-                                        <h2>
-                                            Which machine needs attention?
-                                        </h2>
-
-                                        <p>
-                                            Select the milling machine experiencing
-                                            the issue. Only machines registered to
-                                            your MillTrack account are shown here.
-                                        </p>
-
+                                        <p class="eyebrow">Step 1 of 3</p>
+                                        <h2>Which machine needs attention?</h2>
+                                        <p>Select the milling machine experiencing the issue. Only machines registered to your MillTrack account are shown here.</p>
                                     </div>
-
 
                                     <div class="machine-grid">
-
-                                        <template
-                                            for:each={machines}
-                                            for:item="machine">
-
-                                            <article
-                                                key={machine.id}
-                                                class={machine.cardClass}
-                                                data-id={machine.id}
-                                                role="button"
-                                                tabindex="0"
-                                                aria-pressed={machine.selected}
-                                                onclick={handleMachineSelect}
-                                                onkeydown={handleMachineKeydown}>
-
-
-                                                <!-- HEADER -->
-
+                                        <template for:each={machines} for:item="machine">
+                                            <article key={machine.id} class={machine.cardClass} data-id={machine.id} role="button" tabindex="0" aria-pressed={machine.selected} onclick={handleMachineSelect} onkeydown={handleMachineKeydown}>
                                                 <div class="machine-card-top">
-
                                                     <div class="machine-icon">
-
-                                                        <svg
-                                                            viewBox="0 0 24 24"
-                                                            aria-hidden="true">
-
-                                                            <circle
-                                                                cx="12"
-                                                                cy="12"
-                                                                r="3">
-                                                            </circle>
-
-                                                            <circle
-                                                                cx="12"
-                                                                cy="12"
-                                                                r="7">
-                                                            </circle>
-
-                                                            <path
-                                                                d="M12 2.5v2M12 19.5v2M21.5 12h-2M4.5 12h-2">
-                                                            </path>
-
+                                                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                                                            <circle cx="12" cy="12" r="3"></circle>
+                                                            <circle cx="12" cy="12" r="7"></circle>
+                                                            <path d="M12 2.5v2M12 19.5v2M21.5 12h-2M4.5 12h-2"></path>
                                                         </svg>
-
                                                     </div>
-
-
-                                                    <span class={machine.statusClass}>
-                                                        {machine.statusDisplay}
-                                                    </span>
-
+                                                    <span class={machine.statusClass}>{machine.statusDisplay}</span>
                                                 </div>
-
-
-                                                <!-- TITLE -->
 
                                                 <div class="machine-card-copy">
-
-                                                    <p class="machine-kicker">
-                                                        Milling Machine
-                                                    </p>
-
-                                                    <h3>
-                                                        {machine.name}
-                                                    </h3>
-
-                                                    <p class="machine-model">
-                                                        {machine.manufacturerModelDisplay}
-                                                    </p>
-
+                                                    <p class="machine-kicker">Milling Machine</p>
+                                                    <h3>{machine.name}</h3>
+                                                    <p class="machine-model">{machine.manufacturerModelDisplay}</p>
                                                 </div>
-
-
-                                                <!-- DETAILS -->
 
                                                 <div class="machine-details">
-
                                                     <div>
-                                                        <span class="detail-label">
-                                                            Serial Number
-                                                        </span>
-
-                                                        <strong class="serial-value">
-                                                            {machine.serialDisplay}
-                                                        </strong>
+                                                        <span class="detail-label">Serial Number</span>
+                                                        <strong class="serial-value">{machine.serialDisplay}</strong>
                                                     </div>
-
-
                                                     <div>
-
-                                                        <span class="detail-label">
-                                                            Last Service
-                                                        </span>
-
+                                                        <span class="detail-label">Last Service</span>
                                                         <template if:true={machine.lastServiceDate}>
-
                                                             <strong>
-                                                                <lightning-formatted-date-time
-                                                                    value={machine.lastServiceDate}
-                                                                    year="numeric"
-                                                                    month="short"
-                                                                    day="2-digit"
-                                                                    time-zone="UTC">
-                                                                </lightning-formatted-date-time>
+                                                                <lightning-formatted-date-time value={machine.lastServiceDate} year="numeric" month="short" day="2-digit" time-zone="UTC"></lightning-formatted-date-time>
                                                             </strong>
-
                                                         </template>
-
-
                                                         <template if:false={machine.lastServiceDate}>
-
-                                                            <strong>
-                                                                No service recorded
-                                                            </strong>
-
+                                                            <strong>No service recorded</strong>
                                                         </template>
-
                                                     </div>
-
                                                 </div>
-
-
-                                                <!-- MACHINE IMAGE -->
 
                                                 <div class="machine-preview-shell">
-
                                                     <template if:true={machine.hasImage}>
-
                                                         <div class="machine-preview">
-
-                                                            <img
-                                                                src={machine.imageUrl}
-                                                                alt={machine.name}
-                                                                class="machine-preview-image" />
-
+                                                            <img src={machine.imageUrl} alt={machine.name} class="machine-preview-image" />
                                                         </div>
-
                                                     </template>
-
 
                                                     <template if:false={machine.hasImage}>
-
                                                         <div class="machine-preview machine-preview-empty">
-
                                                             <div class="machine-preview-empty-icon">
-
-                                                                <svg
-                                                                    viewBox="0 0 24 24"
-                                                                    aria-hidden="true">
-
-                                                                    <circle
-                                                                        cx="12"
-                                                                        cy="12"
-                                                                        r="3">
-                                                                    </circle>
-
-                                                                    <circle
-                                                                        cx="12"
-                                                                        cy="12"
-                                                                        r="7">
-                                                                    </circle>
-
+                                                                <svg viewBox="0 0 24 24" aria-hidden="true">
+                                                                    <circle cx="12" cy="12" r="3"></circle>
+                                                                    <circle cx="12" cy="12" r="7"></circle>
                                                                 </svg>
-
                                                             </div>
-
-                                                            <span>
-                                                                Machine image not available
-                                                            </span>
-
+                                                            <span>Machine image not available</span>
                                                         </div>
-
                                                     </template>
-
                                                 </div>
-
-
-                                                <!-- SELECTION -->
 
                                                 <div class="machine-select-row">
-
                                                     <template if:true={machine.selected}>
-
                                                         <span class="selected-machine-label">
-
-                                                            <span class="selected-check">
-                                                                ✓
-                                                            </span>
-
+                                                            <span class="selected-check">✓</span>
                                                             Selected
-
                                                         </span>
-
                                                     </template>
-
 
                                                     <template if:false={machine.selected}>
-
                                                         <span class="select-machine-label">
-
                                                             Select machine
-
-                                                            <span aria-hidden="true">
-                                                                →
-                                                            </span>
-
+                                                            <span aria-hidden="true">→</span>
                                                         </span>
-
                                                     </template>
-
                                                 </div>
-
                                             </article>
-
                                         </template>
-
                                     </div>
 
-
                                     <template if:true={hasStepError}>
-
-                                        <div
-                                            class="inline-error"
-                                            role="alert">
-
-                                            <span class="inline-error-icon">
-                                                !
-                                            </span>
-
-                                            <span>
-                                                {stepError}
-                                            </span>
-
+                                        <div class="inline-error" role="alert">
+                                            <span class="inline-error-icon">!</span>
+                                            <span>{stepError}</span>
                                         </div>
-
                                     </template>
-
                                 </main>
 
-
                                 <footer class="wizard-footer">
-
-                                    <button
-                                        type="button"
-                                        class="secondary-button"
-                                        onclick={handleBackHome}>
-                                        Back to Home
-                                    </button>
-
-                                    <button
-                                        type="button"
-                                        class="primary-button"
-                                        onclick={handleContinueFromMachine}>
-
+                                    <button type="button" class="secondary-button" onclick={handleBackHome}>Back to Home</button>
+                                    <button type="button" class="primary-button" onclick={handleContinueFromMachine}>
                                         Continue to Issue Details
-
-                                        <span aria-hidden="true">
-                                            →
-                                        </span>
-
+                                        <span aria-hidden="true">→</span>
                                     </button>
-
                                 </footer>
-
                             </template>
-
 
                             <!-- ===============================
                                  STEP 2
                                  =============================== -->
-
                             <template if:true={isStepTwo}>
-
                                 <main class="wizard-content">
-
                                     <div class="step-heading">
-
-                                        <p class="eyebrow">
-                                            Step 2 of 3
-                                        </p>
-
-                                        <h2>
-                                            Tell us what's happening
-                                        </h2>
-
-                                        <p>
-                                            Give the MillTrack service team enough
-                                            information to understand what you're
-                                            experiencing with the machine.
-                                        </p>
-
+                                        <p class="eyebrow">Step 2 of 3</p>
+                                        <h2>Tell us what's happening</h2>
+                                        <p>Give the MillTrack service team enough information to understand what you're experiencing with the machine.</p>
                                     </div>
 
-
                                     <!-- ISSUE DETAILS -->
-
                                     <section class="content-card">
-
                                         <div class="card-heading">
-
                                             <div class="card-heading-icon issue-icon">
-
-                                                <svg
-                                                    viewBox="0 0 24 24"
-                                                    aria-hidden="true">
-
-                                                    <path
-                                                        d="M6.5 3.75h8.25l2.75 2.75v13.75H6.5z">
-                                                    </path>
-
-                                                    <path
-                                                        d="M14.75 3.75V6.5h2.75M9 10h6M9 13.25h6M9 16.5h4">
-                                                    </path>
-
+                                                <svg viewBox="0 0 24 24" aria-hidden="true">
+                                                    <path d="M6.5 3.75h8.25l2.75 2.75v13.75H6.5z"></path>
+                                                    <path d="M14.75 3.75V6.5h2.75M9 10h6M9 13.25h6M9 16.5h4"></path>
                                                 </svg>
-
                                             </div>
-
 
                                             <div>
-
-                                                <p class="section-kicker">
-                                                    Issue Details
-                                                </p>
-
-                                                <h3>
-                                                    What happened?
-                                                </h3>
-
-                                                <p>
-                                                    Describe the symptoms, sounds,
-                                                    messages, or behavior you've noticed.
-                                                </p>
-
+                                                <p class="section-kicker">Issue Details</p>
+                                                <h3>What happened?</h3>
+                                                <p>Describe the symptoms, sounds, messages, or behavior you've noticed.</p>
                                             </div>
-
                                         </div>
-
 
                                         <div class="form-stack">
-
                                             <div class="form-field">
-
-                                                <label
-                                                    class="field-label"
-                                                    for="subject">
-
+                                                <label class="field-label" for="subject">
                                                     Subject
-
-                                                    <span class="optional-label">
-                                                        Optional
-                                                    </span>
-
+                                                    <span class="required-mark">*</span>
                                                 </label>
 
-                                                <input
-                                                    id="subject"
-                                                    type="text"
-                                                    class="text-input"
-                                                    maxlength="255"
-                                                    value={subject}
-                                                    placeholder="Example: Machine stops during milling"
-                                                    oninput={handleSubjectChange} />
-
+                                                <input id="subject" type="text" class="text-input" maxlength="255" value={subject} placeholder="Example: Machine stops during milling" oninput={handleSubjectChange} required />
                                             </div>
 
-
                                             <div class="form-field">
-
-                                                <label
-                                                    class="field-label"
-                                                    for="description">
-
+                                                <label class="field-label" for="description">
                                                     Describe the problem
-
-                                                    <span class="required-mark">
-                                                        *
-                                                    </span>
-
+                                                    <span class="required-mark">*</span>
                                                 </label>
 
-                                                <p class="field-helper">
-                                                    Include when the issue started and
-                                                    what happens when you try to use
-                                                    the machine.
-                                                </p>
+                                                <p class="field-helper">Include when the issue started and what happens when you try to use the machine.</p>
 
-                                                <textarea
-                                                    id="description"
-                                                    class="text-area"
-                                                    value={description}
-                                                    placeholder="Tell us what you're seeing, hearing, or experiencing..."
-                                                    oninput={handleDescriptionChange}>
-                                                </textarea>
-
+                                                <textarea id="description" class="text-area" value={description} placeholder="Tell us what you're seeing, hearing, or experiencing..." oninput={handleDescriptionChange}></textarea>
                                             </div>
-
 
                                             <div class="form-field">
-
-                                                <label
-                                                    class="field-label"
-                                                    for="errorCode">
-
+                                                <label class="field-label" for="errorCode">
                                                     Error Code
-
-                                                    <span class="optional-label">
-                                                        If available
-                                                    </span>
-
+                                                    <span class="optional-label">If available</span>
                                                 </label>
 
-                                                <input
-                                                    id="errorCode"
-                                                    type="text"
-                                                    class="text-input"
-                                                    value={errorCode}
-                                                    placeholder="Enter the exact error code shown by the machine"
-                                                    oninput={handleErrorCodeChange} />
-
+                                                <input id="errorCode" type="text" class="text-input" value={errorCode} placeholder="Enter the exact error code shown by the machine" oninput={handleErrorCodeChange} />
                                             </div>
-
                                         </div>
-
                                     </section>
-
 
                                     <!-- PRIORITY -->
-
                                     <section class="content-card">
-
                                         <div class="card-heading">
-
-                                            <div class="card-heading-icon priority-icon">
-                                                !
-                                            </div>
-
-
+                                            <div class="card-heading-icon priority-icon">!</div>
                                             <div>
-
-                                                <p class="section-kicker priority-kicker">
-                                                    Service Priority
-                                                </p>
-
-                                                <h3>
-                                                    How urgent is this issue?
-                                                </h3>
-
-                                                <p>
-                                                    Choose the priority that best reflects
-                                                    the impact of the problem.
-                                                </p>
-
+                                                <p class="section-kicker priority-kicker">Service Priority</p>
+                                                <h3>How urgent is this issue?</h3>
+                                                <p>Choose the priority that best reflects the impact of the problem.</p>
                                             </div>
-
                                         </div>
 
-
-                                        <div
-                                            class="priority-grid"
-                                            role="radiogroup"
-                                            aria-label="Service priority">
-
-                                            <template
-                                                for:each={priorities}
-                                                for:item="option">
-
-                                                <button
-                                                    key={option.value}
-                                                    type="button"
-                                                    class={option.choiceClass}
-                                                    data-value={option.value}
-                                                    role="radio"
-                                                    aria-checked={option.ariaChecked}
-                                                    onclick={handlePrioritySelect}>
-
-                                                    <span class="priority-choice-dot">
-                                                    </span>
-
-                                                    <span>
-                                                        {option.label}
-                                                    </span>
-
+                                        <div class="priority-grid" role="radiogroup" aria-label="Service priority">
+                                            <template for:each={priorities} for:item="option">
+                                                <button key={option.value} type="button" class={option.choiceClass} data-value={option.value} role="radio" aria-checked={option.ariaChecked} onclick={handlePrioritySelect}>
+                                                    <span class="priority-choice-dot"></span>
+                                                    <span>{option.label}</span>
                                                 </button>
-
                                             </template>
-
                                         </div>
-
                                     </section>
-
-
-                                    <!-- TECHNICIAN -->
-
-                                    <section class="content-card technician-card">
-
-                                        <label class="technician-option">
-
-                                            <input
-                                                type="checkbox"
-                                                checked={technicianRequested}
-                                                onchange={handleTechnicianRequestedChange} />
-
-                                            <span class="technician-copy">
-
-                                                <strong>
-                                                    I would like a technician to review this issue
-                                                </strong>
-
-                                                <span>
-                                                    Select this if you would like the
-                                                    MillTrack service team to consider
-                                                    technician support for this request.
-                                                </span>
-
-                                            </span>
-
-                                        </label>
-
-                                    </section>
-
 
                                     <template if:true={hasStepError}>
-
-                                        <div
-                                            class="inline-error"
-                                            role="alert">
-
-                                            <span class="inline-error-icon">
-                                                !
-                                            </span>
-
-                                            <span>
-                                                {stepError}
-                                            </span>
-
+                                        <div class="inline-error" role="alert">
+                                            <span class="inline-error-icon">!</span>
+                                            <span>{stepError}</span>
                                         </div>
-
                                     </template>
-
                                 </main>
 
-
                                 <footer class="wizard-footer wizard-footer-between">
-
-                                    <button
-                                        type="button"
-                                        class="secondary-button"
-                                        onclick={handleBack}>
-
-                                        <span aria-hidden="true">
-                                            ←
-                                        </span>
-
+                                    <button type="button" class="secondary-button" onclick={handleBack}>
+                                        <span aria-hidden="true">←</span>
                                         Back
-
                                     </button>
 
-
-                                    <button
-                                        type="button"
-                                        class="primary-button"
-                                        onclick={handleContinueToReview}>
-
+                                    <button type="button" class="primary-button" onclick={handleContinueToReview}>
                                         Review Service Request
-
-                                        <span aria-hidden="true">
-                                            →
-                                        </span>
-
+                                        <span aria-hidden="true">→</span>
                                     </button>
-
                                 </footer>
-
                             </template>
-
 
                             <!-- ===============================
                                  STEP 3
                                  =============================== -->
-
                             <template if:true={isStepThree}>
-
                                 <main class="wizard-content">
-
                                     <div class="step-heading">
-
-                                        <p class="eyebrow">
-                                            Step 3 of 3
-                                        </p>
-
-                                        <h2>
-                                            Review your service request
-                                        </h2>
-
-                                        <p>
-                                            Confirm the information below before
-                                            sending your request to the MillTrack
-                                            service team.
-                                        </p>
-
+                                        <p class="eyebrow">Step 3 of 3</p>
+                                        <h2>Review your service request</h2>
+                                        <p>Confirm the information below before sending your request to the MillTrack service team.</p>
                                     </div>
-
 
                                     <!-- MACHINE REVIEW -->
-
                                     <section class="review-card review-machine-card">
-
                                         <div class="review-card-header">
-
                                             <div class="review-heading-group">
-
-                                                <div class="review-number review-number-blue">
-                                                    1
-                                                </div>
-
+                                                <div class="review-number review-number-blue">1</div>
                                                 <div>
-
-                                                    <p class="section-kicker">
-                                                        Selected Machine
-                                                    </p>
-
-                                                    <h3>
-                                                        {selectedMachine.name}
-                                                    </h3>
-
+                                                    <p class="section-kicker">Selected Machine</p>
+                                                    <h3>{selectedMachine.name}</h3>
                                                 </div>
-
                                             </div>
 
-
-                                            <button
-                                                type="button"
-                                                class="edit-button"
-                                                onclick={handleEditMachine}>
-                                                Edit
-                                            </button>
-
+                                            <button type="button" class="edit-button" onclick={handleEditMachine}>Edit</button>
                                         </div>
-
 
                                         <div class="review-machine-layout">
-
                                             <template if:true={selectedMachine.hasImage}>
-
                                                 <div class="review-machine-image-shell">
-
-                                                    <img
-                                                        src={selectedMachine.imageUrl}
-                                                        alt={selectedMachine.name}
-                                                        class="review-machine-image" />
-
+                                                    <img src={selectedMachine.imageUrl} alt={selectedMachine.name} class="review-machine-image" />
                                                 </div>
-
                                             </template>
 
-
                                             <div class="review-machine-grid">
+                                                <div>
+                                                    <span>Manufacturer &amp; Model</span>
+                                                    <strong>{selectedMachine.manufacturerModelDisplay}</strong>
+                                                </div>
 
                                                 <div>
+                                                    <span>Serial Number</span>
+                                                    <strong class="serial-value">{selectedMachine.serialDisplay}</strong>
+                                                </div>
 
-                                                    <span>
-                                                        Manufacturer &amp; Model
-                                                    </span>
-
+                                                <div>
+                                                    <span>Machine Status</span>
                                                     <strong>
-                                                        {selectedMachine.manufacturerModelDisplay}
+                                                        <span class={selectedMachine.statusClass}>{selectedMachine.statusDisplay}</span>
                                                     </strong>
-
                                                 </div>
-
-
-                                                <div>
-
-                                                    <span>
-                                                        Serial Number
-                                                    </span>
-
-                                                    <strong class="serial-value">
-                                                        {selectedMachine.serialDisplay}
-                                                    </strong>
-
-                                                </div>
-
-
-                                                <div>
-
-                                                    <span>
-                                                        Machine Status
-                                                    </span>
-
-                                                    <strong>
-
-                                                        <span class={selectedMachine.statusClass}>
-                                                            {selectedMachine.statusDisplay}
-                                                        </span>
-
-                                                    </strong>
-
-                                                </div>
-
                                             </div>
-
                                         </div>
-
                                     </section>
-
 
                                     <!-- ISSUE REVIEW -->
-
                                     <section class="review-card review-issue-card">
-
                                         <div class="review-card-header">
-
                                             <div class="review-heading-group">
-
-                                                <div class="review-number review-number-tan">
-                                                    2
-                                                </div>
-
+                                                <div class="review-number review-number-tan">2</div>
                                                 <div>
-
-                                                    <p class="section-kicker review-tan-kicker">
-                                                        Issue Information
-                                                    </p>
-
-                                                    <h3>
-                                                        Service Request Details
-                                                    </h3>
-
+                                                    <p class="section-kicker review-tan-kicker">Issue Information</p>
+                                                    <h3>Service Request Details</h3>
                                                 </div>
-
                                             </div>
 
-
-                                            <button
-                                                type="button"
-                                                class="edit-button"
-                                                onclick={handleEditDetails}>
-                                                Edit
-                                            </button>
-
+                                            <button type="button" class="edit-button" onclick={handleEditDetails}>Edit</button>
                                         </div>
-
 
                                         <div class="review-details">
-
                                             <div class="review-detail full-width">
-
-                                                <span class="review-label">
-                                                    Subject
-                                                </span>
-
-                                                <strong>
-                                                    {subjectDisplay}
-                                                </strong>
-
+                                                <span class="review-label">Subject</span>
+                                                <strong>{subjectDisplay}</strong>
                                             </div>
 
-
                                             <div class="review-detail full-width">
-
-                                                <span class="review-label">
-                                                    Description
-                                                </span>
-
-                                                <p class="review-description">
-                                                    {description}
-                                                </p>
-
+                                                <span class="review-label">Description</span>
+                                                <p class="review-description">{description}</p>
                                             </div>
-
 
                                             <div class="review-detail-grid">
-
                                                 <div class="review-detail">
-
-                                                    <span class="review-label">
-                                                        Error Code
-                                                    </span>
-
-                                                    <strong>
-                                                        {errorCodeDisplay}
-                                                    </strong>
-
+                                                    <span class="review-label">Error Code</span>
+                                                    <strong>{errorCodeDisplay}</strong>
                                                 </div>
 
-
                                                 <div class="review-detail">
-
-                                                    <span class="review-label">
-                                                        Priority
-                                                    </span>
-
+                                                    <span class="review-label">Priority</span>
                                                     <strong>
-
-                                                        <span class={priorityPillClass}>
-                                                            {priority}
-                                                        </span>
-
+                                                        <span class={priorityPillClass}>{priority}</span>
                                                     </strong>
-
                                                 </div>
-
-
-                                                <div class="review-detail">
-
-                                                    <span class="review-label">
-                                                        Technician Requested
-                                                    </span>
-
-                                                    <strong>
-                                                        {technicianRequestedDisplay}
-                                                    </strong>
-
-                                                </div>
-
                                             </div>
-
                                         </div>
-
                                     </section>
 
-
                                     <div class="submission-notice">
-
-                                        <div class="submission-notice-icon">
-                                            i
-                                        </div>
-
-                                        <p>
-                                            After submission, your request will be
-                                            sent to the MillTrack service team.
-                                            You can monitor its progress from
-                                            My Service Requests in the Customer Portal.
-                                        </p>
-
+                                        <div class="submission-notice-icon">i</div>
+                                        <p>After submission, your request will be sent to the MillTrack service team. You can monitor its progress from My Service Requests in the Customer Portal.</p>
                                     </div>
 
-
                                     <template if:true={hasSubmissionError}>
-
-                                        <div
-                                            class="inline-error"
-                                            role="alert">
-
-                                            <span class="inline-error-icon">
-                                                !
-                                            </span>
-
-                                            <span>
-                                                {submissionError}
-                                            </span>
-
+                                        <div class="inline-error" role="alert">
+                                            <span class="inline-error-icon">!</span>
+                                            <span>{submissionError}</span>
                                         </div>
-
                                     </template>
-
                                 </main>
 
-
                                 <footer class="wizard-footer wizard-footer-between">
-
-                                    <button
-                                        type="button"
-                                        class="secondary-button"
-                                        onclick={handleBack}
-                                        disabled={isSubmitting}>
-
-                                        <span aria-hidden="true">
-                                            ←
-                                        </span>
-
+                                    <button type="button" class="secondary-button" onclick={handleBack} disabled={isSubmitting}>
+                                        <span aria-hidden="true">←</span>
                                         Back
-
                                     </button>
 
-
-                                    <button
-                                        type="button"
-                                        class="primary-button submit-button"
-                                        onclick={handleSubmit}
-                                        disabled={isSubmitDisabled}>
-
+                                    <button type="button" class="primary-button submit-button" onclick={handleSubmit} disabled={isSubmitDisabled}>
                                         <template if:true={isSubmitting}>
-                                            <span class="button-spinner">
-                                            </span>
+                                            <span class="button-spinner"></span>
                                         </template>
-
                                         {submitButtonLabel}
-
                                     </button>
-
                                 </footer>
-
                             </template>
-
                         </div>
-
                     </template>
-
 
                     <!-- =========================================
                          SUCCESS
                          ========================================= -->
-
                     <template if:true={hasSubmitted}>
-
                         <section class="success-card">
-
-                            <div class="success-icon">
-                                ✓
-                            </div>
-
-                            <p class="success-eyebrow">
-                                Request Received
-                            </p>
-
-                            <h2>
-                                Your service request has been submitted
-                            </h2>
-
-                            <p class="success-copy">
-                                Your request has been sent to the MillTrack
-                                service team. You can monitor its progress
-                                from My Service Requests.
-                            </p>
-
+                            <div class="success-icon">✓</div>
+                            <p class="success-eyebrow">Request Received</p>
+                            <h2>Your service request has been submitted</h2>
+                            <p class="success-copy">Your request has been sent to the MillTrack service team. You can monitor its progress from My Service Requests.</p>
 
                             <div class="success-reference">
-
-                                <span>
-                                    Service Request
-                                </span>
-
-                                <strong>
-                                    #{successCaseNumber}
-                                </strong>
-
+                                <span>Service Request</span>
+                                <strong>#{successCaseNumber}</strong>
                             </div>
-
 
                             <div class="success-actions">
-
-                                <button
-                                    type="button"
-                                    class="primary-button"
-                                    onclick={handleViewServiceRequest}>
-                                    View Service Request
-                                </button>
-
-                                <button
-                                    type="button"
-                                    class="secondary-button"
-                                    onclick={handleBackHome}>
-                                    Back to Home
-                                </button>
-
+                                <button type="button" class="primary-button" onclick={handleViewServiceRequest}>View Service Request</button>
+                                <button type="button" class="secondary-button" onclick={handleBackHome}>Back to Home</button>
                             </div>
-
                         </section>
-
                     </template>
-
                 </template>
-
             </template>
-
         </template>
-
     </div>
 </template>

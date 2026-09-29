@@ -24,6 +24,14 @@ import ASSET_SERIAL from '@salesforce/schema/Asset.Serial_Number__c';
 import ASSET_MANUFACTURER from '@salesforce/schema/Asset.Manufacturer__c';
 import ASSET_MODEL from '@salesforce/schema/Asset.Model__c';
 import ASSET_STATUS from '@salesforce/schema/Asset.Machine_Status__c';
+import ASSET_ACCOUNT from '@salesforce/schema/Asset.AccountId';
+import ASSET_CONTACT from '@salesforce/schema/Asset.ContactId';
+
+import ACCOUNT_NAME from '@salesforce/schema/Account.Name';
+
+import CONTACT_NAME from '@salesforce/schema/Contact.Name';
+import CONTACT_PHONE from '@salesforce/schema/Contact.Phone';
+import CONTACT_EMAIL from '@salesforce/schema/Contact.Email';
 
 import USER_NAME from '@salesforce/schema/User.Name';
 
@@ -44,7 +52,25 @@ const LOG_FIELDS = [
 ];
 
 const WO_FIELDS = [WO_NUMBER, WO_DISPATCH];
-const ASSET_FIELDS = [ASSET_NAME, ASSET_SERIAL, ASSET_MANUFACTURER, ASSET_MODEL, ASSET_STATUS];
+
+const ASSET_FIELDS = [
+    ASSET_NAME,
+    ASSET_SERIAL,
+    ASSET_MANUFACTURER,
+    ASSET_MODEL,
+    ASSET_STATUS,
+    ASSET_ACCOUNT,
+    ASSET_CONTACT
+];
+
+const ACCOUNT_FIELDS = [ACCOUNT_NAME];
+
+const CONTACT_FIELDS = [
+    CONTACT_NAME,
+    CONTACT_PHONE,
+    CONTACT_EMAIL
+];
+
 const USER_FIELDS = [USER_NAME];
 
 export default class MaintenanceLogServiceSummary extends LightningElement {
@@ -70,6 +96,12 @@ export default class MaintenanceLogServiceSummary extends LightningElement {
 
     @wire(getRecord, { recordId: '$assetId', fields: ASSET_FIELDS })
     assetRecord;
+
+    @wire(getRecord, { recordId: '$accountId', fields: ACCOUNT_FIELDS })
+    accountRecord;
+
+    @wire(getRecord, { recordId: '$contactId', fields: CONTACT_FIELDS })
+    contactRecord;
 
     @wire(getRecord, { recordId: '$performedById', fields: USER_FIELDS })
     performedByRecord;
@@ -104,6 +136,14 @@ export default class MaintenanceLogServiceSummary extends LightningElement {
 
     get performedById() {
         return getFieldValue(this.logRecord?.data, LOG_PERFORMED_BY);
+    }
+
+    get accountId() {
+        return getFieldValue(this.assetRecord?.data, ASSET_ACCOUNT);
+    }
+
+    get contactId() {
+        return getFieldValue(this.assetRecord?.data, ASSET_CONTACT);
     }
 
     // =========================================================
@@ -180,6 +220,30 @@ export default class MaintenanceLogServiceSummary extends LightningElement {
 
     get machineStatus() {
         return getFieldValue(this.assetRecord?.data, ASSET_STATUS);
+    }
+
+    // =========================================================
+    // Account
+    // =========================================================
+
+    get accountName() {
+        return getFieldValue(this.accountRecord?.data, ACCOUNT_NAME);
+    }
+
+    // =========================================================
+    // Contact
+    // =========================================================
+
+    get contactName() {
+        return getFieldValue(this.contactRecord?.data, CONTACT_NAME);
+    }
+
+    get contactPhone() {
+        return getFieldValue(this.contactRecord?.data, CONTACT_PHONE);
+    }
+
+    get contactEmail() {
+        return getFieldValue(this.contactRecord?.data, CONTACT_EMAIL);
     }
 
     // =========================================================
@@ -266,8 +330,20 @@ export default class MaintenanceLogServiceSummary extends LightningElement {
         return Boolean(this.assetId && this.assetRecord?.data);
     }
 
+    get hasAccount() {
+        return Boolean(this.accountId && this.accountRecord?.data);
+    }
+
+    get hasContact() {
+        return Boolean(this.contactId && this.contactRecord?.data);
+    }
+
     get showRelatedContext() {
-        return this.showRelatedRecordCards && (this.hasWorkOrder || this.hasAsset);
+        return this.showRelatedRecordCards && (
+            this.hasAsset ||
+            this.hasAccount ||
+            this.hasContact
+        );
     }
 
     // =========================================================
@@ -290,6 +366,7 @@ export default class MaintenanceLogServiceSummary extends LightningElement {
         if (this.isPartsRequest) return 'summary-hero parts-request';
         if (this.issueResolved) return 'summary-hero resolved';
         if (this.followUpRequired) return 'summary-hero follow-up';
+
         return 'summary-hero neutral';
     }
 
@@ -297,6 +374,7 @@ export default class MaintenanceLogServiceSummary extends LightningElement {
         if (this.isPartsRequest) return 'utility:package';
         if (this.issueResolved) return 'utility:success';
         if (this.followUpRequired) return 'utility:warning';
+
         return 'utility:settings';
     }
 
@@ -381,6 +459,24 @@ export default class MaintenanceLogServiceSummary extends LightningElement {
 
         window.open(
             `/lightning/r/Asset/${this.assetId}/view`,
+            '_self'
+        );
+    }
+
+    handleAccountOpen() {
+        if (!this.hasAccount) return;
+
+        window.open(
+            `/lightning/r/Account/${this.accountId}/view`,
+            '_self'
+        );
+    }
+
+    handleContactOpen() {
+        if (!this.hasContact) return;
+
+        window.open(
+            `/lightning/r/Contact/${this.contactId}/view`,
             '_self'
         );
     }

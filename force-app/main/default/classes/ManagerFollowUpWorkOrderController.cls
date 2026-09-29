@@ -65,6 +65,32 @@ public with sharing class ManagerFollowUpWorkOrderController {
     }
 
     // =========================================================
+    // Tool Catalog
+    // =========================================================
+
+    @AuraEnabled(cacheable=true)
+    public static List<ToolOption> getToolCatalog() {
+        List<Tool_Catalog__c> catalogTools = [
+            SELECT Id, Name
+            FROM Tool_Catalog__c
+            WITH USER_MODE
+            ORDER BY Name
+            LIMIT 200
+        ];
+
+        List<ToolOption> results = new List<ToolOption>();
+
+        for (Tool_Catalog__c catalogTool : catalogTools) {
+            ToolOption option = new ToolOption();
+            option.id = catalogTool.Id;
+            option.name = catalogTool.Name;
+            results.add(option);
+        }
+
+        return results;
+    }
+
+    // =========================================================
     // Approve Follow-Up Plan
     // =========================================================
 
@@ -73,7 +99,7 @@ public with sharing class ManagerFollowUpWorkOrderController {
         if (workOrderId == null) throw handledException('A Work Order ID is required.');
 
         String normalizedFix = normalizeOptionalText(recommendedFixSummary);
-        String normalizedTools = normalizeOptionalText(recommendedTools);
+        String normalizedTools = normalizeAndValidateRecommendedTools(recommendedTools);
 
         if (String.isBlank(normalizedFix)) throw handledException('Recommended Fix Summary is required.');
         if (normalizedFix.length() > 255) throw handledException('Recommended Fix Summary must be 255 characters or fewer.');
@@ -162,7 +188,6 @@ public with sharing class ManagerFollowUpWorkOrderController {
 
         result.accountId = workOrder.AccountId;
         result.accountName = workOrder.Account == null ? null : workOrder.Account.Name;
-
         result.assetId = workOrder.AssetId;
 
         if (workOrder.Asset != null) {
@@ -247,7 +272,8 @@ public with sharing class ManagerFollowUpWorkOrderController {
             if (!(rawPart instanceof Map<String, Object>)) throw handledException('One of the selected parts is not in the expected format.');
 
             Map<String, Object> partData = (Map<String, Object>) rawPart;
-            Object rawPartCatalogId = partData.get('partCatalogId'), rawQuantity = partData.get('quantity');
+            Object rawPartCatalogId = partData.get('partCatalogId');
+            Object rawQuantity = partData.get('quantity');
 
             if (rawPartCatalogId == null) throw handledException('A selected part is missing its Part Catalog ID.');
 
@@ -260,7 +286,8 @@ public with sharing class ManagerFollowUpWorkOrderController {
             }
 
             Integer quantity = parseQuantity(rawQuantity);
-            requestedParts.put(partCatalogId, (requestedParts.containsKey(partCatalogId) ? requestedParts.get(partCatalogId) : 0) + quantity);
+            Integer existingQuantity = requestedParts.containsKey(partCatalogId) ? requestedParts.get(partCatalogId) : 0;
+            requestedParts.put(partCatalogId, existingQuantity + quantity);
         }
 
         return requestedParts;
@@ -278,6 +305,7 @@ public with sharing class ManagerFollowUpWorkOrderController {
         }
 
         if (quantity <= 0 || quantity.scale() > 0) throw handledException('Part quantities must be whole numbers greater than zero.');
+
         return Integer.valueOf(String.valueOf(quantity.setScale(0)));
     }
 
@@ -295,7 +323,9 @@ public with sharing class ManagerFollowUpWorkOrderController {
         Set<Id> accessibleIds = new Set<Id>();
         for (Part_Catalog__c part : parts) accessibleIds.add(part.Id);
 
-        if (accessibleIds.size() != partCatalogIds.size()) throw handledException('One or more selected parts are inactive, invalid, or no longer accessible.');
+        if (accessibleIds.size() != partCatalogIds.size()) {
+            throw handledException('One or more selected parts are inactive, invalid, or no longer accessible.');
+        }
     }
 
     private static void validateNoExistingActivePartRequests(Id workOrderId, Set<Id> partCatalogIds) {
@@ -319,8 +349,61 @@ public with sharing class ManagerFollowUpWorkOrderController {
     }
 
     // =========================================================
-    // Helpers
+    // Tool Validation / Helpers
     // =========================================================
+
+    private static String normalizeAndValidateRecommendedTools(String value) {
+        if (String.isBlank(value)) return null;
+
+        List<String> requestedTools = new List<String>();
+        Set<String> requestedToolKeys = new Set<String>();
+
+        for (String rawTool : value.split('[\\r\\n,;]+')) {
+            String toolName = rawTool == null ? null : rawTool.trim();
+            if (String.isBlank(toolName)) continue;
+
+            String toolKey = toolName.toLowerCase();
+            if (requestedToolKeys.add(toolKey)) requestedTools.add(toolName);
+        }
+
+        if (requestedTools.isEmpty()) return null;
+
+        List<Tool_Catalog__c> catalogTools = [
+            SELECT Id, Name
+            FROM Tool_Catalog__c
+            WITH USER_MODE
+            ORDER BY Name
+            LIMIT 200
+        ];
+
+        Map<String, String> catalogNamesByKey = new Map<String, String>();
+
+        for (Tool_Catalog__c catalogTool : catalogTools) {
+            if (String.isBlank(catalogTool.Name)) continue;
+
+            String catalogName = catalogTool.Name.trim();
+            catalogNamesByKey.put(catalogName.toLowerCase(), catalogName);
+        }
+
+        List<String> normalizedTools = new List<String>();
+        List<String> invalidTools = new List<String>();
+
+        for (String requestedTool : requestedTools) {
+            String catalogName = catalogNamesByKey.get(requestedTool.toLowerCase());
+
+            if (catalogName == null) invalidTools.add(requestedTool);
+            else normalizedTools.add(catalogName);
+        }
+
+        if (!invalidTools.isEmpty()) {
+            throw handledException(
+                'One or more selected tools are not valid Tool Catalog entries: ' +
+                String.join(invalidTools, ', ') + '.'
+            );
+        }
+
+        return String.join(normalizedTools, '\n');
+    }
 
     private static void validateFollowUpStatus(WorkOrder workOrder) {
         if (workOrder.Dispatch_Status__c != REQUIRED_STATUS) {
@@ -333,10 +416,7 @@ public with sharing class ManagerFollowUpWorkOrderController {
 
     private static String safeText(String value) { return value == null ? '' : value; }
     private static String normalizeOptionalText(String value) { return String.isBlank(value) ? null : value.trim(); }
-
-    private static String getFirstDmlMessage(DmlException ex) {
-        return ex == null || ex.getNumDml() == 0 ? 'An unexpected save error occurred.' : ex.getDmlMessage(0);
-    }
+    private static String getFirstDmlMessage(DmlException ex) { return ex == null || ex.getNumDml() == 0 ? 'An unexpected save error occurred.' : ex.getDmlMessage(0); }
 
     private static AuraHandledException handledException(String message) {
         AuraHandledException ex = new AuraHandledException(message);
@@ -358,7 +438,6 @@ public with sharing class ManagerFollowUpWorkOrderController {
 
         @AuraEnabled public Id accountId { get; set; }
         @AuraEnabled public String accountName { get; set; }
-
         @AuraEnabled public Id contactId { get; set; }
         @AuraEnabled public String contactName { get; set; }
         @AuraEnabled public String contactEmail { get; set; }
@@ -393,6 +472,11 @@ public with sharing class ManagerFollowUpWorkOrderController {
         @AuraEnabled public String technicianName { get; set; }
 
         @AuraEnabled public List<ExistingPartData> existingParts { get; set; }
+    }
+
+    public class ToolOption {
+        @AuraEnabled public Id id { get; set; }
+        @AuraEnabled public String name { get; set; }
     }
 
     public class ExistingPartData {

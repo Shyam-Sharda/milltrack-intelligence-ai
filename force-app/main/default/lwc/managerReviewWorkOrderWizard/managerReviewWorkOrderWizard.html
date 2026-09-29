@@ -1,83 +1,55 @@
 <template>
-
     <div class="wizard-shell">
-
         <template if:true={isLoading}>
-
             <div class="loading-state">
                 <lightning-spinner
                     alternative-text="Loading Work Order review"
                     size="medium">
                 </lightning-spinner>
             </div>
-
         </template>
-
-
         <template if:false={isLoading}>
-
             <template if:true={errorMessage}>
-
                 <div class="error-state">
-
                     <lightning-icon
                         icon-name="utility:error"
                         size="small"
                         class="error-icon">
                     </lightning-icon>
-
                     <div>
                         <h2>Unable to Load Work Order Review</h2>
                         <p>{errorMessage}</p>
                     </div>
-
                 </div>
-
             </template>
-
-
             <template if:false={errorMessage}>
-
                 <!-- =====================================================
                      HEADER
                      ===================================================== -->
-
                 <header class="wizard-header">
-
                     <div class="header-content">
-
                         <div class="header-icon">
-
                             <lightning-icon
                                 icon-name="standard:work_order"
                                 size="small">
                             </lightning-icon>
-
                         </div>
-
                         <div>
-
                             <p class="eyebrow">
                                 Manager Review
                             </p>
-
                             <h1>
                                 Review Work Order
                             </h1>
-
                             <p class="header-subtitle">
                                 Review the AI-assisted service plan before
                                 approving this Work Order.
                             </p>
-
                             <div class="header-meta">
-
                                 <span class="work-order-number">
                                     {workOrderNumber}
                                 </span>
-
                                 <span class="header-meta-divider"></span>
-
                                 <span class="header-machine">
                                     <lightning-icon
                                         icon-name="standard:asset_object"
@@ -85,67 +57,46 @@
                                     </lightning-icon>
                                     <span>{machineLabel}</span>
                                 </span>
-
                                 <span class="header-meta-divider"></span>
-
                                 <span class="header-serial">
                                     S/N {serialNumber}
                                 </span>
-
                                 <span class="header-meta-divider"></span>
-
                                 <span class={priorityClass}>
                                     {priority}
                                 </span>
-
                                 <span class={previousFailureClass}>
                                     {previousFailureLabel}
                                 </span>
-
                             </div>
-
                         </div>
-
                     </div>
-
-
                     <button
                         class="regenerate-button"
                         type="button"
                         onclick={handleRegenerate}
                         disabled={isRegenerating}>
-
                         <lightning-icon
                             icon-name="utility:refresh"
                             size="xx-small"
                             class={regenerateIconClass}>
                         </lightning-icon>
-
                         <template if:false={isRegenerating}>
                             <span>Regenerate AI Proposal</span>
                         </template>
-
                         <template if:true={isRegenerating}>
                             <span>Regenerating...</span>
                         </template>
-
                     </button>
-
                 </header>
-
                 <template if:true={regenerationErrorMessage}>
-
                     <div class="regeneration-error" role="alert">
                         <lightning-icon icon-name="utility:error" size="xx-small"></lightning-icon>
                         <span>{regenerationErrorMessage}</span>
                     </div>
-
                 </template>
-
                 <section class="context-strip">
-
                     <div class="context-panel customer-panel">
-
                         <div class="context-panel-header">
                             <div class="context-icon customer-context-icon">
                                 <lightning-icon
@@ -153,40 +104,30 @@
                                     size="small">
                                 </lightning-icon>
                             </div>
-
                             <div class="context-details">
                                 <p class="context-label">Customer</p>
                                 <h2>{accountName}</h2>
                             </div>
                         </div>
-
                         <div class="context-info-grid">
                             <span class="context-info-label">Submitted by</span>
                             <strong>{contactName}</strong>
-
                             <template if:true={hasContactTitle}>
                                 <span class="context-info-label">Role</span>
                                 <span>{contactTitle}</span>
                             </template>
-
                             <template if:true={hasContactEmail}>
                                 <span class="context-info-label">Email</span>
                                 <span>{contactEmail}</span>
                             </template>
-
                             <template if:true={hasContactPhone}>
                                 <span class="context-info-label">Phone</span>
                                 <span>{contactPhone}</span>
                             </template>
                         </div>
-
                     </div>
-
-
                     <template if:true={hasCaseNumber}>
-
                         <div class="context-panel case-panel">
-
                             <div class="context-panel-header">
                                 <div class="context-icon case-context-icon">
                                     <lightning-icon
@@ -194,29 +135,24 @@
                                         size="small">
                                     </lightning-icon>
                                 </div>
-
                                 <div class="context-details">
                                     <p class="context-label">Service Case</p>
                                     <h2>{caseNumber}</h2>
                                 </div>
                             </div>
-
                             <div class="context-info-grid">
                                 <span class="context-info-label">Subject</span>
                                 <span>{caseSubject}</span>
-
                                 <span class="context-info-label">Status</span>
                                 <span>
                                     <span class={caseStatusClass}>
                                         {caseStatus}
                                     </span>
                                 </span>
-
                                 <template if:true={reviewData.errorCode}>
                                     <span class="context-info-label">Error Code</span>
                                     <strong>{reviewData.errorCode}</strong>
                                 </template>
-
                                 <template if:true={reviewData.dateReported}>
                                     <span class="context-info-label">Reported</span>
                                     <lightning-formatted-date-time
@@ -229,538 +165,272 @@
                                     </lightning-formatted-date-time>
                                 </template>
                             </div>
-
                         </div>
-
                     </template>
-
                 </section>
-
-
                 <!-- =====================================================
                      PROGRESS
                      ===================================================== -->
-
                 <div class="progress-shell">
-
                     <div class={stepOneClass}>
-
                         <div class="step-circle">
                             1
                         </div>
-
                         <div>
                             <strong>
                                 Problem &amp; Assessment
                             </strong>
-
                             <span>
                                 Understand the issue
                             </span>
                         </div>
-
                     </div>
-
-
                     <div class="progress-line"></div>
-
-
                     <div class={stepTwoClass}>
-
                         <div class="step-circle">
                             2
                         </div>
-
                         <div>
                             <strong>
                                 Fix &amp; Tools
                             </strong>
-
                             <span>
                                 Prepare the repair
                             </span>
                         </div>
-
                     </div>
-
-
                     <div class="progress-line"></div>
-
-
                     <div class={stepThreeClass}>
-
                         <div class="step-circle">3</div>
-
                         <div>
                             <strong>Parts to Order</strong>
                             <span>Plan required parts</span>
                         </div>
-
                     </div>
-
                     <div class="progress-line"></div>
-
                     <div class={stepFourClass}>
-
                         <div class="step-circle">4</div>
-
                         <div>
                             <strong>Approval</strong>
                             <span>Finalize the Work Order</span>
                         </div>
-
                     </div>
-
                 </div>
-
-
                 <!-- =====================================================
                      STEP 1
                      ===================================================== -->
-
                 <template if:true={isStepOne}>
-
                     <main class="wizard-content">
-
                         <div class="step-heading">
-
                             <p class="eyebrow">
                                 Step 1 of 4
                             </p>
-
                             <h2>
                                 Problem &amp; AI Assessment
                             </h2>
-
                             <p>
                                 Understand what happened, compare relevant
                                 service history, and review the proposed
                                 repair approach.
                             </p>
-
                         </div>
-
-
                         <!-- WHAT HAPPENED -->
-
                         <section class="content-card problem-card">
-
                             <div class="card-header">
-
                                 <div>
-
-                                    <p class="section-kicker problem-kicker">
-                                        What happened?
-                                    </p>
-
-                                    <h3>
-                                        Problem Summary
-                                    </h3>
-
+                                    <p class="section-kicker problem-kicker">What happened?</p>
+                                    <h3>Problem Summary</h3>
                                 </div>
-
-                                <button
-                                    class="icon-action"
-                                    type="button"
-                                    title="Edit Problem Summary"
-                                    disabled>
-
-                                    <lightning-icon
-                                        icon-name="utility:edit"
-                                        size="xx-small">
-                                    </lightning-icon>
-
-                                </button>
-
+                                <template if:false={isEditingProblemSummary}>
+                                    <button class="icon-action" type="button" title="Edit Problem Summary" onclick={handleEditProblemSummary} disabled={isRegenerating}>
+                                        <lightning-icon icon-name="utility:edit" size="xx-small"></lightning-icon>
+                                    </button>
+                                </template>
                             </div>
-
-                            <p class="primary-copy">
-                                {problemSummary}
-                            </p>
-
+                            <template if:false={isEditingProblemSummary}>
+                                <p class="primary-copy">{problemSummary}</p>
+                            </template>
+                            <template if:true={isEditingProblemSummary}>
+                                <div class="assessment-editor">
+                                    <textarea class="assessment-edit-input problem-summary-edit-input" value={problemSummaryDraft} oninput={handleProblemSummaryDraftChange} aria-label="Edit Problem Summary"></textarea>
+                                    <div class="assessment-editor-actions">
+                                        <button type="button" class="small-secondary-button" onclick={handleCancelProblemSummaryEdit}>Cancel</button>
+                                        <button type="button" class="small-primary-button" onclick={handleSaveProblemSummary}>Save</button>
+                                    </div>
+                                </div>
+                            </template>
                         </section>
-
-
                         <!-- HISTORICAL PRECEDENT -->
-
                         <section class="content-card history-card">
-
                             <div class="history-heading">
-
                                 <div>
-
-                                    <p class="section-kicker history-kicker">
-                                        Has this happened before?
-                                    </p>
-
-                                    <h3>
-                                        {precedentHeading}
-                                    </h3>
-
+                                    <p class="section-kicker history-kicker">Has this happened before?</p>
+                                    <h3>{precedentHeading}</h3>
                                 </div>
-
-                                <lightning-icon
-                                    icon-name="utility:history"
-                                    size="small">
-                                </lightning-icon>
-
+                                <lightning-icon icon-name="utility:history" size="small"></lightning-icon>
                             </div>
-
-
                             <template if:true={hasHistoricalPrecedents}>
-
-                                <lightning-accordion
-                                    allow-multiple-sections-open>
-
-                                    <lightning-accordion-section
-                                        name="historical-precedents"
-                                        label={precedentHeading}>
-
+                                <lightning-accordion allow-multiple-sections-open>
+                                    <lightning-accordion-section name="historical-precedents" label={precedentHeading}>
                                         <div class="precedent-list">
-
-                                            <template
-                                                for:each={precedents}
-                                                for:item="precedent">
-
-                                                <article
-                                                    key={precedent.maintenanceLogId}
-                                                    class="precedent-card">
-
-
+                                            <template for:each={precedents} for:item="precedent">
+                                                <article key={precedent.maintenanceLogId} class="precedent-card">
                                                     <div class="precedent-header">
-
                                                         <div>
-
-                                                            <p class="precedent-number">
-                                                                Historical Precedent
-                                                                {precedent.displayNumber}
-                                                            </p>
-
-                                                            <h4>
-                                                                {precedent.machineLabel}
-                                                            </h4>
-
+                                                            <p class="precedent-number">Historical Precedent {precedent.displayNumber}</p>
+                                                            <h4>{precedent.machineLabel}</h4>
                                                             <div class="precedent-meta">
-
                                                                 <lightning-formatted-date-time
                                                                     value={precedent.maintenanceDate}
                                                                     year="numeric"
                                                                     month="short"
                                                                     day="2-digit">
                                                                 </lightning-formatted-date-time>
-
-                                                                <span class={precedent.sameAssetClass}>
-                                                                    {precedent.sameAssetLabel}
-                                                                </span>
-
+                                                                <span class={precedent.sameAssetClass}>{precedent.sameAssetLabel}</span>
                                                             </div>
-
                                                         </div>
-
                                                     </div>
-
-
-                                                    <div class="precedent-section">
-
-                                                        <h5>
-                                                            Why It’s Relevant
-                                                        </h5>
-
-                                                        <p>
-                                                            {precedent.whyRelevant}
-                                                        </p>
-
-                                                    </div>
-
-
+                                                    <template if:true={precedent.hasProblemSummary}>
+                                                        <div class="precedent-section">
+                                                            <h5>Problem Summary</h5>
+                                                            <p>{precedent.problemSummary}</p>
+                                                        </div>
+                                                    </template>
                                                     <template if:true={precedent.hasRootCause}>
-
                                                         <div class="precedent-section">
-
-                                                            <h5>
-                                                                Recorded Root Cause
-                                                            </h5>
-
-                                                            <p>
-                                                                {precedent.rootCause}
-                                                            </p>
-
+                                                            <h5>Root Cause</h5>
+                                                            <p>{precedent.rootCause}</p>
                                                         </div>
-
                                                     </template>
-
-
                                                     <template if:true={precedent.hasSuccessfulRepair}>
-
                                                         <div class="precedent-section">
-
-                                                            <h5>
-                                                                Successful Repair
-                                                            </h5>
-
-                                                            <p>
-                                                                {precedent.successfulRepair}
-                                                            </p>
-
+                                                            <h5>Successful Repair</h5>
+                                                            <p>{precedent.successfulRepair}</p>
                                                         </div>
-
                                                     </template>
-
-
-                                                    <template if:true={precedent.hasPartsUsed}>
-
-                                                        <div class="precedent-section">
-
-                                                            <h5>
-                                                                Parts Used
-                                                            </h5>
-
-                                                            <p>
-                                                                {precedent.partsUsed}
-                                                            </p>
-
-                                                        </div>
-
-                                                    </template>
-
-
-                                                    <template if:true={precedent.hasTechnicianNotes}>
-
-                                                        <div class="precedent-section">
-
-                                                            <h5>
-                                                                Technician Observation
-                                                            </h5>
-
-                                                            <p>
-                                                                {precedent.technicianNotes}
-                                                            </p>
-
-                                                        </div>
-
-                                                    </template>
-
-
                                                     <template if:true={precedent.hasLaborHours}>
-
                                                         <div class="precedent-section compact-section">
-
-                                                            <h5>
-                                                                Labor Hours
-                                                            </h5>
-
-                                                            <p>
-                                                                {precedent.laborHours}
-                                                            </p>
-
+                                                            <h5>Labor Hours</h5>
+                                                            <p>{precedent.laborHours}</p>
                                                         </div>
-
                                                     </template>
-
-
                                                     <div class="precedent-section outcome-section">
-
-                                                        <h5>
-                                                            Outcome
-                                                        </h5>
-
-                                                        <p>
-                                                            {precedent.outcome}
-                                                        </p>
-
+                                                        <h5>Outcome</h5>
+                                                        <p>{precedent.outcome}</p>
                                                     </div>
-
                                                 </article>
-
                                             </template>
-
                                         </div>
-
-
                                         <div class="history-disclaimer">
-
-                                            <lightning-icon
-                                                icon-name="utility:info"
-                                                size="xx-small">
-                                            </lightning-icon>
-
+                                            <lightning-icon icon-name="utility:info" size="xx-small"></lightning-icon>
                                             <p>
-                                                Historical repairs are supporting
-                                                evidence. Verify the current machine
-                                                condition before finalizing the
-                                                repair plan.
+                                                Historical repairs are supporting evidence. Verify the current machine
+                                                condition before finalizing the repair plan.
                                             </p>
-
                                         </div>
-
                                     </lightning-accordion-section>
-
                                 </lightning-accordion>
-
                             </template>
-
-
                             <template if:false={hasHistoricalPrecedents}>
-
                                 <div class="empty-history">
-
-                                    <lightning-icon
-                                        icon-name="utility:info_alt"
-                                        size="small">
-                                    </lightning-icon>
-
-                                    <p>
-                                        {noHistoryMessage}
-                                    </p>
-
+                                    <lightning-icon icon-name="utility:info_alt" size="small"></lightning-icon>
+                                    <p>{noHistoryMessage}</p>
                                 </div>
-
                             </template>
-
                         </section>
-
-
                         <!-- AI RECOMMENDATION -->
-
                         <section class="content-card ai-card">
-
                             <div class="card-header">
-
                                 <div>
-
-                                    <p class="section-kicker ai-kicker">
-                                        What does AI recommend?
-                                    </p>
-
-                                    <h3>
-                                        AI Recommended Solution
-                                    </h3>
-
+                                    <p class="section-kicker ai-kicker">What does AI recommend?</p>
+                                    <h3>AI Recommended Solution</h3>
                                 </div>
-
-                                <div class="ai-badge">
-
-                                    <lightning-icon
-                                        icon-name="utility:einstein"
-                                        size="xx-small">
-                                    </lightning-icon>
-
-                                    <span>
-                                        AI Assisted
-                                    </span>
-
+                                <div class="card-header-actions">
+                                    <div class="ai-badge">
+                                        <lightning-icon icon-name="utility:einstein" size="xx-small"></lightning-icon>
+                                        <span>AI Assisted</span>
+                                    </div>
+                                    <template if:false={isEditingRecommendedSolution}>
+                                        <button class="icon-action ai-edit-action" type="button" title="Edit AI Recommended Solution" onclick={handleEditRecommendedSolution} disabled={isRegenerating}>
+                                            <lightning-icon icon-name="utility:edit" size="xx-small"></lightning-icon>
+                                        </button>
+                                    </template>
                                 </div>
-
                             </div>
-
-
-                            <div class="recommended-solution">
-
-                                <p>
-                                    {recommendedSolution}
-                                </p>
-
-                            </div>
-
+                            <template if:false={isEditingRecommendedSolution}>
+                                <div class="recommended-solution">
+                                    <p>{recommendedSolution}</p>
+                                </div>
+                            </template>
+                            <template if:true={isEditingRecommendedSolution}>
+                                <div class="assessment-editor">
+                                        <textarea class="assessment-edit-input recommended-solution-edit-input" value={recommendedSolutionDraft} oninput={handleRecommendedSolutionDraftChange} aria-label="Edit AI Recommended Solution"></textarea>                                    <div class="assessment-editor-actions">
+                                        <button type="button" class="small-secondary-button" onclick={handleCancelRecommendedSolutionEdit}>Cancel</button>
+                                        <button type="button" class="small-primary-button" onclick={handleSaveRecommendedSolution}>Save</button>
+                                    </div>
+                                </div>
+                            </template>
                         </section>
-
                     </main>
-
-
                     <footer class="wizard-footer">
-
                         <button
                             type="button"
                             class="secondary-button"
                             onclick={handleCancel}>
-
                             Cancel
-
                         </button>
-
-
                         <button
                             type="button"
                             class="primary-button"
                             onclick={handleContinue}>
-
                             Continue to Fix &amp; Tools
-
                             <lightning-icon
                                 icon-name="utility:chevronright"
                                 size="xx-small">
                             </lightning-icon>
-
                         </button>
-
                     </footer>
-
                 </template>
-
-
                 <!-- =====================================================
                      STEP 2
                      ===================================================== -->
-
                 <template if:true={isStepTwo}>
-
                     <main class="wizard-content">
-
                         <div class="step-heading">
-
                             <p class="eyebrow">
                                 Step 2 of 4
                             </p>
-
                             <h2>
                                 Fix &amp; Tools
                             </h2>
-
                             <p>
                                 Refine the technician-facing repair direction
                                 and prepare the tools needed for the visit.
                             </p>
-
                         </div>
-
-
                         <section class="content-card fix-summary-card">
-
                             <div class="card-header">
-
                                 <div>
-
                                     <p class="section-kicker fix-kicker">
                                         Repair direction
                                     </p>
-
                                     <h3>
                                         Recommended Fix Summary
                                     </h3>
-
                                     <p class="field-helper">
                                         Keep this concise. This becomes the
                                         technician-facing repair direction.
                                     </p>
-
                                 </div>
-
                                 <div class="manager-edit-badge">
-
                                     <lightning-icon
                                         icon-name="utility:edit"
                                         size="xx-small">
                                     </lightning-icon>
-
                                     <span>Manager Editable</span>
-
                                 </div>
-
                             </div>
-
-
                             <div class="fix-editor">
-
                                 <textarea
                                     class="fix-summary-input"
                                     maxlength="255"
@@ -769,71 +439,46 @@
                                     aria-label="Recommended Fix Summary"
                                     disabled={isRegenerating}>
                                 </textarea>
-
                                 <div class={recommendedFixSummaryCounterClass}>
                                     {recommendedFixSummaryLength} / 255
                                 </div>
-
                             </div>
-
                         </section>
-
-
                         <section class="content-card tools-card">
-
                             <div class="card-header">
-
                                 <div>
-
                                     <p class="section-kicker tools-kicker">
                                         Visit preparation
                                     </p>
-
                                     <h3>
                                         Tools to Bring
                                     </h3>
-
                                     <p class="field-helper">
                                         Review the AI suggestions and add or
                                         remove tools before dispatch.
                                     </p>
-
                                 </div>
-
                                 <div class="tool-count-badge">
                                     {recommendedTools.length} selected
                                 </div>
-
                             </div>
-
-
                             <template if:true={hasRecommendedTools}>
-
                                 <div class="tool-list">
-
                                     <template
                                         for:each={recommendedTools}
                                         for:item="tool">
-
                                         <div
                                             key={tool.id}
                                             class="tool-chip">
-
                                             <div class="tool-chip-main">
-
                                                 <div class="tool-icon">
-
                                                     <lightning-icon
                                                         icon-name="utility:setup"
                                                         size="xx-small">
                                                     </lightning-icon>
-
                                                 </div>
-
                                                 <span>{tool.name}</span>
-
                                             </div>
-
                                             <button
                                                 type="button"
                                                 class="remove-tool-button"
@@ -841,32 +486,21 @@
                                                 title="Remove tool"
                                                 onclick={handleRemoveTool}
                                                 disabled={isRegenerating}>
-
                                                 <lightning-icon
                                                     icon-name="utility:close"
                                                     size="xx-small">
                                                 </lightning-icon>
-
                                             </button>
-
                                         </div>
-
                                     </template>
-
                                 </div>
-
                             </template>
-
-
                             <template if:false={hasRecommendedTools}>
-
                                 <div class="empty-tools">
-
                                     <lightning-icon
                                         icon-name="utility:info_alt"
                                         size="small">
                                     </lightning-icon>
-
                                     <div>
                                         <strong>No tools identified yet</strong>
                                         <p>
@@ -874,91 +508,136 @@
                                             bring for this service visit.
                                         </p>
                                     </div>
-
                                 </div>
-
                             </template>
-
-
                             <div class="add-tool-row">
-
-                                <div class="add-tool-input-wrap">
-
-                                    <lightning-icon
-                                        icon-name="utility:add"
-                                        size="xx-small">
-                                    </lightning-icon>
-
-                                    <input
-                                        type="text"
-                                        class="add-tool-input"
-                                        placeholder="Add a tool..."
-                                        value={newToolName}
-                                        oninput={handleNewToolChange}
-                                        onkeydown={handleToolKeyDown}
-                                        disabled={isRegenerating}>
-
+                                <div class="tool-picker-shell">
+                                    <div class={toolPickerClass}>
+                                        <button
+                                            type="button"
+                                            class="tool-picker-trigger"
+                                            aria-haspopup="listbox"
+                                            aria-expanded={isToolDropdownOpen}
+                                            onclick={handleToggleToolDropdown}
+                                            disabled={isRegenerating}>
+                                            <span class="tool-picker-trigger-main">
+                                                <span class="tool-picker-trigger-icon">
+                                                    <lightning-icon
+                                                        icon-name="utility:setup"
+                                                        size="xx-small">
+                                                    </lightning-icon>
+                                                </span>
+                                                <span class="tool-picker-trigger-label">
+                                                    {toolPickerLabel}
+                                                </span>
+                                            </span>
+                                            <lightning-icon
+                                                class={toolPickerChevronClass}
+                                                icon-name="utility:chevrondown"
+                                                size="xx-small">
+                                            </lightning-icon>
+                                        </button>
+                                        <template if:true={showToolAddedMessage}>
+                                            <div class="tool-added-toast" role="status">
+                                                <lightning-icon icon-name="utility:success" size="xx-small"></lightning-icon>
+                                                <span>{toolAddedMessage}</span>
+                                            </div>
+                                        </template>
+                                        <template if:true={isToolDropdownOpen}>
+                                            <div class="tool-picker-menu">
+                                                <div class="tool-picker-search-wrap">
+                                                    <lightning-icon
+                                                        icon-name="utility:search"
+                                                        size="xx-small">
+                                                    </lightning-icon>
+                                                    <input
+                                                        type="search"
+                                                        class="tool-picker-search-input"
+                                                        placeholder="Search tools..."
+                                                        value={toolSearchTerm}
+                                                        oninput={handleToolSearchChange}
+                                                        onkeydown={handleToolSearchKeyDown}
+                                                        aria-label="Search tools">
+                                                </div>
+                                                <div
+                                                    class="tool-picker-options"
+                                                    role="listbox"
+                                                    aria-label="Available tools">
+                                                    <template if:true={hasAvailableToolOptions}>
+                                                        <template
+                                                            for:each={availableToolOptions}
+                                                            for:item="tool">
+                                                            <button
+                                                                key={tool.id}
+                                                                type="button"
+                                                                class="tool-picker-option"
+                                                                data-id={tool.id}
+                                                                role="option"
+                                                                onclick={handleToolOptionClick}>
+                                                                <span class="tool-picker-option-main">
+                                                                    <span class="tool-picker-option-icon">
+                                                                        <lightning-icon
+                                                                            icon-name="utility:setup"
+                                                                            size="xx-small">
+                                                                        </lightning-icon>
+                                                                    </span>
+                                                                    <span class="tool-picker-option-name">
+                                                                        {tool.name}
+                                                                    </span>
+                                                                </span>
+                                                                <lightning-icon
+                                                                    class="tool-picker-add-icon"
+                                                                    icon-name="utility:add"
+                                                                    size="xx-small">
+                                                                </lightning-icon>
+                                                            </button>
+                                                        </template>
+                                                    </template>
+                                                    <template if:false={hasAvailableToolOptions}>
+                                                        <div class="tool-picker-empty">
+                                                            <lightning-icon
+                                                                icon-name="utility:info_alt"
+                                                                size="xx-small">
+                                                            </lightning-icon>
+                                                            <span>No matching tools available.</span>
+                                                        </div>
+                                                    </template>
+                                                </div>
+                                            </div>
+                                        </template>
+                                    </div>
                                 </div>
-
-                                <button
-                                    type="button"
-                                    class="add-tool-button"
-                                    onclick={handleAddTool}
-                                    disabled={isRegenerating}>
-                                    Add Tool
-                                </button>
-
                             </div>
-
                         </section>
-
                     </main>
-
-
                     <footer class="wizard-footer">
-
                         <button
                             type="button"
                             class="secondary-button"
                             onclick={handleBack}>
-
                             <lightning-icon
                                 icon-name="utility:chevronleft"
                                 size="xx-small">
                             </lightning-icon>
-
                             Back
-
                         </button>
-
-
                         <button
                             type="button"
                             class="primary-button"
                             onclick={handleContinueToParts}>
-
                             Continue to Parts to Order
-
                             <lightning-icon
                                 icon-name="utility:chevronright"
                                 size="xx-small">
                             </lightning-icon>
-
                         </button>
-
                     </footer>
-
                 </template>
-
-
                 <!-- =====================================================
                      STEP 3 - PARTS TO ORDER
                      ===================================================== -->
-
                 <template if:true={isStepThree}>
-
                     <main class="wizard-content">
-
                         <div class="step-heading">
                             <p class="eyebrow">Step 3 of 4</p>
                             <h2>Parts to Order</h2>
@@ -967,7 +646,6 @@
                                 this Work Order is dispatched. Nothing is ordered from this screen.
                             </p>
                         </div>
-
                         <section class="content-card ai-parts-card">
                             <div class="card-header">
                                 <div>
@@ -985,7 +663,6 @@
                             </div>
                             <div class="ai-parts-copy">{recommendedPartsDisplay}</div>
                         </section>
-
                         <section class="content-card parts-catalog-card">
                             <div class="parts-catalog-header">
                                 <div>
@@ -995,7 +672,6 @@
                                         Showing active parts for {manufacturer} machines.
                                     </p>
                                 </div>
-
                                 <div class="parts-search-wrap">
                                     <lightning-icon icon-name="utility:search" size="xx-small"></lightning-icon>
                                     <input
@@ -1006,20 +682,17 @@
                                         oninput={handlePartSearchChange}>
                                 </div>
                             </div>
-
                             <template if:true={isLoadingParts}>
                                 <div class="parts-loading-state">
                                     <lightning-spinner alternative-text="Loading compatible parts" size="small"></lightning-spinner>
                                 </div>
                             </template>
-
                             <template if:true={partsErrorMessage}>
                                 <div class="parts-inline-error">
                                     <lightning-icon icon-name="utility:error" size="xx-small"></lightning-icon>
                                     <span>{partsErrorMessage}</span>
                                 </div>
                             </template>
-
                             <template if:false={isLoadingParts}>
                                 <template if:true={hasCatalogParts}>
                                     <div class="parts-table-wrap">
@@ -1061,12 +734,10 @@
                                             </tbody>
                                         </table>
                                     </div>
-
                                     <div class="parts-pagination-row">
                                         <div class="parts-pagination-summary">
                                             {catalogDisplayCountLabel}
                                         </div>
-
                                         <div class="parts-pagination-actions">
                                             <template if:true={canShowLessCatalogParts}>
                                                 <button
@@ -1080,7 +751,6 @@
                                                     Show Less
                                                 </button>
                                             </template>
-
                                             <template if:true={hasMoreCatalogParts}>
                                                 <button
                                                     type="button"
@@ -1096,7 +766,6 @@
                                         </div>
                                     </div>
                                 </template>
-
                                 <template if:false={hasCatalogParts}>
                                     <div class="empty-parts-state">
                                         <lightning-icon icon-name="utility:search" size="small"></lightning-icon>
@@ -1108,7 +777,6 @@
                                 </template>
                             </template>
                         </section>
-
                         <section class="content-card selected-parts-card">
                             <div class="card-header">
                                 <div>
@@ -1121,7 +789,6 @@
                                 </div>
                                 <div class="part-count-badge">{selectedPartCountLabel}</div>
                             </div>
-
                             <template if:true={hasSelectedParts}>
                                 <div class="selected-parts-list">
                                     <template for:each={selectedParts} for:item="part">
@@ -1139,7 +806,6 @@
                                                     </div>
                                                 </div>
                                             </div>
-
                                             <div class="selected-part-actions">
                                                 <label class="quantity-field">
                                                     <span>Quantity</span>
@@ -1164,7 +830,6 @@
                                     </template>
                                 </div>
                             </template>
-
                             <template if:false={hasSelectedParts}>
                                 <div class="empty-selected-parts">
                                     <lightning-icon icon-name="utility:info_alt" size="small"></lightning-icon>
@@ -1175,31 +840,23 @@
                                 </div>
                             </template>
                         </section>
-
                     </main>
-
                     <footer class="wizard-footer">
                         <button type="button" class="secondary-button" onclick={handleBack}>
                             <lightning-icon icon-name="utility:chevronleft" size="xx-small"></lightning-icon>
                             Back
                         </button>
-
                         <button type="button" class="primary-button" onclick={handleContinueToApproval}>
                             Continue to Approval
                             <lightning-icon icon-name="utility:chevronright" size="xx-small"></lightning-icon>
                         </button>
                     </footer>
-
                 </template>
-
                 <!-- =====================================================
                      STEP 4 - APPROVAL
                      ===================================================== -->
-
                 <template if:true={isStepFour}>
-
                     <main class="wizard-content">
-
                         <div class="step-heading">
                             <p class="eyebrow">Step 4 of 4</p>
                             <h2>Approval</h2>
@@ -1208,14 +865,10 @@
                                 is ready for dispatch preparation.
                             </p>
                         </div>
-
                         <!-- 1. REPAIR PLAN -->
-
                         <section class="content-card approval-repair-card approval-flow-card">
-
                             <div class="approval-flow-title-row">
                                 <div class="approval-step-number approval-step-number-repair">1</div>
-
                                 <div class="approval-card-heading approval-flow-heading">
                                     <!-- Final Review -->
                                     <div class="approval-card-icon repair-plan-icon">
@@ -1226,7 +879,6 @@
                                             class="repair-plan-lightning-icon">
                                         </lightning-icon>
                                     </div>
-
                                     <div>
                                         <p class="section-kicker approval-repair-kicker">Final Review</p>
                                         <h3>Repair Plan</h3>
@@ -1236,24 +888,20 @@
                                     </div>
                                 </div>
                             </div>
-
                             <div class="approval-summary-grid">
                                 <div class="approval-summary-item approval-summary-wide">
                                     <span class="approval-summary-label">Problem Summary</span>
                                     <p>{problemSummary}</p>
                                 </div>
-
                                 <div class="approval-summary-item approval-summary-wide">
                                     <span class="approval-summary-label">Recommended Fix Summary</span>
                                     <p>{recommendedFixSummary}</p>
                                 </div>
-
                                 <div class="approval-summary-item approval-tools-summary">
                                     <div class="approval-summary-row">
                                         <span class="approval-summary-label">Tools to Bring</span>
                                         <span class="approval-count-badge">{approvalToolCountLabel}</span>
                                     </div>
-
                                     <template if:true={hasRecommendedTools}>
                                         <div class="approval-tool-list">
                                             <template for:each={recommendedTools} for:item="tool">
@@ -1264,34 +912,26 @@
                                             </template>
                                         </div>
                                     </template>
-
                                     <template if:false={hasRecommendedTools}>
                                         <p class="approval-empty-copy">No tools were identified for this repair.</p>
                                     </template>
                                 </div>
                             </div>
-
                         </section>
-
                         <!-- ARROW: REPAIR PLAN → PARTS -->
                         <div class="approval-flow-connector" aria-hidden="true">
                             <div class="approval-flow-arrow">
                                 <lightning-icon icon-name="utility:down" size="xx-small"></lightning-icon>
                             </div>
                         </div>
-
                         <!-- 2. PARTS REQUEST -->
-
                         <section class="content-card approval-parts-card approval-flow-card">
-
                             <div class="approval-flow-title-row approval-card-heading-row">
                                 <div class="approval-heading-main">
                                     <div class="approval-step-number approval-step-number-parts">2</div>
-
                                     <div class="approval-card-icon approval-parts-icon">
                                         <lightning-icon icon-name="standard:product_item" size="small"></lightning-icon>
                                     </div>
-
                                     <div>
                                         <p class="section-kicker approval-parts-kicker">Parts Request</p>
                                         <h3>Parts</h3>
@@ -1300,10 +940,8 @@
                                         </p>
                                     </div>
                                 </div>
-
                                 <div class="approval-count-badge approval-part-count">{approvalPartCountLabel}</div>
                             </div>
-
                             <template if:true={hasSelectedParts}>
                                 <div class="approval-parts-list">
                                     <template for:each={selectedParts} for:item="part">
@@ -1321,7 +959,6 @@
                                                     </div>
                                                 </div>
                                             </div>
-
                                             <div class="approval-quantity">
                                                 <span>Qty</span>
                                                 <strong>{part.quantity}</strong>
@@ -1330,7 +967,6 @@
                                     </template>
                                 </div>
                             </template>
-
                             <template if:false={hasSelectedParts}>
                                 <div class="approval-empty-parts">
                                     <div class="approval-empty-parts-icon">
@@ -1342,22 +978,17 @@
                                     </div>
                                 </div>
                             </template>
-
                         </section>
-
                         <!-- ARROW: PARTS → NEXT STEP -->
                         <div class="approval-flow-connector" aria-hidden="true">
                             <div class="approval-flow-arrow">
                                 <lightning-icon icon-name="utility:down" size="xx-small"></lightning-icon>
                             </div>
                         </div>
-
                         <!-- 3. NEXT STEP -->
-
                         <section class="content-card approval-dispatch-card approval-flow-card">
                             <div class="approval-flow-title-row">
                                 <div class="approval-step-number approval-step-number-next">3</div>
-
                                     <!-- Next Step -->
                                     <div class="approval-card-icon dispatch-icon">
                                         <lightning-icon
@@ -1365,31 +996,25 @@
                                             size="small">
                                         </lightning-icon>
                                     </div>
-
                                 <div class="approval-dispatch-copy">
                                     <p class="section-kicker dispatch-kicker">Next Step</p>
-
                                     <template if:true={hasSelectedParts}>
                                         <h3>Order Required Parts</h3>
                                     </template>
-
                                     <template if:false={hasSelectedParts}>
                                         <h3>Assign a Technician</h3>
                                     </template>
-
                                     <div class={approvalDispatchClass}>{approvalDispatchStatus}</div>
                                     <p>{approvalDispatchDescription}</p>
                                 </div>
                             </div>
                         </section>
-
                         <template if:true={approvalErrorMessage}>
                             <div class="parts-inline-error approval-error" role="alert">
                                 <lightning-icon icon-name="utility:error" size="xx-small"></lightning-icon>
                                 <span>{approvalErrorMessage}</span>
                             </div>
                         </template>
-
                         <div class="approval-notice">
                             <lightning-icon icon-name="utility:info" size="xx-small"></lightning-icon>
                             <span>
@@ -1397,11 +1022,8 @@
                                 and create any selected part requests.
                             </span>
                         </div>
-
                     </main>
-
                     <footer class="wizard-footer approval-footer">
-
                         <button
                             type="button"
                             class="secondary-button"
@@ -1409,67 +1031,44 @@
                             disabled={isApproving}>
                             Cancel
                         </button>
-
                         <div class="approval-footer-actions">
-
                             <button
                                 type="button"
                                 class="secondary-button"
                                 onclick={handleBack}
                                 disabled={isApproving}>
-
                                 <lightning-icon
                                     icon-name="utility:chevronleft"
                                     size="xx-small">
                                 </lightning-icon>
-
                                 Back
-
                             </button>
-
                             <button
                                 type="button"
                                 class="approve-work-order-button"
                                 onclick={handleApproveWorkOrder}
                                 disabled={isApproveDisabled}>
-
                                 <template if:false={isApproving}>
-
                                     <lightning-icon
                                         icon-name="utility:success"
                                         size="xx-small">
                                     </lightning-icon>
-
                                     Approve Work Order
-
                                 </template>
-
                                 <template if:true={isApproving}>
-
                                     <lightning-icon
                                         icon-name="utility:refresh"
                                         size="xx-small"
                                         class="regenerate-icon regenerate-icon-spinning">
                                     </lightning-icon>
-
                                     Approving...
-
                                 </template>
-
                             </button>
-
                         </div>
-
                     </footer>
-
                 </template>
-
             </template>
-
         </template>
-
-
-
         <template if:true={showRegenerationConfirmation}>
             <section role="dialog" tabindex="-1" aria-modal="true"
                 aria-labelledby="regeneration-modal-heading"
@@ -1484,13 +1083,11 @@
                             <h2 id="regeneration-modal-heading">Regenerate AI Proposal?</h2>
                         </div>
                     </header>
-
                     <div class="regeneration-modal-body">
                         <p>
                             This will replace the current AI draft and any
                             unsaved manager edits.
                         </p>
-
                         <div class="regeneration-warning">
                             <lightning-icon icon-name="utility:info_alt" size="xx-small"></lightning-icon>
                             <span>
@@ -1501,13 +1098,11 @@
                             </span>
                         </div>
                     </div>
-
                     <footer class="regeneration-modal-footer">
                         <button type="button" class="secondary-button"
                             onclick={handleCancelRegeneration}>
                             Cancel
                         </button>
-
                         <button type="button" class="regenerate-confirm-button"
                             onclick={handleConfirmRegeneration}>
                             <lightning-icon icon-name="utility:refresh" size="xx-small"></lightning-icon>
@@ -1516,12 +1111,9 @@
                     </footer>
                 </div>
             </section>
-
             <div class="slds-backdrop slds-backdrop_open"></div>
         </template>
-
         <template if:true={showRegenerationFlow}>
-
             <div class="hidden-flow" aria-hidden="true">
                 <lightning-flow
                     flow-api-name="MGR_01_Regenerate_Work_Order_AI_Proposal"
@@ -1530,85 +1122,58 @@
                     onstatuschange={handleRegenerationStatus}>
                 </lightning-flow>
             </div>
-
         </template>
-
         <!-- =====================================================
             REGENERATION PROCESSING OVERLAY
             ===================================================== -->
-
         <template if:true={isRegenerating}>
-
             <div
                 class="regeneration-processing-overlay"
                 role="status"
                 aria-live="polite">
-
                 <div class="regeneration-processing-card">
-
                     <div class="regeneration-spinner-wrap">
-
                         <lightning-spinner
                             alternative-text="Regenerating AI proposal"
                             size="medium">
                         </lightning-spinner>
-
                     </div>
-
                     <h2>Regenerating AI Proposal</h2>
-
                     <p>
                         Reviewing the Work Order, historical repairs,
                         and service guidance.
                     </p>
-
                     <span class="regeneration-processing-note">
                         Your updated proposal will appear shortly.
                     </span>
-
                 </div>
-
             </div>
-
         </template>
-
         <!-- =====================================================
              APPROVAL PROCESSING OVERLAY
              ===================================================== -->
-
         <template if:true={isApproving}>
-
             <div
                 class="regeneration-processing-overlay"
                 role="status"
                 aria-live="polite">
-
                 <div class="regeneration-processing-card">
-
                     <div class="regeneration-spinner-wrap">
                         <lightning-spinner
                             alternative-text="Approving Work Order"
                             size="medium">
                         </lightning-spinner>
                     </div>
-
                     <h2>Approving Work Order</h2>
-
                     <p>
                         Saving the reviewed repair plan and creating
                         any required part requests.
                     </p>
-
                     <span class="regeneration-processing-note">
                         Please keep this page open while approval completes.
                     </span>
-
                 </div>
-
             </div>
-
         </template>
-
     </div>
-
 </template>

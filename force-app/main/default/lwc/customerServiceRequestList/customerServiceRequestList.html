@@ -1,0 +1,112 @@
+<template>
+    <section class="service-request-list-page">
+        <template if:true={isLoading}>
+            <div class="loading-state">
+                <lightning-spinner alternative-text="Loading service requests" size="medium"></lightning-spinner>
+            </div>
+        </template>
+        <template if:true={hasError}>
+            <div class="error-state">
+                <div class="error-icon">!</div>
+                <div>
+                    <h2>We couldn't load your service requests.</h2>
+                    <p>{errorMessage}</p>
+                </div>
+            </div>
+        </template>
+        <template if:false={isLoading}>
+            <template if:false={hasError}>
+                <div class="page-header">
+                    <div>
+                        <p class="eyebrow">MILLTRACK CUSTOMER PORTAL</p>
+                        <h1>Service Requests</h1>
+                        <p class="page-description">Track current machine issues, upcoming service visits, and completed MillTrack service history.</p>
+                    </div>
+                    <span class="record-count">{resultCountLabel}</span>
+                </div>
+                <div class="filter-row" role="group" aria-label="Service request filters">
+                    <button type="button" class={allFilterClass} data-filter="All" onclick={handleFilter}>All</button>
+                    <button type="button" class={openFilterClass} data-filter="Open" onclick={handleFilter}>Open</button>
+                    <button type="button" class={completedFilterClass} data-filter="Completed" onclick={handleFilter}>Completed</button>
+                </div>
+                <template if:true={hasServiceRequests}>
+                    <div class="table-card">
+                        <div class="table-wrapper">
+                            <table class="customer-table">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">Service Request</th>
+                                        <th scope="col">Request #</th>
+                                        <th scope="col">Machine</th>
+                                        <th scope="col">Status</th>
+                                        <th scope="col">Priority</th>
+                                        <th scope="col">Scheduled Visit</th>
+                                        <th scope="col">Opened</th>
+                                        <th scope="col">Closed</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <template for:each={filteredServiceRequests} for:item="record">
+                                        <tr key={record.id}>
+                                            <td>
+                                                <button type="button" class="record-link record-link-primary" data-id={record.id} onclick={handleRecordNavigation}>
+                                                    {record.subjectDisplay}
+                                                </button>
+                                            </td>
+                                            <td>
+                                                <button type="button" class="record-link record-number-link" data-id={record.id} onclick={handleRecordNavigation}>
+                                                    {record.caseNumberDisplay}
+                                                </button>
+                                            </td>
+                                            <td>
+                                                <template if:true={record.assetId}>
+                                                    <button type="button" class="record-link" data-id={record.assetId} onclick={handleAssetNavigation}>
+                                                        {record.assetNameDisplay}
+                                                    </button>
+                                                </template>
+                                                <template if:false={record.assetId}>
+                                                    <span>{record.assetNameDisplay}</span>
+                                                </template>
+                                            </td>
+                                            <td>
+                                                <span class={record.statusClass}>{record.customerStatusDisplay}</span>
+                                            </td>
+                                            <td>
+                                                <span class={record.priorityClass}>{record.priorityDisplay}</span>
+                                            </td>
+                                            <td>
+                                                <template if:true={record.hasScheduledVisit}>
+                                                    <lightning-formatted-date-time value={record.scheduledVisit} year="numeric" month="short" day="2-digit" hour="numeric" minute="2-digit"></lightning-formatted-date-time>
+                                                </template>
+                                                <template if:false={record.hasScheduledVisit}>
+                                                    <span class="muted-value">To be scheduled</span>
+                                                </template>
+                                            </td>
+                                            <td>
+                                                <lightning-formatted-date-time value={record.createdDate} year="numeric" month="short" day="2-digit"></lightning-formatted-date-time>
+                                            </td>
+                                            <td>
+                                                <template if:true={record.hasClosedDate}>
+                                                    <lightning-formatted-date-time value={record.closedDate} year="numeric" month="short" day="2-digit"></lightning-formatted-date-time>
+                                                </template>
+                                                <template if:false={record.hasClosedDate}>
+                                                    <span class="muted-value">—</span>
+                                                </template>
+                                            </td>
+                                        </tr>
+                                    </template>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </template>
+                <template if:false={hasServiceRequests}>
+                    <div class="empty-state">
+                        <h2>No service requests found</h2>
+                        <p>There are no service requests matching the selected filter.</p>
+                    </div>
+                </template>
+            </template>
+        </template>
+    </section>
+</template>
